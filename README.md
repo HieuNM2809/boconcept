@@ -133,6 +133,14 @@ Cấu trúc view: `views/home.ejs` + `views/partials/*` · CSS/JS tĩnh ở `pub
 
 > Thông số / đóng gói / FAQ là placeholder theo ngôn ngữ ở `resources/lang/{vi,en}/product.js` (schema chưa có cột thông số kỹ thuật).
 
+### Trang quản trị Slideshow — `GET /admin/slides` (Basic Auth)
+
+CRUD slide hero trang chủ: danh sách, thêm/sửa/xóa, bật–ẩn, sắp thứ tự — dữ liệu bảng `slides`, song ngữ (`title_vi/en`, `badge_vi/en`). Controller `admin.controller.js`, service `slide.service.js`, views `views/admin/*`. Slide `status=1` hiển thị ở hero theo `sort_order`; bảng rỗng → homepage dùng fallback tĩnh.
+
+Bảo vệ bằng **HTTP Basic Auth** (`app/Http/Middleware/adminAuth.middleware.js`): `ADMIN_USER` / `ADMIN_PASS` (mặc định `admin` / `admin` — đổi trong `.env`).
+
+> Auth đơn giản cho dev; production nên đặt sau HTTPS hoặc nâng cấp session login. Ảnh nhập bằng URL (chưa có upload file).
+
 ## API
 
 | Method | Endpoint            | Auth | Mô tả                          |

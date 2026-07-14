@@ -1,0 +1,32 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'partners'}) %>
+<main class="admin-wrap admin-narrow">
+    <div class="admin-head">
+        <h1><%= item ? ('Sửa đối tác #' + item.id) : 'Thêm đối tác' %></h1>
+        <a class="btn-sm" href="/admin/partners">← Quay lại</a>
+    </div>
+    <form class="admin-form" method="post" action="<%= action %>">
+        <label>Tên đối tác *</label>
+        <input name="name" required value="<%= item ? item.name : '' %>">
+        <label>Logo (URL) — để trống sẽ hiển thị bằng chữ</label>
+        <input name="logo" value="<%= item ? (item.logo || '') : '' %>" placeholder="https://...">
+        <% if (item && item.logo) { %><img class="form-preview" src="<%= item.logo %>" alt=""><% } %>
+        <div class="form-2col">
+            <div><label>Link (khi bấm vào)</label><input name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://..."></div>
+            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
+        </div>
+        <label>Trạng thái</label>
+        <select name="status">
+            <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
+            <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
+        </select>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+            <a class="btn btn-outline" href="/admin/partners">Hủy</a>
+        </div>
+    </form>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

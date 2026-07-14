@@ -1,0 +1,37 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'categories'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>Loại sản phẩm</h1>
+        <a class="btn btn-primary" href="/admin/categories/new">+ Thêm loại</a>
+    </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+    <table class="admin-table">
+        <thead>
+        <tr><th>#</th><th>Ảnh</th><th>Tên (VI)</th><th>Tên (EN)</th><th>Danh mục cha</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!items.length) { %><tr><td colspan="8" class="admin-empty">Chưa có loại sản phẩm.</td></tr><% } %>
+        <% items.forEach(function (c) { %>
+            <tr>
+                <td><%= c.id %></td>
+                <td><% if (c.image) { %><img class="admin-thumb" src="<%= c.image %>" alt="" loading="lazy"><% } else { %>—<% } %></td>
+                <td><%= c.name_vi %></td>
+                <td><%= c.name_en || '—' %></td>
+                <td><%= c.parent_name || '—' %></td>
+                <td><%= c.sort_order %></td>
+                <td><span class="badge-status <%= c.status ? 'on' : 'off' %>"><%= c.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/categories/<%= c.id %>/edit">Sửa</a>
+                    <form method="post" action="/admin/categories/<%= c.id %>/delete" data-confirm="Xóa loại sản phẩm này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+    <p class="admin-note">Không xóa được loại còn danh mục con hoặc còn sản phẩm.</p>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

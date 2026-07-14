@@ -1,0 +1,58 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'products'}) %>
+<main class="admin-wrap admin-narrow">
+    <div class="admin-head">
+        <h1><%= item ? ('Sửa sản phẩm #' + item.id) : 'Thêm sản phẩm' %></h1>
+        <a class="btn-sm" href="/admin/products">← Quay lại</a>
+    </div>
+    <form class="admin-form" method="post" action="<%= action %>">
+        <div class="form-2col">
+            <div><label>Tên (VI) *</label><input name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
+            <div><label>Tên (EN)</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
+        </div>
+        <label>Ảnh chính (URL)</label>
+        <input name="thumbnail" value="<%= item ? (item.thumbnail || '') : '' %>" placeholder="https://...">
+        <% if (item && item.thumbnail) { %><img class="form-preview" src="<%= item.thumbnail %>" alt=""><% } %>
+        <div class="form-2col">
+            <div>
+                <label>Danh mục</label>
+                <select name="category_id">
+                    <option value="">— Không —</option>
+                    <% categories.forEach(function (c) { %>
+                        <option value="<%= c.id %>" <%= (item && item.category_id === c.id) ? 'selected' : '' %>><%= c.name_vi %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div><label>Giá (₫)</label><input type="number" step="1000" min="0" name="price" value="<%= item ? Number(item.price || 0) : 0 %>"></div>
+            <div><label>Nổi bật (hero/trang chủ)</label>
+                <select name="is_featured">
+                    <option value="0" <%= (!item || !item.is_featured) ? 'selected' : '' %>>Không</option>
+                    <option value="1" <%= (item && item.is_featured) ? 'selected' : '' %>>Có</option>
+                </select>
+            </div>
+            <div><label>Ưu tiên (thứ tự)</label><input type="number" name="priority" value="<%= item ? item.priority : 0 %>"></div>
+            <div><label>Slug</label><input name="slug" value="<%= item ? (item.slug || '') : '' %>"></div>
+            <div><label>Trạng thái</label>
+                <select name="status">
+                    <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
+                </select>
+            </div>
+        </div>
+        <label>Mô tả (VI)</label>
+        <textarea name="description_vi" rows="3"><%= item ? (item.description_vi || '') : '' %></textarea>
+        <label>Mô tả (EN)</label>
+        <textarea name="description_en" rows="3"><%= item ? (item.description_en || '') : '' %></textarea>
+        <% if (item && item.variants && item.variants.length) { %>
+            <p class="admin-note">Biến thể: <%= item.variants.map(function (v) { return v.name; }).join(', ') %> · Ảnh gallery: <%= (item.images || []).length %> (quản lý biến thể/gallery sẽ bổ sung sau).</p>
+        <% } %>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+            <a class="btn btn-outline" href="/admin/products">Hủy</a>
+        </div>
+    </form>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

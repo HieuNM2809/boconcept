@@ -1,0 +1,44 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'categories'}) %>
+<main class="admin-wrap admin-narrow">
+    <div class="admin-head">
+        <h1><%= item ? ('Sửa loại #' + item.id) : 'Thêm loại sản phẩm' %></h1>
+        <a class="btn-sm" href="/admin/categories">← Quay lại</a>
+    </div>
+    <form class="admin-form" method="post" action="<%= action %>">
+        <div class="form-2col">
+            <div><label>Tên (VI) *</label><input name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
+            <div><label>Tên (EN)</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
+        </div>
+        <label>Ảnh (URL)</label>
+        <input name="image" value="<%= item ? (item.image || '') : '' %>" placeholder="https://...">
+        <% if (item && item.image) { %><img class="form-preview" src="<%= item.image %>" alt=""><% } %>
+        <div class="form-2col">
+            <div>
+                <label>Danh mục cha</label>
+                <select name="parent_id">
+                    <option value="">— Không (cấp 1) —</option>
+                    <% parents.forEach(function (p) { %>
+                        <option value="<%= p.id %>" <%= (item && item.parent_id === p.id) ? 'selected' : '' %>><%= p.name_vi %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div><label>Slug</label><input name="slug" value="<%= item ? (item.slug || '') : '' %>"></div>
+            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
+            <div><label>Trạng thái</label>
+                <select name="status">
+                    <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+            <a class="btn btn-outline" href="/admin/categories">Hủy</a>
+        </div>
+    </form>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

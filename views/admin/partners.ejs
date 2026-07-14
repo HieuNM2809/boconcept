@@ -1,0 +1,36 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'partners'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>Đối tác hợp tác</h1>
+        <a class="btn btn-primary" href="/admin/partners/new">+ Thêm đối tác</a>
+    </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+    <table class="admin-table">
+        <thead>
+        <tr><th>#</th><th>Logo</th><th>Tên</th><th>Link</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!items.length) { %><tr><td colspan="7" class="admin-empty">Chưa có đối tác.</td></tr><% } %>
+        <% items.forEach(function (p) { %>
+            <tr>
+                <td><%= p.id %></td>
+                <td><% if (p.logo) { %><img class="admin-thumb" src="<%= p.logo %>" alt="" loading="lazy"><% } else { %>— (chữ)<% } %></td>
+                <td><%= p.name %></td>
+                <td><%= p.link || '—' %></td>
+                <td><%= p.sort_order %></td>
+                <td><span class="badge-status <%= p.status ? 'on' : 'off' %>"><%= p.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/partners/<%= p.id %>/edit">Sửa</a>
+                    <form method="post" action="/admin/partners/<%= p.id %>/delete" data-confirm="Xóa đối tác này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+    <p class="admin-note">Đối tác không có logo sẽ hiển thị bằng chữ (tên) ở trang chủ.</p>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

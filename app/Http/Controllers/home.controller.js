@@ -1,6 +1,7 @@
 const CategoryService = require('../../Services/Api/category.service');
 const ProductService = require('../../Services/Api/product.service');
 const SlideService = require('../../Services/Api/slide.service');
+const PartnerService = require('../../Services/Api/partner.service');
 const {logger} = require('../../../config/log4js');
 
 // Dữ liệu KHÔNG dịch (ảnh/icon/tên thương hiệu) — phần chữ lấy từ resources/lang.
@@ -17,7 +18,9 @@ const CERT_IMAGES = [
     'https://picsum.photos/seed/cert2/400/560',
     'https://picsum.photos/seed/cert3/400/560',
 ];
-const PARTNERS = ['Auchan', 'matelpro', 'OTTO', 'wayfair', 'DMORA', 'produceshop'];
+// Fallback khi DB chưa có đối tác (quản lý ở /admin/partners)
+const FALLBACK_PARTNERS = ['Auchan', 'matelpro', 'OTTO', 'wayfair', 'DMORA', 'produceshop']
+    .map((name) => ({name, logo: null, link: null}));
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
 
@@ -26,13 +29,15 @@ async function index(req, res) {
     const home = res.locals.t.home;
 
     try {
-        const [cats, featured, slides] = await Promise.all([
+        const [cats, featured, slides, partnersRows] = await Promise.all([
             CategoryService.getAll({status: 1}),      // danh mục từ DB
             ProductService.getFeatured({limit: 8}),   // sản phẩm nổi bật từ DB
             SlideService.getActiveOrdered(),          // slide hero từ DB (quản lý ở /admin/slides)
+            PartnerService.getActiveOrdered(),        // đối tác từ DB (quản lý ở /admin/partners)
         ]);
 
         const heroSlides = slides.length ? toPlain(slides) : FALLBACK_SLIDES;
+        const partners = partnersRows.length ? toPlain(partnersRows) : FALLBACK_PARTNERS;
 
         res.render('home', {
             pageTitle: home.meta.title,
@@ -40,7 +45,7 @@ async function index(req, res) {
             featuredProducts: toPlain(featured),
             heroSlides,
             whyUs: home.why.items.map((it, i) => ({...it, icon: WHY_ICONS[i % WHY_ICONS.length]})),
-            partners: PARTNERS,
+            partners,
             certificates: home.certs.items.map((c, i) => ({...c, image: CERT_IMAGES[i % CERT_IMAGES.length]})),
         });
     } catch (err) {

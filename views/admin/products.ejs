@@ -1,0 +1,40 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'products'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>Sản phẩm</h1>
+        <a class="btn btn-primary" href="/admin/products/new">+ Thêm sản phẩm</a>
+    </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+    <table class="admin-table">
+        <thead>
+        <tr><th>#</th><th>Ảnh</th><th>Tên (VI)</th><th>Danh mục</th><th>Giá</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!items.length) { %><tr><td colspan="8" class="admin-empty">Chưa có sản phẩm.</td></tr><% } %>
+        <% items.forEach(function (p) { %>
+            <tr>
+                <td><%= p.id %></td>
+                <td><% if (p.thumbnail) { %><img class="admin-thumb" src="<%= p.thumbnail %>" alt="" loading="lazy"><% } else { %>—<% } %></td>
+                <td><%= p.name_vi %></td>
+                <td><%= p.category ? p.category.name_vi : '—' %></td>
+                <td><%= Number(p.price || 0).toLocaleString('vi-VN') %> ₫</td>
+                <td><%= p.is_featured ? '★' : '' %></td>
+                <td><span class="badge-status <%= p.status ? 'on' : 'off' %>"><%= p.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/products/<%= p.id %>/edit">Sửa</a>
+                    <a class="btn-sm" href="/products/<%= p.id %>" target="_blank" rel="noopener">Xem</a>
+                    <form method="post" action="/admin/products/<%= p.id %>/delete" data-confirm="Xóa sản phẩm này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+    <% if (meta && meta.total > items.length) { %>
+        <p class="admin-note">Hiển thị <%= items.length %>/<%= meta.total %> sản phẩm (giới hạn 100 — bổ sung phân trang khi cần).</p>
+    <% } %>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>
