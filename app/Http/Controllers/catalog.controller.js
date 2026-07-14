@@ -30,6 +30,14 @@ async function category(req, res) {
     const id = parseInt(req.params.id, 10);
     const t = res.locals.t;
 
+    if (!Number.isInteger(id) || id < 1) {
+        return res.status(404).render('category', {
+            pageTitle: t.catalog.notFound,
+            category: null, breadcrumb: [], children: [],
+            products: [], meta: null, pages: [], filters: {}, linkFor: () => '#',
+        });
+    }
+
     try {
         const {current, chain} = await CategoryService.getBreadcrumb(id);
         if (!current) {
@@ -85,6 +93,13 @@ async function category(req, res) {
 async function product(req, res) {
     const id = parseInt(req.params.id, 10);
     const t = res.locals.t;
+
+    if (!Number.isInteger(id) || id < 1) {
+        return res.status(404).render('product', {
+            pageTitle: t.product.notFound,
+            product: null, breadcrumb: [], gallery: [],
+        });
+    }
 
     try {
         const found = await ProductService.getById(id);
