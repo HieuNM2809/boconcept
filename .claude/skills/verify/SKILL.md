@@ -36,7 +36,9 @@ curl -s "$B/api/products?per_page=3"                # public read
 curl -s -X POST $B/api/products -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d @payload.json  # write (needs token)
 ```
 
-Probes that matter here: bad id `/products/abc` & `/categories/abc` → must be **404** (regression: NaN id used to 500); `?per_page=999` → 422; wrong login / no-token write → 401; `?sort=BOGUS` → defaults to popular.
+Probes that matter here: bad id `/products/abc` & `/categories/abc` **and** `/admin/<res>/abc/edit` → must be **404** (regression: NaN id → `findByPk(NaN)` used to 500; public catalog guards in the controller, admin guards via `adminRouter.param('id')`); `?per_page=999` → 422; wrong login / no-token write / `/admin/*` no-auth → 401; `?sort=BOGUS` → defaults to popular.
+
+Admin area (`/admin`, Basic Auth `ADMIN_USER`/`ADMIN_PASS`): 5 sections — slides, categories, partners, products, certificates — each list + `/new` + `/:id/edit` + POST create/update/`:id/delete`. Homepage sections are all DB-driven (slides, categories, featured=category-tiles-with-counts, partners, certificates) with static fallbacks; changing a section in admin should reflect on `/` after refresh.
 
 ## Gotchas (Windows + Git Bash)
 

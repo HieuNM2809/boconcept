@@ -31,5 +31,6 @@ module.exports = {
         phone: 'Phone: 1900 588 880',
         svcList: ['Privacy policy', 'Warranty policy', 'Return policy', 'FAQ', 'Payment policy'],
         rights: 'All rights reserved.',
+        admin: 'Admin',
     },
 };

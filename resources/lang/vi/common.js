@@ -31,5 +31,6 @@ module.exports = {
         phone: 'SĐT: 1900 588 880',
         svcList: ['Chính sách bảo mật', 'Chính sách bảo hành', 'Chính sách đổi trả', 'Câu hỏi thường gặp', 'Chính sách thanh toán'],
         rights: 'Bảo lưu mọi quyền.',
+        admin: 'Quản trị',
     },
 };
