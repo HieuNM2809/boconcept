@@ -120,6 +120,12 @@ Mở `http://localhost:3000/` để xem **trang chủ** render bằng EJS, dữ 
 
 Cấu trúc view: `views/home.ejs` + `views/partials/*` · CSS/JS tĩnh ở `public/` (phục vụ tại `/static`). Health check chuyển sang `GET /health`.
 
+### Trang danh sách theo loại — `GET /categories/:id`
+
+`views/category.ejs` (controller `catalog.controller.js`): breadcrumb, danh mục con (kèm số sản phẩm), và lưới sản phẩm có **sắp xếp / phân trang / tìm theo tên**. Query: `?sort=popular|newest|bestseller|price_asc|price_desc&per_page=&page=&q=`. Dữ liệu từ `ProductService.getAll` + `CategoryService`. Card danh mục ở trang chủ trỏ tới trang này.
+
+> `bestseller` tạm map sang `priority` (chưa có dữ liệu lượt bán). Card sản phẩm tạm trỏ `/api/products/:id` (chưa có trang chi tiết).
+
 ## API
 
 | Method | Endpoint            | Auth | Mô tả                          |
