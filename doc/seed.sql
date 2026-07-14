@@ -45,3 +45,14 @@ VALUES
     (2, 'https://picsum.photos/seed/hero-living/1600/720', 'Không gian sống hiện đại', 'Modern Living Spaces', 'Bộ sưu tập mới', 'New collection', '#featured', 2, 1, NOW(), NOW()),
     (3, 'https://picsum.photos/seed/hero-bed/1600/720', 'Giấc ngủ trọn vẹn mỗi ngày', 'Rest, Redefined', 'Phòng ngủ', 'Bedroom', '#featured', 3, 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE `title_vi` = VALUES(`title_vi`), `image` = VALUES(`image`), `updated_at` = NOW();
+
+-- Đối tác hợp tác (logo để trống → hiển thị bằng chữ)
+INSERT INTO `partners` (`id`, `name`, `logo`, `link`, `sort_order`, `status`, `created_at`, `updated_at`)
+VALUES
+    (1, 'Auchan',      NULL, NULL, 1, 1, NOW(), NOW()),
+    (2, 'matelpro',    NULL, NULL, 2, 1, NOW(), NOW()),
+    (3, 'OTTO',        NULL, NULL, 3, 1, NOW(), NOW()),
+    (4, 'wayfair',     NULL, NULL, 4, 1, NOW(), NOW()),
+    (5, 'DMORA',       NULL, NULL, 5, 1, NOW(), NOW()),
+    (6, 'produceshop', NULL, NULL, 6, 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `updated_at` = NOW();

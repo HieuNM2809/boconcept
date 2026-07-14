@@ -77,7 +77,11 @@
         <h2 class="section-title center"><%= t.home.partners.title %></h2>
         <div class="partner-row">
             <% partners.forEach(function (p) { %>
-                <span class="partner-logo"><%= p %></span>
+                <% if (p.link) { %>
+                    <a class="partner-logo" href="<%= p.link %>" target="_blank" rel="noopener"><% if (p.logo) { %><img src="<%= p.logo %>" alt="<%= p.name %>"><% } else { %><%= p.name %><% } %></a>
+                <% } else { %>
+                    <span class="partner-logo"><% if (p.logo) { %><img src="<%= p.logo %>" alt="<%= p.name %>"><% } else { %><%= p.name %><% } %></span>
+                <% } %>
             <% }) %>
         </div>
     </div>

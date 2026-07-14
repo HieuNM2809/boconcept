@@ -120,6 +120,20 @@ CREATE TABLE IF NOT EXISTS `slides` (
     KEY `idx_slides_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ── Đối tác hợp tác (quản lý ở /admin/partners) ───────────────────────────────
+CREATE TABLE IF NOT EXISTS `partners` (
+    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name`       VARCHAR(255) NOT NULL,
+    `logo`       VARCHAR(500) NULL,
+    `link`       VARCHAR(500) NULL,
+    `sort_order` INT          NOT NULL DEFAULT 0,
+    `status`     TINYINT      NOT NULL DEFAULT 1,
+    `created_at` DATETIME     NULL,
+    `updated_at` DATETIME     NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_partners_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- API client mẫu để test /api/auth/login
 INSERT INTO `api_clients` (`service_name`, `client_id`, `client_secret`, `is_active`, `created_at`, `updated_at`)
 VALUES ('demo', 'demo-client', 'demo-secret', 1, NOW(), NOW())
