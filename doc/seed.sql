@@ -37,3 +37,11 @@ VALUES
     (2, 1, 'https://picsum.photos/seed/sofa1b/800', 1, NOW(), NOW()),
     (3, 2, 'https://picsum.photos/seed/table1a/800', 0, NOW(), NOW())
 ON DUPLICATE KEY UPDATE `url` = VALUES(`url`), `updated_at` = NOW();
+
+-- Slideshow trang chủ
+INSERT INTO `slides` (`id`, `image`, `title_vi`, `title_en`, `badge_vi`, `badge_en`, `link`, `sort_order`, `status`, `created_at`, `updated_at`)
+VALUES
+    (1, 'https://picsum.photos/seed/hero-danish/1600/720', 'Ưu đãi cuối mùa: Đang diễn ra', 'End Season Sale: Now On', 'Thiết kế Đan Mạch', 'Danish design', '#featured', 1, 1, NOW(), NOW()),
+    (2, 'https://picsum.photos/seed/hero-living/1600/720', 'Không gian sống hiện đại', 'Modern Living Spaces', 'Bộ sưu tập mới', 'New collection', '#featured', 2, 1, NOW(), NOW()),
+    (3, 'https://picsum.photos/seed/hero-bed/1600/720', 'Giấc ngủ trọn vẹn mỗi ngày', 'Rest, Redefined', 'Phòng ngủ', 'Bedroom', '#featured', 3, 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE `title_vi` = VALUES(`title_vi`), `image` = VALUES(`image`), `updated_at` = NOW();

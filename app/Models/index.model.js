@@ -5,6 +5,7 @@ const Category = require('./Category.model');
 const Product = require('./Product.model');
 const ProductVariant = require('./ProductVariant.model');
 const ProductImage = require('./ProductImage.model');
+const Slide = require('./Slide.model');
 
 // ── Category (cây danh mục) ───────────────────────────────────────────────────
 Category.hasMany(Category, {foreignKey: 'parent_id', as: 'children'});
@@ -28,4 +29,5 @@ module.exports = {
     Product,
     ProductVariant,
     ProductImage,
+    Slide,
 };

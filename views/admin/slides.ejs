@@ -1,0 +1,54 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<header class="admin-bar">
+    <div class="admin-bar-inner">
+        <a class="admin-brand" href="/admin/slides">⚙️ Quản trị · Slideshow</a>
+        <a class="admin-bar-link" href="/" target="_blank" rel="noopener">Xem site ↗</a>
+    </div>
+</header>
+
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>Quản lý Slideshow</h1>
+        <a class="btn btn-primary" href="/admin/slides/new">+ Thêm slide</a>
+    </div>
+
+    <% if (flash) { %>
+        <div class="admin-flash">
+            <%= ({created: 'Đã thêm slide.', updated: 'Đã cập nhật slide.', deleted: 'Đã xóa slide.', notfound: 'Không tìm thấy slide.'})[flash] || '' %>
+        </div>
+    <% } %>
+
+    <table class="admin-table">
+        <thead>
+        <tr><th>#</th><th>Ảnh</th><th>Tiêu đề (VI)</th><th>Badge (VI)</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!slides.length) { %>
+            <tr><td colspan="7" class="admin-empty">Chưa có slide nào. Bấm “+ Thêm slide”.</td></tr>
+        <% } %>
+        <% slides.forEach(function (s) { %>
+            <tr>
+                <td><%= s.id %></td>
+                <td><img class="admin-thumb" src="<%= s.image %>" alt="" loading="lazy"></td>
+                <td><%= s.title_vi || '—' %></td>
+                <td><%= s.badge_vi || '—' %></td>
+                <td><%= s.sort_order %></td>
+                <td><span class="badge-status <%= s.status ? 'on' : 'off' %>"><%= s.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/slides/<%= s.id %>/edit">Sửa</a>
+                    <form method="post" action="/admin/slides/<%= s.id %>/delete" data-confirm="Xóa slide này?">
+                        <button class="btn-sm danger" type="submit">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+
+    <p class="admin-note">Slide đang “Hiện” sẽ xuất hiện ở slideshow trang chủ theo thứ tự tăng dần.</p>
+</main>
+
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

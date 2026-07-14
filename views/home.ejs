@@ -8,9 +8,9 @@
         <% heroSlides.forEach(function (s) { %>
             <div class="hero-slide" style="background-image:url('<%= s.image %>')">
                 <div class="container hero-content">
-                    <span class="hero-badge"><%= s.badge %></span>
-                    <h1 class="hero-title"><%= s.title %></h1>
-                    <a class="btn btn-primary" href="#featured"><%= t.common.actions.shopNow %> &rarr;</a>
+                    <% if (pick(s, 'badge')) { %><span class="hero-badge"><%= pick(s, 'badge') %></span><% } %>
+                    <h1 class="hero-title"><%= pick(s, 'title') %></h1>
+                    <a class="btn btn-primary" href="<%= s.link || '#featured' %>"><%= t.common.actions.shopNow %> &rarr;</a>
                 </div>
             </div>
         <% }) %>
