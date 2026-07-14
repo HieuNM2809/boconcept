@@ -49,4 +49,36 @@
     document.querySelectorAll('select[data-nav]').forEach((s) => {
         s.addEventListener('change', () => { if (s.value) window.location.href = s.value; });
     });
+
+    // ── Product detail: gallery + variants + tabs ──────────────────────────────
+    const gMain = document.getElementById('galleryMain');
+    if (gMain) {
+        const setMain = (src) => { if (src) gMain.style.backgroundImage = `url('${src}')`; };
+
+        document.querySelectorAll('.g-thumb').forEach((th) => th.addEventListener('click', () => {
+            setMain(th.dataset.image);
+            document.querySelectorAll('.g-thumb').forEach((x) => x.classList.remove('active'));
+            th.classList.add('active');
+        }));
+        document.querySelectorAll('[data-gdir]').forEach((btn) => btn.addEventListener('click', () => {
+            const track = document.getElementById('gThumbs');
+            if (track) track.scrollBy({left: Number(btn.dataset.gdir) * 120, behavior: 'smooth'});
+        }));
+
+        const priceEl = document.getElementById('pdPrice');
+        const skuEl = document.getElementById('pdSku');
+        document.querySelectorAll('.variant').forEach((v) => v.addEventListener('click', () => {
+            document.querySelectorAll('.variant').forEach((x) => x.classList.remove('active'));
+            v.classList.add('active');
+            if (v.dataset.image) setMain(v.dataset.image);
+            if (priceEl && v.dataset.price) priceEl.textContent = v.dataset.price;
+            if (skuEl && v.dataset.sku) skuEl.textContent = v.dataset.sku;
+        }));
+    }
+
+    document.querySelectorAll('.tab-btn').forEach((btn) => btn.addEventListener('click', () => {
+        const id = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach((x) => x.classList.toggle('active', x === btn));
+        document.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('active', p.id === 'tab-' + id));
+    }));
 })();

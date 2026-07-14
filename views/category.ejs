@@ -82,7 +82,7 @@
         <% if (products.length) { %>
             <div class="product-grid listing-grid">
                 <% products.forEach(function (p) { %>
-                    <a class="product-card" href="/api/products/<%= p.id %>">
+                    <a class="product-card" href="/products/<%= p.id %>">
                         <div class="product-thumb" style="background-image:url('<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/400') %>')">
                             <% if (p.is_featured) { %><span class="badge-hot">HOT</span><% } %>
                         </div>

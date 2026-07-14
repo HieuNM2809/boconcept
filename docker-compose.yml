@@ -1,7 +1,8 @@
-# MySQL cho môi trường dev. Đọc biến từ .env (cùng thư mục).
+# Hạ tầng dev: MySQL + Redis. Đọc biến từ .env (cùng thư mục).
 # Lệnh:
-#   docker compose up -d          # khởi động
-#   docker compose logs -f mysql  # xem log
+#   docker compose up -d          # khởi động tất cả
+#   docker compose up -d redis    # chỉ khởi động 1 service
+#   docker compose ps             # trạng thái
 #   docker compose down           # dừng (giữ dữ liệu)
 #   docker compose down -v        # dừng + XÓA dữ liệu (chạy lại schema.sql từ đầu)
 services:
@@ -31,5 +32,24 @@ services:
       retries: 10
       start_period: 30s
 
+  redis:
+    image: redis:7-alpine
+    container_name: boconcept-redis
+    restart: unless-stopped
+    # Dev: chạy không mật khẩu (khớp REDIS_PASSWORD rỗng trong .env).
+    # Nếu đặt REDIS_PASSWORD, thêm vào command: --requirepass ${REDIS_PASSWORD}
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - boconcept_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
 volumes:
   boconcept_mysql_data:
+  boconcept_redis_data:

@@ -58,8 +58,7 @@
       "<rootDir>/tests/**/*.test.js"
     ],
     "testPathIgnorePatterns": [
-      "/node_modules/",
-      "<rootDir>/hasaki-tech-hasaki-services-hasakinow-f023bb13ba94/"
+      "/node_modules/"
     ]
   }
 }

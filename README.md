@@ -72,18 +72,19 @@ cp .env.example .env        # rồi chỉnh thông số DB/Redis/JWT
 
 > Trên Windows (Git Bash) dùng `copy .env.example .env` nếu `cp` không có.
 
-### MySQL bằng Docker (khuyến nghị cho dev)
+### Hạ tầng bằng Docker — MySQL + Redis (khuyến nghị cho dev)
 
 ```bash
-docker compose up -d          # chạy MySQL 8 (port theo DB_PORT, mặc định 3306)
-docker compose logs -f mysql  # xem log
+docker compose up -d          # chạy MySQL 8 + Redis 7
+docker compose ps             # trạng thái
+docker compose logs -f redis  # xem log 1 service
 docker compose down           # dừng (giữ dữ liệu)
 docker compose down -v        # dừng + XÓA dữ liệu (chạy lại schema.sql từ đầu)
 ```
 
-- Lần khởi tạo đầu tiên tự chạy `doc/schema.sql` → tạo bảng `api_clients`, `examples` và seed client demo (`demo-client` / `demo-secret`).
-- Container: `boconcept-mysql`; dữ liệu lưu ở volume `boconcept_mysql_data`.
-- Kiểm tra kết nối từ app: `RUN_DB_TESTS=1 npm test`.
+- **MySQL** (`boconcept-mysql`, port `DB_PORT` mặc định 3306) — lần khởi tạo đầu tiên tự chạy `doc/schema.sql` + `doc/seed.sql` (tạo bảng, seed client demo `demo-client` / `demo-secret` và catalog mẫu). Dữ liệu ở volume `boconcept_mysql_data`.
+- **Redis** (`boconcept-redis`, port `REDIS_PORT` mặc định 6379) — cache; dữ liệu ở volume `boconcept_redis_data` (appendonly). Dev chạy không mật khẩu (khớp `REDIS_PASSWORD` rỗng); nếu đặt mật khẩu thêm `--requirepass` vào `command`.
+- Kiểm tra kết nối từ app: `RUN_DB_TESTS=1 npm test` (MySQL). Redis dùng qua `lib/redis.js` / `app/Helpers/cache.helper.js`.
 
 ### Hoặc dùng MySQL sẵn có
 
@@ -124,7 +125,13 @@ Cấu trúc view: `views/home.ejs` + `views/partials/*` · CSS/JS tĩnh ở `pub
 
 `views/category.ejs` (controller `catalog.controller.js`): breadcrumb, danh mục con (kèm số sản phẩm), và lưới sản phẩm có **sắp xếp / phân trang / tìm theo tên**. Query: `?sort=popular|newest|bestseller|price_asc|price_desc&per_page=&page=&q=`. Dữ liệu từ `ProductService.getAll` + `CategoryService`. Card danh mục ở trang chủ trỏ tới trang này.
 
-> `bestseller` tạm map sang `priority` (chưa có dữ liệu lượt bán). Card sản phẩm tạm trỏ `/api/products/:id` (chưa có trang chi tiết).
+> `bestseller` tạm map sang `priority` (chưa có dữ liệu lượt bán).
+
+### Trang chi tiết sản phẩm — `GET /products/:id`
+
+`views/product.ejs` (controller `catalog.controller.js`): gallery (1 hình gốc + dải thumbnail kiểu Shopee, bấm để đổi ảnh chính), chọn **biến thể** (cập nhật ảnh/giá/SKU qua JS), SKU, danh mục, nút liên hệ, và **tabs** (Thông tin thêm / Đóng gói & vận chuyển / FAQ accordion). Dữ liệu từ `ProductService.getById` (kèm `variants` + `images`); tự fallback khi sản phẩm không có biến thể/ảnh. Card sản phẩm ở trang chủ & trang danh sách trỏ tới đây.
+
+> Thông số / đóng gói / FAQ là placeholder theo ngôn ngữ ở `resources/lang/{vi,en}/product.js` (schema chưa có cột thông số kỹ thuật).
 
 ## API
 

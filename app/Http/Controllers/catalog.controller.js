@@ -81,4 +81,45 @@ async function category(req, res) {
     }
 }
 
-module.exports = {category};
+// Trang chi tiết sản phẩm — GET /products/:id
+async function product(req, res) {
+    const id = parseInt(req.params.id, 10);
+    const t = res.locals.t;
+
+    try {
+        const found = await ProductService.getById(id);
+        if (!found) {
+            return res.status(404).render('product', {
+                pageTitle: t.product.notFound,
+                product: null, breadcrumb: [], gallery: [],
+            });
+        }
+        const prod = found.get ? found.get({plain: true}) : found;
+
+        let breadcrumb = [];
+        if (prod.category_id) {
+            const {chain} = await CategoryService.getBreadcrumb(prod.category_id);
+            breadcrumb = chain;
+        }
+
+        // Gallery: hình gốc (thumbnail) + ảnh phụ (ProductImage), khử trùng lặp
+        const imgs = (prod.images || [])
+            .slice()
+            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+            .map((i) => i.url);
+        const gallery = [...new Set([prod.thumbnail, ...imgs].filter(Boolean))];
+        if (!gallery.length) gallery.push(`https://picsum.photos/seed/p${prod.id}/800`);
+
+        res.render('product', {
+            pageTitle: `${res.locals.pick(prod, 'name')} — webFurniture`,
+            product: prod,
+            breadcrumb,
+            gallery,
+        });
+    } catch (err) {
+        logger.error('Product page error', {error: {message: err.message, stack: err.stack}});
+        res.status(500).send('Không tải được trang chi tiết sản phẩm. Kiểm tra kết nối MySQL.');
+    }
+}
+
+module.exports = {category, product};

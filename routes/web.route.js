@@ -8,6 +8,9 @@ router.get('/', (req, res) => homeController.index(req, res));
 // Trang danh sách sản phẩm theo loại
 router.get('/categories/:id', (req, res) => catalogController.category(req, res));
 
+// Trang chi tiết sản phẩm
+router.get('/products/:id', (req, res) => catalogController.product(req, res));
+
 // Health check
 const health = (req, res) => {
     res.status(200).json({

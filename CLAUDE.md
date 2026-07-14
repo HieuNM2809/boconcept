@@ -4,10 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-Two things live under `E:\boconcept`:
-
-- **The project (repo root)** — a Node.js + Express + Sequelize/MySQL service. It started as a clean MVC "base" (extracted from the reference below) and is being built into a **BoConcept-style furniture e‑commerce** site (bilingual VI/EN). Backend = JSON REST API under `/api`; frontend = server-rendered EJS pages under `/`.
-- **`hasaki-tech-hasaki-services-hasakinow-.../`** — the original HasakiNow logistics service this base was derived from. **Read-only reference; do not modify.** It has a much heavier stack (Elasticsearch, Kafka, Bee-Queue, APM) that was deliberately dropped here. Jest is scoped to ignore it.
+`E:\boconcept` (repo root) is a **Node.js + Express + Sequelize/MySQL** service. It began as a clean MVC "base" (extracted from a HasakiNow logistics reference project that has since been removed — it used a much heavier stack with Elasticsearch, Kafka, Bee-Queue, and APM that were deliberately dropped here) and is being built into a **BoConcept-style furniture e‑commerce** site (bilingual VI/EN). Backend = JSON REST API under `/api`; frontend = server-rendered EJS pages under `/`.
 
 ## Commands
 

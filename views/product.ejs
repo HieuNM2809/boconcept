@@ -1,0 +1,124 @@
+<%- include('partials/head') %>
+<body>
+<%- include('partials/header') %>
+
+<% if (!product) { %>
+    <section class="section">
+        <div class="container center">
+            <h2 class="section-title"><%= t.product.notFound %></h2>
+            <a class="btn btn-outline" href="/"><%= t.product.backHome %></a>
+        </div>
+    </section>
+<% } else { %>
+    <% const dv = (product.variants && product.variants.length) ? product.variants[0] : null; %>
+    <% const initPrice = (dv && dv.price != null) ? dv.price : product.price; %>
+    <% const initSku = (dv && dv.sku) ? dv.sku : ('SP' + product.id); %>
+
+    <div class="container pd">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="/"><%= t.product.home %></a>
+            <% breadcrumb.forEach(function (b) { %>
+                <span class="sep">/</span><a href="/categories/<%= b.id %>"><%= pick(b, 'name') %></a>
+            <% }) %>
+            <span class="sep">/</span><span class="crumb-current"><%= pick(product, 'name') %></span>
+        </nav>
+
+        <div class="pd-top">
+            <!-- Gallery: 1 hình gốc + item con (giống shopee) -->
+            <div class="gallery">
+                <div class="gallery-main" id="galleryMain" style="background-image:url('<%= gallery[0] %>')"></div>
+                <div class="gallery-thumbs">
+                    <button class="g-arrow" data-gdir="-1" aria-label="prev">&lsaquo;</button>
+                    <div class="g-thumb-track" id="gThumbs">
+                        <% gallery.forEach(function (src, i) { %>
+                            <button class="g-thumb <%= i === 0 ? 'active' : '' %>" data-image="<%= src %>"
+                                    style="background-image:url('<%= src %>')" aria-label="image <%= i + 1 %>"></button>
+                        <% }) %>
+                    </div>
+                    <button class="g-arrow" data-gdir="1" aria-label="next">&rsaquo;</button>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="pd-info">
+                <h1 class="pd-name"><%= pick(product, 'name') %></h1>
+                <div class="pd-price" id="pdPrice"><%= money(initPrice) %></div>
+                <p class="pd-desc"><%= pick(product, 'description') || t.product.noDescription %></p>
+
+                <% if (product.variants && product.variants.length) { %>
+                    <div class="pd-variants">
+                        <span class="pd-variant-label"><%= t.product.variantLabel %>:</span>
+                        <div class="variant-list">
+                            <% product.variants.forEach(function (v, i) { %>
+                                <button class="variant <%= i === 0 ? 'active' : '' %>"
+                                        data-image="<%= v.image || '' %>"
+                                        data-price="<%= money(v.price != null ? v.price : product.price) %>"
+                                        data-sku="<%= v.sku || ('SP' + product.id) %>">
+                                    <% if (v.image) { %><img src="<%= v.image %>" alt="<%= v.name %>"><% } %>
+                                    <span><%= v.name %></span>
+                                </button>
+                            <% }) %>
+                        </div>
+                    </div>
+                <% } %>
+
+                <div class="pd-meta">
+                    <div><span class="pd-meta-k"><%= t.product.sku %>:</span> <span id="pdSku"><%= initSku %></span></div>
+                    <% if (breadcrumb.length) { %>
+                        <div>
+                            <span class="pd-meta-k"><%= t.product.categories %>:</span>
+                            <% breadcrumb.forEach(function (b, i) { %><a class="pd-cat" href="/categories/<%= b.id %>"><%= pick(b, 'name') %></a><%= i < breadcrumb.length - 1 ? ', ' : '' %><% }) %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <a class="btn btn-primary pd-cta" href="#footer"><%= t.product.contact %> &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="additional"><%= t.product.tabs.additional %></button>
+                <button class="tab-btn" data-tab="packaging"><%= t.product.tabs.packaging %></button>
+                <button class="tab-btn" data-tab="faq"><%= t.product.tabs.faq %></button>
+            </div>
+
+            <div class="tab-panel active" id="tab-additional">
+                <div class="tab-2col">
+                    <div>
+                        <h3 class="tab-h"><%= t.product.specsTitle %></h3>
+                        <table class="spec-table">
+                            <% t.product.specs.forEach(function (s) { %>
+                                <tr><th><%= s.label %></th><td><%= s.value %></td></tr>
+                            <% }) %>
+                        </table>
+                    </div>
+                    <div class="tab-img" style="background-image:url('<%= gallery[0] %>')"></div>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="tab-packaging">
+                <p class="tab-desc"><%= t.product.packagingDesc %></p>
+                <table class="spec-table">
+                    <% t.product.packaging.forEach(function (s) { %>
+                        <tr><th><%= s.label %></th><td><%= s.value %></td></tr>
+                    <% }) %>
+                </table>
+                <a class="btn btn-outline pd-cta" href="#footer"><%= t.product.contact %> &rarr;</a>
+            </div>
+
+            <div class="tab-panel" id="tab-faq">
+                <% t.product.faq.forEach(function (f) { %>
+                    <details class="faq-item"><summary><%= f.q %></summary><p><%= f.a %></p></details>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+<% } %>
+
+<%- include('partials/footer') %>
+<script src="/static/js/main.js"></script>
+</body>
+</html>
