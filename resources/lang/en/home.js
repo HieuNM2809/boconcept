@@ -17,7 +17,7 @@ module.exports = {
     },
     categories: {title: 'Product categories', sub: 'Our furniture across Europe for the last 40 years.'},
     partners: {title: 'Our partners', sub: 'Our Partners'},
-    featured: {title: 'Featured products', sub: 'HOME FURNITURE'},
+    featured: {title: 'Featured products', sub: 'HOME FURNITURE', productsWord: 'products'},
     certs: {
         title: 'Company certificates',
         items: [{title: 'Business license'}, {title: 'Quality certificate'}, {title: 'Certificate of origin'}],

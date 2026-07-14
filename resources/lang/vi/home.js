@@ -17,7 +17,7 @@ module.exports = {
     },
     categories: {title: 'Loại sản phẩm', sub: 'Nội thất của chúng tôi trên khắp châu Âu suốt 40 năm qua.'},
     partners: {title: 'Đối tác hợp tác', sub: 'Our Partners'},
-    featured: {title: 'Thông tin sản phẩm nổi bật', sub: 'NỘI THẤT GIA ĐÌNH'},
+    featured: {title: 'Thông tin sản phẩm nổi bật', sub: 'NỘI THẤT GIA ĐÌNH', productsWord: 'sản phẩm'},
     certs: {
         title: 'Giấy chứng nhận công ty',
         items: [{title: 'Giấy phép kinh doanh'}, {title: 'Chứng nhận chất lượng'}, {title: 'Chứng nhận xuất xứ'}],

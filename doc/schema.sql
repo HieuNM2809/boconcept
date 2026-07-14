@@ -134,6 +134,20 @@ CREATE TABLE IF NOT EXISTS `partners` (
     KEY `idx_partners_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ── Giấy chứng nhận công ty (quản lý ở /admin/certificates) ───────────────────
+CREATE TABLE IF NOT EXISTS `certificates` (
+    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `image`      VARCHAR(500) NOT NULL,
+    `title_vi`   VARCHAR(255) NULL,
+    `title_en`   VARCHAR(255) NULL,
+    `sort_order` INT          NOT NULL DEFAULT 0,
+    `status`     TINYINT      NOT NULL DEFAULT 1,
+    `created_at` DATETIME     NULL,
+    `updated_at` DATETIME     NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_certificates_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- API client mẫu để test /api/auth/login
 INSERT INTO `api_clients` (`service_name`, `client_id`, `client_secret`, `is_active`, `created_at`, `updated_at`)
 VALUES ('demo', 'demo-client', 'demo-secret', 1, NOW(), NOW())

@@ -2,6 +2,7 @@ const CategoryService = require('../../Services/Api/category.service');
 const ProductService = require('../../Services/Api/product.service');
 const SlideService = require('../../Services/Api/slide.service');
 const PartnerService = require('../../Services/Api/partner.service');
+const CertificateService = require('../../Services/Api/certificate.service');
 const {logger} = require('../../../config/log4js');
 
 // Dữ liệu KHÔNG dịch (ảnh/icon/tên thương hiệu) — phần chữ lấy từ resources/lang.
@@ -13,10 +14,12 @@ const FALLBACK_SLIDES = [
     {image: 'https://picsum.photos/seed/hero-bed/1600/720', title_vi: 'Giấc ngủ trọn vẹn mỗi ngày', title_en: 'Rest, Redefined', badge_vi: 'Phòng ngủ', badge_en: 'Bedroom', link: '#featured'},
 ];
 const WHY_ICONS = ['🏅', '🌐', '⏱️', '📈'];
-const CERT_IMAGES = [
-    'https://picsum.photos/seed/cert1/400/560',
-    'https://picsum.photos/seed/cert2/400/560',
-    'https://picsum.photos/seed/cert3/400/560',
+const WHY_IMAGE = 'https://picsum.photos/seed/why-business/760/620'; // ảnh minh họa (placeholder, có thể thay)
+// Fallback khi DB chưa có chứng nhận (quản lý ở /admin/certificates)
+const FALLBACK_CERTS = [
+    {image: 'https://picsum.photos/seed/cert1/400/560', title_vi: 'Giấy phép kinh doanh', title_en: 'Business license'},
+    {image: 'https://picsum.photos/seed/cert2/400/560', title_vi: 'Chứng nhận chất lượng', title_en: 'Quality certificate'},
+    {image: 'https://picsum.photos/seed/cert3/400/560', title_vi: 'Chứng nhận xuất xứ', title_en: 'Certificate of origin'},
 ];
 // Fallback khi DB chưa có đối tác (quản lý ở /admin/partners)
 const FALLBACK_PARTNERS = ['Auchan', 'matelpro', 'OTTO', 'wayfair', 'DMORA', 'produceshop']
@@ -29,24 +32,27 @@ async function index(req, res) {
     const home = res.locals.t.home;
 
     try {
-        const [cats, featured, slides, partnersRows] = await Promise.all([
+        const [cats, featuredCats, slides, partnersRows, certRows] = await Promise.all([
             CategoryService.getAll({status: 1}),      // danh mục từ DB
-            ProductService.getFeatured({limit: 8}),   // sản phẩm nổi bật từ DB
+            CategoryService.getWithProductCounts(),   // loại sản phẩm + số lượng (mục "nổi bật")
             SlideService.getActiveOrdered(),          // slide hero từ DB (quản lý ở /admin/slides)
             PartnerService.getActiveOrdered(),        // đối tác từ DB (quản lý ở /admin/partners)
+            CertificateService.getActiveOrdered(),    // chứng nhận từ DB (quản lý ở /admin/certificates)
         ]);
 
         const heroSlides = slides.length ? toPlain(slides) : FALLBACK_SLIDES;
         const partners = partnersRows.length ? toPlain(partnersRows) : FALLBACK_PARTNERS;
+        const certificates = certRows.length ? toPlain(certRows) : FALLBACK_CERTS;
 
         res.render('home', {
             pageTitle: home.meta.title,
             categories: toPlain(cats).filter((c) => !c.parent_id),
-            featuredProducts: toPlain(featured),
+            featuredCategories: featuredCats,
             heroSlides,
             whyUs: home.why.items.map((it, i) => ({...it, icon: WHY_ICONS[i % WHY_ICONS.length]})),
+            whyImage: WHY_IMAGE,
             partners,
-            certificates: home.certs.items.map((c, i) => ({...c, image: CERT_IMAGES[i % CERT_IMAGES.length]})),
+            certificates,
         });
     } catch (err) {
         logger.error('Home render error', {error: {message: err.message, stack: err.stack}});

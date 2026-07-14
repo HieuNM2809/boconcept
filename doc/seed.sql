@@ -56,3 +56,11 @@ VALUES
     (5, 'DMORA',       NULL, NULL, 5, 1, NOW(), NOW()),
     (6, 'produceshop', NULL, NULL, 6, 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `updated_at` = NOW();
+
+-- Giấy chứng nhận công ty
+INSERT INTO `certificates` (`id`, `image`, `title_vi`, `title_en`, `sort_order`, `status`, `created_at`, `updated_at`)
+VALUES
+    (1, 'https://picsum.photos/seed/cert1/400/560', 'Giấy phép kinh doanh', 'Business license', 1, 1, NOW(), NOW()),
+    (2, 'https://picsum.photos/seed/cert2/400/560', 'Chứng nhận chất lượng', 'Quality certificate', 2, 1, NOW(), NOW()),
+    (3, 'https://picsum.photos/seed/cert3/400/560', 'Chứng nhận xuất xứ', 'Certificate of origin', 3, 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE `title_vi` = VALUES(`title_vi`), `image` = VALUES(`image`), `updated_at` = NOW();

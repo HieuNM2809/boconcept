@@ -106,6 +106,24 @@ class CategoryService {
         }));
         return children;
     }
+
+    /**
+     * Danh sách loại sản phẩm (status=1) kèm số sản phẩm, sắp theo sort_order.
+     * Dùng cho mục "Thông tin sản phẩm nổi bật" ở trang chủ.
+     */
+    static async getWithProductCounts({limit = null} = {}) {
+        const opts = {
+            where: {status: 1},
+            order: [['sort_order', 'ASC'], ['id', 'ASC']],
+            raw: true,
+        };
+        if (limit) opts.limit = parseInt(limit, 10);
+        const cats = await Category.findAll(opts);
+        await Promise.all(cats.map(async (c) => {
+            c.product_count = await Product.count({where: {category_id: c.id, status: 1}});
+        }));
+        return cats;
+    }
 }
 
 module.exports = CategoryService;

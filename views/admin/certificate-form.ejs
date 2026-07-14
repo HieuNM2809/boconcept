@@ -1,0 +1,32 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'certificates'}) %>
+<main class="admin-wrap admin-narrow">
+    <div class="admin-head">
+        <h1><%= item ? ('Sửa chứng nhận #' + item.id) : 'Thêm chứng nhận' %></h1>
+        <a class="btn-sm" href="/admin/certificates">← Quay lại</a>
+    </div>
+    <form class="admin-form" method="post" action="<%= action %>">
+        <label>Ảnh (URL) *</label>
+        <input name="image" required value="<%= item ? item.image : '' %>" placeholder="https://...">
+        <% if (item && item.image) { %><img class="form-preview" src="<%= item.image %>" alt=""><% } %>
+        <div class="form-2col">
+            <div><label>Tiêu đề (VI)</label><input name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>"></div>
+            <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
+            <div><label>Trạng thái</label>
+                <select name="status">
+                    <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+            <a class="btn btn-outline" href="/admin/certificates">Hủy</a>
+        </div>
+    </form>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

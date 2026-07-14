@@ -7,6 +7,7 @@ const ProductVariant = require('./ProductVariant.model');
 const ProductImage = require('./ProductImage.model');
 const Slide = require('./Slide.model');
 const Partner = require('./Partner.model');
+const Certificate = require('./Certificate.model');
 
 // ── Category (cây danh mục) ───────────────────────────────────────────────────
 Category.hasMany(Category, {foreignKey: 'parent_id', as: 'children'});
@@ -32,4 +33,5 @@ module.exports = {
     ProductImage,
     Slide,
     Partner,
+    Certificate,
 };

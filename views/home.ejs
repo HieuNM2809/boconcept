@@ -24,20 +24,27 @@
     </div>
 </section>
 
-<!-- ── Why us (spec 3.2 · Thông tin doanh nghiệp) ──────────────────────────── -->
+<!-- ── Why us (spec 3.2 · Thông tin doanh nghiệp) — ảnh trái + list phải ────── -->
 <section class="section why" id="why">
-    <div class="container">
-        <h2 class="section-title center"><%= t.home.why.title %></h2>
-        <div class="why-grid">
-            <% whyUs.forEach(function (f) { %>
-                <div class="why-card">
-                    <div class="why-icon"><%= f.icon %></div>
-                    <h3><%= f.title %></h3>
-                    <p><%= f.desc %></p>
-                </div>
-            <% }) %>
+    <div class="container why-layout">
+        <div class="why-media">
+            <img src="<%= whyImage %>" alt="" loading="lazy">
         </div>
-        <div class="center"><a class="btn btn-outline" href="#"><%= t.common.actions.viewDetail %> &rarr;</a></div>
+        <div class="why-content">
+            <h2 class="section-title"><%= t.home.why.title %></h2>
+            <ul class="why-list">
+                <% whyUs.forEach(function (f) { %>
+                    <li class="why-item">
+                        <span class="why-item-icon"><%= f.icon %></span>
+                        <div class="why-item-text">
+                            <h3><%= f.title %></h3>
+                            <p><%= f.desc %></p>
+                        </div>
+                    </li>
+                <% }) %>
+            </ul>
+            <a class="btn btn-outline" href="#"><%= t.common.actions.viewDetail %> &rarr;</a>
+        </div>
     </div>
 </section>
 
@@ -93,18 +100,13 @@
         <h2 class="section-title center"><%= t.home.featured.title %></h2>
         <p class="featured-sub center"><%= t.home.featured.sub %></p>
 
-        <% if (featuredProducts.length) { %>
-            <div class="product-grid">
-                <% featuredProducts.forEach(function (p) { %>
-                    <a class="product-card" href="/products/<%= p.id %>">
-                        <div class="product-thumb" style="background-image:url('<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/400') %>')">
-                            <% if (p.is_featured) { %><span class="badge-hot">HOT</span><% } %>
-                        </div>
-                        <div class="product-info">
-                            <span class="product-cat"><%= p.category ? pick(p.category, 'name') : '' %></span>
-                            <h3 class="product-name"><%= pick(p, 'name') %></h3>
-                            <span class="product-price"><%= money(p.price) %></span>
-                        </div>
+        <% if (featuredCategories.length) { %>
+            <div class="feat-cat-grid">
+                <% featuredCategories.forEach(function (c) { %>
+                    <a class="feat-cat" href="/categories/<%= c.id %>">
+                        <div class="feat-cat-thumb" style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/300/240') %>')"></div>
+                        <div class="feat-cat-name"><%= pick(c, 'name') %></div>
+                        <div class="feat-cat-count">(<%= c.product_count %> <%= t.home.featured.productsWord %>)</div>
                     </a>
                 <% }) %>
             </div>
@@ -121,8 +123,8 @@
         <div class="cert-row">
             <% certificates.forEach(function (c) { %>
                 <figure class="cert-card">
-                    <img src="<%= c.image %>" alt="<%= c.title %>" loading="lazy">
-                    <figcaption><%= c.title %></figcaption>
+                    <img src="<%= c.image %>" alt="<%= pick(c, 'title') %>" loading="lazy">
+                    <figcaption><%= pick(c, 'title') %></figcaption>
                 </figure>
             <% }) %>
         </div>

@@ -133,13 +133,21 @@ Cấu trúc view: `views/home.ejs` + `views/partials/*` · CSS/JS tĩnh ở `pub
 
 > Thông số / đóng gói / FAQ là placeholder theo ngôn ngữ ở `resources/lang/{vi,en}/product.js` (schema chưa có cột thông số kỹ thuật).
 
-### Trang quản trị Slideshow — `GET /admin/slides` (Basic Auth)
+### Khu quản trị `/admin` (Basic Auth)
 
-CRUD slide hero trang chủ: danh sách, thêm/sửa/xóa, bật–ẩn, sắp thứ tự — dữ liệu bảng `slides`, song ngữ (`title_vi/en`, `badge_vi/en`). Controller `admin.controller.js`, service `slide.service.js`, views `views/admin/*`. Slide `status=1` hiển thị ở hero theo `sort_order`; bảng rỗng → homepage dùng fallback tĩnh.
+Bảo vệ bằng **HTTP Basic Auth** (`app/Http/Middleware/adminAuth.middleware.js`): `ADMIN_USER` / `ADMIN_PASS` (mặc định `admin` / `admin` — đổi trong `.env`). Thanh nav chung `views/admin/_nav.ejs`; mỗi mục là bảng danh sách + form thêm/sửa, xóa có xác nhận.
 
-Bảo vệ bằng **HTTP Basic Auth** (`app/Http/Middleware/adminAuth.middleware.js`): `ADMIN_USER` / `ADMIN_PASS` (mặc định `admin` / `admin` — đổi trong `.env`).
+| Mục | URL | Bảng | Ghi chú |
+|---|---|---|---|
+| Slideshow | `/admin/slides` | `slides` | hero trang chủ, song ngữ, sắp thứ tự |
+| Loại sản phẩm | `/admin/categories` | `categories` | cây danh mục (chọn cha), ảnh; chặn xóa nếu còn con/sản phẩm |
+| Đối tác | `/admin/partners` | `partners` | logo (URL) hoặc hiển thị bằng chữ |
+| Sản phẩm | `/admin/products` | `products` | tên/mô tả song ngữ, danh mục, giá, nổi bật, trạng thái |
+| Giấy chứng nhận | `/admin/certificates` | `certificates` | ảnh + tiêu đề song ngữ, sắp thứ tự |
 
-> Auth đơn giản cho dev; production nên đặt sau HTTPS hoặc nâng cấp session login. Ảnh nhập bằng URL (chưa có upload file).
+Dữ liệu `status=1` hiển thị ngoài trang (theo `sort_order`/`priority`); bảng slides/partners rỗng → homepage dùng fallback tĩnh.
+
+> Auth đơn giản cho dev; production nên đặt sau HTTPS / nâng cấp session login. Ảnh nhập bằng **URL** (chưa có upload file). Quản lý **biến thể & gallery** của sản phẩm sẽ bổ sung sau.
 
 ## API
 

@@ -6,6 +6,7 @@ const adminController = require('../app/Http/Controllers/admin.controller');
 const adminCategoryController = require('../app/Http/Controllers/admin.category.controller');
 const adminPartnerController = require('../app/Http/Controllers/admin.partner.controller');
 const adminProductController = require('../app/Http/Controllers/admin.product.controller');
+const adminCertificateController = require('../app/Http/Controllers/admin.certificate.controller');
 const adminAuth = require('../app/Http/Middleware/adminAuth.middleware');
 
 // Trang chủ (render EJS, load dữ liệu từ DB)
@@ -40,6 +41,7 @@ function crudRoutes(base, ctrl) {
 crudRoutes('categories', adminCategoryController);
 crudRoutes('partners', adminPartnerController);
 crudRoutes('products', adminProductController);
+crudRoutes('certificates', adminCertificateController);
 
 router.use('/admin', adminRouter);
 
