@@ -1,0 +1,35 @@
+// Shared UI strings for ALL pages (header, footer, buttons, ...)
+module.exports = {
+    brand: 'webFurniture',
+    tagline: 'Timeless Italian furniture design.',
+    nav: {
+        who: 'Who we are',
+        products: 'Products',
+        collections: 'Collections',
+        services: 'Services',
+        partners: 'Partners',
+        news: 'News',
+        contact: 'Contact us',
+    },
+    actions: {
+        catalogue: 'Catalogue',
+        shopNow: 'Shop now',
+        viewDetail: 'View company details',
+        search: 'Search',
+        viewAll: 'View all',
+    },
+    langLabel: '🇬🇧 EN',
+    empty: 'No data yet.',
+    footer: {
+        contact: 'Contact information',
+        services: 'Services & support',
+        hotline: 'Hotline',
+        address: 'Address: 123 ABC Street, District 1, HCMC',
+        email: 'Email: contact@webfurniture.vn',
+        website: 'Website: webfurniture.vn',
+        tax: 'Tax code: 0312345678',
+        phone: 'Phone: 1900 588 880',
+        svcList: ['Privacy policy', 'Warranty policy', 'Return policy', 'FAQ', 'Payment policy'],
+        rights: 'All rights reserved.',
+    },
+};

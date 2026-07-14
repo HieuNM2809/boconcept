@@ -1,0 +1,35 @@
+// Chuỗi UI dùng chung cho MỌI trang (header, footer, nút, ...)
+module.exports = {
+    brand: 'webFurniture',
+    tagline: 'Nội thất thiết kế Ý bền vững với thời gian.',
+    nav: {
+        who: 'Giới thiệu',
+        products: 'Sản phẩm',
+        collections: 'Bộ sưu tập',
+        services: 'Dịch vụ',
+        partners: 'Đối tác',
+        news: 'Tin tức',
+        contact: 'Liên hệ',
+    },
+    actions: {
+        catalogue: 'Catalogue',
+        shopNow: 'Mua ngay',
+        viewDetail: 'Xem chi tiết công ty',
+        search: 'Tìm kiếm',
+        viewAll: 'Xem tất cả',
+    },
+    langLabel: '🇻🇳 VI',
+    empty: 'Chưa có dữ liệu.',
+    footer: {
+        contact: 'Thông tin liên hệ',
+        services: 'Dịch vụ và hỗ trợ',
+        hotline: 'Hotline',
+        address: 'Địa chỉ: 123 Đường ABC, Quận 1, TP. HCM',
+        email: 'Email: contact@webfurniture.vn',
+        website: 'Website: webfurniture.vn',
+        tax: 'MST: 0312345678',
+        phone: 'SĐT: 1900 588 880',
+        svcList: ['Chính sách bảo mật', 'Chính sách bảo hành', 'Chính sách đổi trả', 'Câu hỏi thường gặp', 'Chính sách thanh toán'],
+        rights: 'Bảo lưu mọi quyền.',
+    },
+};

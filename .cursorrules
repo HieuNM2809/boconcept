@@ -1,0 +1,30 @@
+# Node.js Service Base — Project Rules
+
+## Kiến trúc
+Node.js + Express theo mô hình MVC kiểu Laravel:
+- **Controllers** (`app/Http/Controllers`) — nhận request, gọi service, trả response qua `BaseController`.
+- **Services** (`app/Services`) — chứa business logic, không đụng tới `req/res`.
+- **Models** (`app/Models`) — Sequelize model; khai báo quan hệ tại `index.model.js`.
+- **Requests** (`app/Http/Requests`) — rule validate bằng express-validator.
+- **Middleware** (`app/Http/Middleware`) — auth, bảo mật, error handler.
+- **Jobs / Console** — job định kỳ (node-cron, qua `Kernel.js`) và CLI (yargs).
+
+## Quy ước
+- Response luôn qua `BaseController.sendSuccessResponse` / `sendErrorResponse`.
+- Controller kế thừa `BaseController`; service dùng static method.
+- Service ném lỗi kèm `err.status` để controller map đúng HTTP status.
+- Validation đặt ở `Requests/*`, gắn vào route trước controller, kết thúc bằng `handleValidation`.
+- Dùng `async/await` + try/catch. Không nuốt lỗi im lặng — log qua `config/log4js`.
+- Timezone Việt Nam `+07:00`; comment/thông báo có thể bằng tiếng Việt.
+- DB: dùng bulk operation khi xử lý số lượng lớn; đặt index hợp lý.
+- Cache: dùng `app/Helpers/cache.helper.js` (Redis) cho dữ liệu đọc nhiều.
+
+## Thêm resource mới
+Model → Service → Validation → Controller → Route (xem README, mục "Thêm một resource mới").
+
+## Biến môi trường
+Xem `.env.example`. Bắt buộc: DB_*, JWT_SECRET. Tùy chọn: REDIS_*.
+
+## Test
+Jest (`tests/`). Unit test cho service/helper; feature test (supertest) cho route.
+Test kết nối DB thật bật bằng `RUN_DB_TESTS=1`.

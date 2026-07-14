@@ -1,0 +1,65 @@
+{
+  "name": "boconcept",
+  "version": "1.0.0",
+  "description": "Node.js service base (Express + Sequelize/MySQL + Redis + JWT) — MVC-style scaffold",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "schedule": "node app/Console/Kernel.js",
+    "cli:example": "node app/Console/Commands/example.command.js",
+    "test": "jest --runInBand --forceExit",
+    "pm2:start": "pm2 start pm2-apps.json",
+    "pm2:stop": "pm2 stop pm2-apps.json",
+    "pm2:logs": "pm2 logs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "axios": "^1.8.1",
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^7.5.1",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "hpp": "^0.2.3",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "log4js": "^6.9.1",
+    "moment": "^2.30.1",
+    "moment-timezone": "^0.6.0",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.11.2",
+    "node-cache": "^5.1.2",
+    "node-cron": "^3.0.3",
+    "p-limit": "^3.1.0",
+    "sequelize": "^6.37.3",
+    "uuid": "^9.0.1",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/tests"
+    ],
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/hasaki-tech-hasaki-services-hasakinow-f023bb13ba94/"
+    ]
+  }
+}

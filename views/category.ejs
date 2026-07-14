@@ -1,0 +1,127 @@
+<%- include('partials/head') %>
+<body>
+<%- include('partials/header') %>
+
+<% if (!category) { %>
+    <section class="section">
+        <div class="container center">
+            <h2 class="section-title"><%= t.catalog.notFound %></h2>
+            <a class="btn btn-outline" href="/"><%= t.catalog.backHome %></a>
+        </div>
+    </section>
+<% } else { %>
+    <div class="container listing">
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="/"><%= t.catalog.home %></a>
+            <% breadcrumb.forEach(function (b) { %>
+                <span class="sep">/</span>
+                <a href="/categories/<%= b.id %>"><%= pick(b, 'name') %></a>
+            <% }) %>
+        </nav>
+
+        <!-- Danh mục con -->
+        <% if (children.length) { %>
+            <section class="subcats-section">
+                <h2 class="section-title"><%= t.catalog.subCategoriesTitle %></h2>
+                <div class="subcat-grid">
+                    <% children.forEach(function (c) { %>
+                        <a class="subcat-card" href="/categories/<%= c.id %>">
+                            <div class="subcat-thumb" style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/300/240') %>')"></div>
+                            <div class="subcat-name"><%= pick(c, 'name') %></div>
+                            <div class="subcat-count"><%= c.product_count %> <%= t.catalog.products %></div>
+                        </a>
+                    <% }) %>
+                </div>
+            </section>
+        <% } %>
+
+        <!-- Tiêu đề + số kết quả -->
+        <div class="listing-head">
+            <h1 class="listing-title">
+                <%= pick(category, 'name') %>
+                <span class="listing-count">· <%= meta.total %> <%= t.catalog.results %></span>
+            </h1>
+        </div>
+
+        <!-- Toolbar: sắp xếp + mỗi trang -->
+        <div class="toolbar">
+            <div class="sort-chips">
+                <span class="toolbar-label"><%= t.catalog.sortBy %></span>
+                <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+                <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+                <a class="chip <%= filters.sort === 'bestseller' ? 'active' : '' %>" href="<%= linkFor({sort: 'bestseller', page: 1}) %>"><%= t.catalog.sort.bestseller %></a>
+                <select class="select" data-nav aria-label="<%= t.catalog.sort.price %>">
+                    <option value="" disabled <%= (filters.sort !== 'price_asc' && filters.sort !== 'price_desc') ? 'selected' : '' %>><%= t.catalog.sort.price %></option>
+                    <option value="<%= linkFor({sort: 'price_asc', page: 1}) %>" <%= filters.sort === 'price_asc' ? 'selected' : '' %>><%= t.catalog.sort.price_asc %></option>
+                    <option value="<%= linkFor({sort: 'price_desc', page: 1}) %>" <%= filters.sort === 'price_desc' ? 'selected' : '' %>><%= t.catalog.sort.price_desc %></option>
+                </select>
+            </div>
+
+            <div class="toolbar-right">
+                <label class="toolbar-label"><%= t.catalog.perPage %></label>
+                <select class="select" data-nav aria-label="<%= t.catalog.perPage %>">
+                    <% [12, 24, 40, 60].forEach(function (n) { %>
+                        <option value="<%= linkFor({per_page: n, page: 1}) %>" <%= Number(filters.per_page) === n ? 'selected' : '' %>><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tìm kiếm theo tên -->
+        <h3 class="search-label"><%= t.catalog.searchByName %></h3>
+        <form class="search-form" action="/categories/<%= category.id %>" method="get">
+            <input type="hidden" name="sort" value="<%= filters.sort %>">
+            <input type="hidden" name="per_page" value="<%= filters.per_page %>">
+            <input class="search-input" type="text" name="q" value="<%= filters.q %>" placeholder="<%= t.catalog.searchPlaceholder %>">
+            <button class="btn btn-primary" type="submit"><%= t.catalog.searchBtn %></button>
+        </form>
+
+        <!-- Lưới sản phẩm -->
+        <% if (products.length) { %>
+            <div class="product-grid listing-grid">
+                <% products.forEach(function (p) { %>
+                    <a class="product-card" href="/api/products/<%= p.id %>">
+                        <div class="product-thumb" style="background-image:url('<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/400') %>')">
+                            <% if (p.is_featured) { %><span class="badge-hot">HOT</span><% } %>
+                        </div>
+                        <div class="product-info">
+                            <span class="product-cat"><%= p.category ? pick(p.category, 'name') : pick(category, 'name') %></span>
+                            <h3 class="product-name"><%= pick(p, 'name') %></h3>
+                            <span class="product-price"><%= money(p.price) %></span>
+                        </div>
+                    </a>
+                <% }) %>
+            </div>
+
+            <!-- Phân trang -->
+            <% if (meta.last_page > 1) { %>
+                <nav class="pagination">
+                    <% if (meta.current_page > 1) { %>
+                        <a class="pg-arrow" href="<%= linkFor({page: meta.current_page - 1}) %>">&lsaquo;</a>
+                    <% } else { %><span class="pg-arrow disabled">&lsaquo;</span><% } %>
+
+                    <% pages.forEach(function (p) { %>
+                        <% if (p === '…') { %>
+                            <span class="pg-ellipsis">…</span>
+                        <% } else { %>
+                            <a class="pg-num <%= p === meta.current_page ? 'active' : '' %>" href="<%= linkFor({page: p}) %>"><%= p %></a>
+                        <% } %>
+                    <% }) %>
+
+                    <% if (meta.current_page < meta.last_page) { %>
+                        <a class="pg-arrow" href="<%= linkFor({page: meta.current_page + 1}) %>">&rsaquo;</a>
+                    <% } else { %><span class="pg-arrow disabled">&rsaquo;</span><% } %>
+                </nav>
+            <% } %>
+        <% } else { %>
+            <p class="empty listing-empty"><%= t.catalog.empty %></p>
+        <% } %>
+    </div>
+<% } %>
+
+<%- include('partials/footer') %>
+<script src="/static/js/main.js"></script>
+</body>
+</html>

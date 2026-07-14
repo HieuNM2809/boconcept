@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+dist/
+coverage/
+
+# Env
+.env
+
+# Logs
+storage/logs/*
+!storage/logs/.gitkeep
+*.log
+npm-debug.log
+yarn-error.log
+nohup.out
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

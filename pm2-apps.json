@@ -1,0 +1,40 @@
+{
+  "apps": [
+    {
+      "name": "app-server",
+      "script": "./index.js",
+      "watch": false,
+      "ignore_watch": [
+        "storage/logs/**",
+        "node_modules/**"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "error_file": "./storage/logs/app-server.log",
+      "out_file": "./storage/logs/app-server.log",
+      "instances": 2,
+      "exec_mode": "cluster",
+      "node_args": "--max_old_space_size=1024"
+    },
+    {
+      "name": "schedule-runner",
+      "script": "./app/Console/Kernel.js",
+      "watch": false,
+      "ignore_watch": [
+        "storage/logs/**",
+        "node_modules/**"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "error_file": "./storage/logs/schedule-runner.log",
+      "out_file": "./storage/logs/schedule-runner.log",
+      "instances": 1,
+      "exec_mode": "fork",
+      "node_args": "--max_old_space_size=1024"
+    }
+  ]
+}

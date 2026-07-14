@@ -1,0 +1,131 @@
+<%- include('partials/head') %>
+<body>
+<%- include('partials/header') %>
+
+<!-- ── HERO / Slideshow (spec 3.2 · animation) ─────────────────────────────── -->
+<section class="hero">
+    <div class="hero-track" id="heroTrack">
+        <% heroSlides.forEach(function (s) { %>
+            <div class="hero-slide" style="background-image:url('<%= s.image %>')">
+                <div class="container hero-content">
+                    <span class="hero-badge"><%= s.badge %></span>
+                    <h1 class="hero-title"><%= s.title %></h1>
+                    <a class="btn btn-primary" href="#featured"><%= t.common.actions.shopNow %> &rarr;</a>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+    <button class="hero-arrow prev" data-dir="-1" aria-label="prev">&lsaquo;</button>
+    <button class="hero-arrow next" data-dir="1" aria-label="next">&rsaquo;</button>
+    <div class="hero-dots" id="heroDots">
+        <% heroSlides.forEach(function (_, i) { %>
+            <button class="dot <%= i === 0 ? 'active' : '' %>" data-idx="<%= i %>" aria-label="slide <%= i + 1 %>"></button>
+        <% }) %>
+    </div>
+</section>
+
+<!-- ── Why us (spec 3.2 · Thông tin doanh nghiệp) ──────────────────────────── -->
+<section class="section why" id="why">
+    <div class="container">
+        <h2 class="section-title center"><%= t.home.why.title %></h2>
+        <div class="why-grid">
+            <% whyUs.forEach(function (f) { %>
+                <div class="why-card">
+                    <div class="why-icon"><%= f.icon %></div>
+                    <h3><%= f.title %></h3>
+                    <p><%= f.desc %></p>
+                </div>
+            <% }) %>
+        </div>
+        <div class="center"><a class="btn btn-outline" href="#"><%= t.common.actions.viewDetail %> &rarr;</a></div>
+    </div>
+</section>
+
+<!-- ── Categories (spec 3.2 · Loại sản phẩm — TỪ DB) ───────────────────────── -->
+<section class="section categories" id="categories">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title"><%= t.home.categories.title %></h2>
+                <p class="section-sub"><%= t.home.categories.sub %></p>
+            </div>
+            <div class="cat-nav">
+                <button class="round-btn" data-scroll="cats" data-dir="-1" aria-label="prev">&lsaquo;</button>
+                <button class="round-btn" data-scroll="cats" data-dir="1" aria-label="next">&rsaquo;</button>
+            </div>
+        </div>
+
+        <% if (categories.length) { %>
+            <div class="cat-track" id="cats">
+                <% categories.forEach(function (c) { %>
+                    <a class="cat-card" href="/categories/<%= c.id %>"
+                       style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/500/600') %>')">
+                        <span class="cat-label"><%= pick(c, 'name') %></span>
+                    </a>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <p class="empty"><%= t.common.empty %></p>
+        <% } %>
+    </div>
+</section>
+
+<!-- ── Partners (spec 3.2 · Đối tác hợp tác) ───────────────────────────────── -->
+<section class="section partners" id="partners">
+    <div class="container">
+        <p class="partners-sub"><%= t.home.partners.sub %></p>
+        <h2 class="section-title center"><%= t.home.partners.title %></h2>
+        <div class="partner-row">
+            <% partners.forEach(function (p) { %>
+                <span class="partner-logo"><%= p %></span>
+            <% }) %>
+        </div>
+    </div>
+</section>
+
+<!-- ── Featured products (spec 3.2 · Sản phẩm nổi bật — TỪ DB) ──────────────── -->
+<section class="section featured" id="featured">
+    <div class="container">
+        <h2 class="section-title center"><%= t.home.featured.title %></h2>
+        <p class="featured-sub center"><%= t.home.featured.sub %></p>
+
+        <% if (featuredProducts.length) { %>
+            <div class="product-grid">
+                <% featuredProducts.forEach(function (p) { %>
+                    <a class="product-card" href="/api/products/<%= p.id %>">
+                        <div class="product-thumb" style="background-image:url('<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/400') %>')">
+                            <% if (p.is_featured) { %><span class="badge-hot">HOT</span><% } %>
+                        </div>
+                        <div class="product-info">
+                            <span class="product-cat"><%= p.category ? pick(p.category, 'name') : '' %></span>
+                            <h3 class="product-name"><%= pick(p, 'name') %></h3>
+                            <span class="product-price"><%= money(p.price) %></span>
+                        </div>
+                    </a>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <p class="empty"><%= t.common.empty %></p>
+        <% } %>
+    </div>
+</section>
+
+<!-- ── Certificates (spec 3.2 · Giấy chứng nhận công ty) ───────────────────── -->
+<section class="section certs">
+    <div class="container">
+        <h2 class="section-title center"><%= t.home.certs.title %></h2>
+        <div class="cert-row">
+            <% certificates.forEach(function (c) { %>
+                <figure class="cert-card">
+                    <img src="<%= c.image %>" alt="<%= c.title %>" loading="lazy">
+                    <figcaption><%= c.title %></figcaption>
+                </figure>
+            <% }) %>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>
+<script src="/static/js/main.js"></script>
+</body>
+</html>

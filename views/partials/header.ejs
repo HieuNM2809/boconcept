@@ -1,0 +1,25 @@
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="/?lang=<%= lang %>">
+            <span class="brand-mark">🛋️</span>
+            <span class="brand-name">web<strong>Furniture</strong></span>
+        </a>
+
+        <nav class="main-nav" id="mainNav">
+            <a href="#"><%= t.common.nav.who %></a>
+            <a href="#categories"><%= t.common.nav.products %></a>
+            <a href="#featured"><%= t.common.nav.collections %></a>
+            <a href="#why"><%= t.common.nav.services %></a>
+            <a href="#partners"><%= t.common.nav.partners %></a>
+            <a href="#"><%= t.common.nav.news %></a>
+            <a href="#footer"><%= t.common.nav.contact %></a>
+        </nav>
+
+        <div class="header-actions">
+            <a class="btn-catalogue" href="#featured"><%= t.common.actions.catalogue %></a>
+            <button class="icon-btn" aria-label="<%= t.common.actions.search %>">🔍</button>
+            <a class="lang-switch" href="?lang=<%= altLang %>" title="<%= t.common.actions.search %>"><%= t.common.langLabel %></a>
+            <button class="icon-btn menu-toggle" id="menuToggle" aria-label="menu">☰</button>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,35 @@
+# MySQL cho môi trường dev. Đọc biến từ .env (cùng thư mục).
+# Lệnh:
+#   docker compose up -d          # khởi động
+#   docker compose logs -f mysql  # xem log
+#   docker compose down           # dừng (giữ dữ liệu)
+#   docker compose down -v        # dừng + XÓA dữ liệu (chạy lại schema.sql từ đầu)
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: boconcept-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS:-root}
+      MYSQL_DATABASE: ${DB_NAME:-app_db}
+      TZ: Asia/Ho_Chi_Minh
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+07:00
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - boconcept_mysql_data:/var/lib/mysql
+      # Tự chạy khi khởi tạo lần đầu (data volume rỗng), theo thứ tự tên file:
+      - ./doc/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro   # tạo bảng + api client demo
+      - ./doc/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro        # dữ liệu mẫu catalog
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASS:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  boconcept_mysql_data:
