@@ -2,6 +2,8 @@
 
 Bộ khung (boilerplate) cho REST API viết bằng **Node.js** theo kiến trúc **MVC kiểu Laravel**, trích xuất và làm sạch từ dự án HasakiNow — đã bỏ toàn bộ phần geo/logistics và thay bằng 1 resource mẫu (`Example`) demo đủ các tầng.
 
+> 📖 **Hướng dẫn vận hành & quản trị** (dành cho người không rành kỹ thuật): [`doc/huong-dan-su-dung.md`](doc/huong-dan-su-dung.md)
+
 ## Stack
 
 - **Express.js** — web framework
