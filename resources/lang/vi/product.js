@@ -5,13 +5,16 @@ module.exports = {
     sku: 'SKU',
     categories: 'Danh mục',
     contact: 'Liên hệ tư vấn',
+    showMore: 'Xem thêm ảnh',
+    related: 'Sản phẩm liên quan',
+    attrs: {size: 'Kích thước', weight: 'Trọng lượng', material: 'Chất liệu', color: 'Màu sắc'},
     tabs: {
         additional: 'Thông tin thêm',
         packaging: 'Đóng gói & vận chuyển',
-        faq: 'Câu hỏi thường gặp',
+        // Bỏ tab "Câu hỏi thường gặp" theo yêu cầu — giữ lại "Đóng gói & vận chuyển".
     },
     specsTitle: 'Thông số kỹ thuật',
-    // Placeholder — TODO: thêm cột thông số vào bảng products để lấy dữ liệu thật
+    // Dùng khi sản phẩm CHƯA có thông số thật trong DB (kích thước/khối lượng/chất liệu)
     specs: [
         {label: 'Kích thước', value: '160 × 90 × 8.2 cm'},
         {label: 'Trọng lượng', value: '44.5 kg'},

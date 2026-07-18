@@ -13,11 +13,31 @@ function normalize(b = {}) {
         slug: str(b.slug),
         description_vi: str(b.description_vi),
         description_en: str(b.description_en),
+        extra_vi: str(b.extra_vi),
+        extra_en: str(b.extra_en),
+        shipping_vi: str(b.shipping_vi),
+        shipping_en: str(b.shipping_en),
         price: parseFloat(b.price) || 0,
+        material_vi: str(b.material_vi),
+        material_en: str(b.material_en),
+        color_vi: str(b.color_vi),
+        color_en: str(b.color_en),
+        dimensions_vi: str(b.dimensions_vi),
+        dimensions_en: str(b.dimensions_en),
+        // Ô trống -> null chứ không 0: 0kg là một giá trị hợp lệ nhưng vô nghĩa,
+        // và nó sẽ lọt vào bộ lọc "khối lượng từ 0".
+        weight: b.weight === '' || b.weight == null ? null : (parseFloat(b.weight) || null),
         thumbnail: str(b.thumbnail),
         is_featured: String(b.is_featured) === '1' ? 1 : 0,
         priority: parseInt(b.priority, 10) || 0,
         status: String(b.status) === '0' ? 0 : 1,
+        // Form gửi tên `gallery[]`, nhưng express dùng qs (extended: true) nên nó
+        // BỎ dấu ngoặc -> đọc ở `b.gallery`, không phải `b['gallery[]']`.
+        // Một ô duy nhất cho ra CHUỖI chứ không phải mảng, phải bọc lại kẻo
+        // Array.isArray sai và toàn bộ ảnh bị bỏ qua khi lưu.
+        gallery: b.gallery == null
+            ? undefined
+            : (Array.isArray(b.gallery) ? b.gallery : [b.gallery]),
     };
 }
 

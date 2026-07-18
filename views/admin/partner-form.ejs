@@ -9,9 +9,7 @@
     <form class="admin-form" method="post" action="<%= action %>">
         <label>Tên đối tác *</label>
         <input name="name" required value="<%= item ? item.name : '' %>">
-        <label>Logo (URL) — để trống sẽ hiển thị bằng chữ</label>
-        <input name="logo" value="<%= item ? (item.logo || '') : '' %>" placeholder="https://...">
-        <% if (item && item.logo) { %><img class="form-preview" src="<%= item.logo %>" alt=""><% } %>
+        <%- include('_image-field', {name: 'logo', label: 'Logo — để trống sẽ hiển thị bằng chữ', value: item ? (item.logo || '') : ''}) %>
         <div class="form-2col">
             <div><label>Link (khi bấm vào)</label><input name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://..."></div>
             <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>

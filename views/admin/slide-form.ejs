@@ -9,9 +9,7 @@
     </div>
 
     <form class="admin-form" method="post" action="<%= action %>">
-        <label>Ảnh (URL) *</label>
-        <input name="image" required value="<%= slide ? slide.image : '' %>" placeholder="https://...">
-        <% if (slide && slide.image) { %><img class="form-preview" src="<%= slide.image %>" alt=""><% } %>
+        <%- include('_image-field', {name: 'image', label: 'Ảnh slide', value: slide ? slide.image : '', required: true, maxKb: 600}) %>
 
         <div class="form-2col">
             <div>
@@ -29,10 +27,6 @@
             <div>
                 <label>Badge (EN)</label>
                 <input name="badge_en" value="<%= slide ? (slide.badge_en || '') : '' %>">
-            </div>
-            <div>
-                <label>Link nút “Mua ngay”</label>
-                <input name="link" value="<%= slide ? (slide.link || '') : '' %>" placeholder="#featured hoặc /categories/1">
             </div>
             <div>
                 <label>Thứ tự hiển thị</label>

@@ -1,0 +1,48 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'gallery'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>Lưới ảnh trang chủ</h1>
+        <% if (activeCount < maxItems) { %>
+            <a class="btn btn-primary" href="/admin/gallery/new">+ Thêm ảnh</a>
+        <% } %>
+    </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+
+    <div class="admin-toggle-bar">
+        <div>
+            <strong>Đang hiện <%= activeCount %>/<%= maxItems %> ảnh.</strong>
+            <span class="admin-hint">
+                Ba ảnh ĐẦU TIÊN (theo thứ tự) vào 3 ô lớn và tự đổi mỗi 5 giây;
+                các ảnh còn lại nằm ở ô nhỏ và đứng yên. Đổi “Thứ tự” là đổi được ảnh nào vào ô lớn.
+            </span>
+        </div>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+        <tr><th>#</th><th>Ảnh</th><th>Mô tả (VI)</th><th>Mô tả (EN)</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!items.length) { %><tr><td colspan="7" class="admin-empty">Chưa có ảnh nào. Khối này sẽ không hiện trên trang chủ.</td></tr><% } %>
+        <% items.forEach(function (g) { %>
+            <tr>
+                <td><%= g.id %></td>
+                <td><img class="admin-thumb" src="<%= g.image %>" alt="" loading="lazy"></td>
+                <td><%= g.alt_vi || '—' %></td>
+                <td><%= g.alt_en || '—' %></td>
+                <td><%= g.sort_order %></td>
+                <td><span class="badge-status <%= g.status ? 'on' : 'off' %>"><%= g.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/gallery/<%= g.id %>/edit">Sửa</a>
+                    <form method="post" action="/admin/gallery/<%= g.id %>/delete" data-confirm="Xóa ảnh này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

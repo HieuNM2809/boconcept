@@ -21,7 +21,14 @@ module.exports = function locale(req, res, next) {
 
     req.lang = lang;
     res.locals.lang = lang;
-    res.locals.altLang = lang === 'en' ? 'vi' : 'en';
+    const altLang = lang === 'en' ? 'vi' : 'en';
+    res.locals.altLang = altLang;
+
+    // Link đổi ngôn ngữ phải GIỮ NGUYÊN các query khác. Trước đây header dùng
+    // `?lang=<altLang>` trần -> trên /search?q=ghe, đổi ngôn ngữ là mất luôn q.
+    const params = new URLSearchParams(req.query);
+    params.set('lang', altLang);
+    res.locals.altLangHref = `${req.path}?${params.toString()}`;
     res.locals.t = trans(lang); // { common, home, messages, ... }
     res.locals.pick = (o, field) => (o && (o[`${field}_${lang}`] || o[`${field}_vi`])) || '';
     res.locals.money = (v) => `${Number(v || 0).toLocaleString('vi-VN')} ₫`;

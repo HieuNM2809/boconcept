@@ -10,7 +10,7 @@
                 <div class="container hero-content">
                     <% if (pick(s, 'badge')) { %><span class="hero-badge"><%= pick(s, 'badge') %></span><% } %>
                     <h1 class="hero-title"><%= pick(s, 'title') %></h1>
-                    <a class="btn btn-primary" href="<%= s.link || '#featured' %>"><%= t.common.actions.shopNow %> &rarr;</a>
+                    <%# Nút "Mua ngay" đã bỏ theo yêu cầu — slide chỉ còn ảnh + badge + tiêu đề %>
                 </div>
             </div>
         <% }) %>
@@ -23,6 +23,60 @@
         <% }) %>
     </div>
 </section>
+
+<!-- ── Khối Công năng (từ DB · /admin/features) ────────────────────────────── -->
+<!-- Cả section nằm trong if: không dùng idiom <p class="empty"> như các mục khác,
+     vì "đang tắt" phải là biến mất hẳn chứ không phải một ô xám "chưa có dữ liệu". -->
+<% if (features.length) { %>
+    <section class="features">
+        <div class="container">
+            <ul class="feature-strip">
+                <% features.forEach(function (f) { %>
+                    <%# tabindex="0" là bắt buộc: không có phần tử nhận focus thì
+                        :focus-within không bao giờ kích hoạt -> bàn phím không đọc được mô tả %>
+                    <li class="feature-item" tabindex="0" role="group">
+                        <img class="feature-icon" src="<%= f.icon %>" alt="" loading="lazy">
+                        <h3 class="feature-title"><%= pick(f, 'title') %></h3>
+                        <% if (pick(f, 'description')) { %>
+                            <p class="feature-desc"><%= pick(f, 'description') %></p>
+                        <% } %>
+                    </li>
+                <% }) %>
+            </ul>
+        </div>
+    </section>
+<% } %>
+
+<!-- ── Showcase sản phẩm nổi bật — tràn màn hình, 4 ảnh/khung ──────────────── -->
+<!-- Nằm NGOÀI .container để tràn hết bề ngang. Lấy 8 sản phẩm, hiện 4, còn lại
+     kéo bằng 2 nút ở giữa hai mép. -->
+<% if (showcase.length) { %>
+    <section class="showcase">
+        <div class="showcase-track" id="showcaseTrack">
+            <% showcase.forEach(function (p) { %>
+                <a class="showcase-item" href="/products/<%= p.id %>">
+                    <div class="showcase-media">
+                        <img src="<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/600/750') %>"
+                             alt="<%= pick(p, 'name') %>" loading="lazy">
+                    </div>
+                    <div class="showcase-info">
+                        <% if (p.category) { %><span class="showcase-cat"><%= pick(p.category, 'name') %></span><% } %>
+                        <h3 class="showcase-name"><%= pick(p, 'name') %></h3>
+                        <span class="showcase-price"><%= money(p.price) %></span>
+                    </div>
+                </a>
+            <% }) %>
+        </div>
+
+        <%# data-scroll-by-item: cuộn đúng bề ngang 1 ảnh thay vì 260px cứng %>
+        <button class="showcase-arrow prev" type="button"
+                data-scroll="showcaseTrack" data-scroll-by-item data-dir="-1"
+                aria-label="<%= t.common.actions.prev %>">&lsaquo;</button>
+        <button class="showcase-arrow next" type="button"
+                data-scroll="showcaseTrack" data-scroll-by-item data-dir="1"
+                aria-label="<%= t.common.actions.next %>">&rsaquo;</button>
+    </section>
+<% } %>
 
 <!-- ── Why us (spec 3.2 · Thông tin doanh nghiệp) — ảnh trái + list phải ────── -->
 <section class="section why" id="why">
@@ -50,25 +104,45 @@
 
 <!-- ── Categories (spec 3.2 · Loại sản phẩm — TỪ DB) ───────────────────────── -->
 <section class="section categories" id="categories">
-    <div class="container">
-        <div class="section-head">
-            <div>
-                <h2 class="section-title"><%= t.home.categories.title %></h2>
-                <p class="section-sub"><%= t.home.categories.sub %></p>
-            </div>
-            <div class="cat-nav">
-                <button class="round-btn" data-scroll="cats" data-dir="-1" aria-label="prev">&lsaquo;</button>
-                <button class="round-btn" data-scroll="cats" data-dir="1" aria-label="next">&rsaquo;</button>
-            </div>
+    <div class="container cat-layout">
+
+        <%# Cột trái: chữ. Tiêu đề + mô tả sửa ở /admin/content, song ngữ.
+            Cố ý không có nút CTA ở đây — theo yêu cầu đã bỏ nút cuối khối. %>
+        <div class="cat-intro">
+            <h2 class="cat-intro-title"><%= categoriesTitle %></h2>
+            <p class="cat-intro-desc"><%= categoriesDesc %></p>
+            <% if (categories.length > 1) { %>
+                <div class="cat-nav">
+                    <button class="round-btn" data-scroll="cats" data-scroll-by-item data-dir="-1"
+                            aria-label="<%= t.common.actions.prev %>">&lsaquo;</button>
+                    <button class="round-btn" data-scroll="cats" data-scroll-by-item data-dir="1"
+                            aria-label="<%= t.common.actions.next %>">&rsaquo;</button>
+                </div>
+            <% } %>
         </div>
 
+        <!-- Cột phải: ảnh loại sản phẩm, tên nằm GIỮA ảnh -->
         <% if (categories.length) { %>
             <div class="cat-track" id="cats">
                 <% categories.forEach(function (c) { %>
-                    <a class="cat-card" href="/categories/<%= c.id %>"
-                       style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/500/600') %>')">
-                        <span class="cat-label"><%= pick(c, 'name') %></span>
-                    </a>
+                    <%# tabindex để bàn phím cũng mở được lớp danh mục con (:focus-within) %>
+                    <div class="cat-card" tabindex="0"
+                         style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/700/560') %>')">
+                        <a class="cat-card-link" href="/categories/<%= c.id %>">
+                            <span class="cat-label"><%= pick(c, 'name') %></span>
+                        </a>
+
+                        <% if (c.children.length) { %>
+                            <div class="cat-subs">
+                                <span class="cat-subs-head"><%= pick(c, 'name') %></span>
+                                <ul class="cat-subs-list">
+                                    <% c.children.forEach(function (ch) { %>
+                                        <li><a href="/categories/<%= ch.id %>"><%= pick(ch, 'name') %></a></li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+                        <% } %>
+                    </div>
                 <% }) %>
             </div>
         <% } else { %>
@@ -78,6 +152,80 @@
 </section>
 
 <!-- ── Partners (spec 3.2 · Đối tác hợp tác) ───────────────────────────────── -->
+<%# ── Lưới ảnh "Style advice" — 3 ô lớn tự đổi ảnh mỗi 5s (fade), 5 ô nhỏ tĩnh.
+    Chữ tiêu đề ĐÓNG CỨNG (t.home.gallery), admin chỉ quản lý kho ảnh ở /admin/gallery. %>
+<% if (gallery.length) { %>
+    <section class="section gallery-grid-section" id="inspiration">
+        <div class="container">
+            <div class="gallery-head">
+                <h2 class="gallery-title"><%= t.home.gallery.title %></h2>
+                <p class="gallery-sub"><%= t.home.gallery.sub %></p>
+            </div>
+
+            <%
+            // 3 ô lớn lấy 3 ảnh đầu; ô nhỏ lấy phần còn lại, lặp lại kho nếu thiếu.
+            const pool = gallery;
+            const at = (i) => pool[i % pool.length];
+            const BIG = [0, 1, 2];
+            const SMALL = [3, 4, 5, 6, 7];
+            %>
+            <div class="collage" id="collage">
+                <% BIG.forEach(function (i, slot) { %>
+                    <figure class="collage-cell is-big big-<%= slot + 1 %>" data-slot="<%= slot %>">
+                        <%# Hai lớp ảnh chồng nhau để chuyển cảnh mờ dần, không nháy trắng %>
+                        <img class="collage-img is-active" src="<%= at(i).image %>" alt="<%= pick(at(i), 'alt') %>">
+                        <img class="collage-img" alt="" aria-hidden="true">
+                    </figure>
+                <% }) %>
+
+                <% SMALL.forEach(function (i, k) { %>
+                    <figure class="collage-cell small-<%= k + 1 %>">
+                        <img class="collage-img is-active" src="<%= at(i).image %>" alt="<%= pick(at(i), 'alt') %>" loading="lazy">
+                    </figure>
+                <% }) %>
+            </div>
+
+            <%# Kho ảnh cho JS xoay vòng. Dùng thẻ JSON + escape "<" để URL/data-URI
+                của admin không thể thoát ra ngoài thẻ script. %>
+            <script type="application/json" id="collagePool"><%- JSON.stringify(gallery.map(function (g) { return {src: g.image, alt: pick(g, 'alt')}; })).replace(/</g, '\\u003c') %></script>
+        </div>
+    </section>
+<% } %>
+
+<%# ── Tin tức: header canh giữa + lưới bài viết 2 cột (ảnh → tiêu đề → mô tả → link) %>
+<% if (news.length) { %>
+    <section class="section news" id="news">
+        <div class="container">
+            <div class="news-head">
+                <h2 class="news-title"><%= newsTitle %></h2>
+                <p class="news-desc"><%= newsDesc %></p>
+                <% if (newsCta) { %>
+                    <a class="news-cta" href="<%= newsCtaLink %>"><%= newsCta %> <span aria-hidden="true">&rarr;</span></a>
+                <% } %>
+            </div>
+
+            <div class="news-grid">
+                <% news.forEach(function (n) { %>
+                    <article class="news-card">
+                        <a class="news-card-media" href="<%= n.link || ('/news/' + n.id) %>">
+                            <img src="<%= n.image %>" alt="<%= pick(n, 'title') %>" loading="lazy">
+                        </a>
+                        <h3 class="news-card-title"><%= pick(n, 'title') %></h3>
+                        <% if (pick(n, 'excerpt')) { %>
+                            <p class="news-card-desc"><%= pick(n, 'excerpt') %></p>
+                        <% } %>
+                        <% if (pick(n, 'cta')) { %>
+                            <a class="news-card-cta" href="<%= n.link || ('/news/' + n.id) %>">
+                                <span aria-hidden="true">&rarr;</span> <%= pick(n, 'cta') %>
+                            </a>
+                        <% } %>
+                    </article>
+                <% }) %>
+            </div>
+        </div>
+    </section>
+<% } %>
+
 <section class="section partners" id="partners">
     <div class="container">
         <p class="partners-sub"><%= t.home.partners.sub %></p>
@@ -132,6 +280,6 @@
 </section>
 
 <%- include('partials/footer') %>
-<script src="/static/js/main.js"></script>
+<script src="/static/js/main.js?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>"></script>
 </body>
 </html>

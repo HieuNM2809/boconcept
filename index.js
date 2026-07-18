@@ -18,6 +18,10 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
+// Cache-busting cho CSS/JS: markup và style đổi cùng lúc, nếu trình duyệt còn giữ
+// style.css cũ thì header 2 hàng mới sẽ bị style bằng rule 1 hàng cũ -> vỡ layout.
+app.locals.assetVersion = Date.now().toString(36);
+
 applyApiMiddlewares(app);
 // i18n cho mọi request: gắn lang + bộ dịch vào res.locals (áp dụng toàn bộ pages)
 app.use(require('./app/Http/Middleware/locale.middleware'));

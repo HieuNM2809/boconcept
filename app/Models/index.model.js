@@ -8,6 +8,11 @@ const ProductImage = require('./ProductImage.model');
 const Slide = require('./Slide.model');
 const Partner = require('./Partner.model');
 const Certificate = require('./Certificate.model');
+const Feature = require('./Feature.model');
+const News = require('./News.model');
+const Gallery = require('./Gallery.model');
+const Page = require('./Page.model');
+const Setting = require('./Setting.model');
 
 // ── Category (cây danh mục) ───────────────────────────────────────────────────
 Category.hasMany(Category, {foreignKey: 'parent_id', as: 'children'});
@@ -34,4 +39,9 @@ module.exports = {
     Slide,
     Partner,
     Certificate,
+    Feature,
+    News,
+    Gallery,
+    Page,
+    Setting,
 };

@@ -1,13 +1,44 @@
-<header class="admin-bar">
-    <div class="admin-bar-inner">
-        <a class="admin-brand" href="/admin">⚙️ Quản trị</a>
-        <nav class="admin-nav">
-            <a href="/admin/slides" class="<%= section === 'slides' ? 'active' : '' %>">Slideshow</a>
-            <a href="/admin/categories" class="<%= section === 'categories' ? 'active' : '' %>">Loại sản phẩm</a>
-            <a href="/admin/partners" class="<%= section === 'partners' ? 'active' : '' %>">Đối tác</a>
-            <a href="/admin/products" class="<%= section === 'products' ? 'active' : '' %>">Sản phẩm</a>
-            <a href="/admin/certificates" class="<%= section === 'certificates' ? 'active' : '' %>">Chứng nhận</a>
-        </nav>
-        <a class="admin-bar-link" href="/" target="_blank" rel="noopener">Xem site ↗</a>
-    </div>
-</header>
+<%
+/* Menu dọc bên trái. Khai báo một mảng thay vì lặp <a> bằng tay: thêm mục mới
+   chỉ sửa một dòng, và không còn nguy cơ quên `class="active"` ở mục nào đó. */
+const adminMenu = [
+    {group: 'Trang chủ', items: [
+        {key: 'slides',       href: '/admin/slides',       label: 'Slideshow',    icon: '🖼️'},
+        {key: 'features',     href: '/admin/features',     label: 'Công năng',    icon: '⭐'},
+        {key: 'gallery',      href: '/admin/gallery',      label: 'Lưới ảnh',     icon: '🧩'},
+        {key: 'content',      href: '/admin/content',      label: 'Nội dung khối', icon: '✏️'},
+    ]},
+    {group: 'Sản phẩm', items: [
+        {key: 'categories',   href: '/admin/categories',   label: 'Loại sản phẩm', icon: '🗂️'},
+        {key: 'products',     href: '/admin/products',     label: 'Sản phẩm',      icon: '🛋️'},
+    ]},
+    {group: 'Nội dung', items: [
+        {key: 'news',         href: '/admin/news',         label: 'Tin tức',       icon: '📰'},
+        {key: 'pages',        href: '/admin/pages',        label: 'Trang giới thiệu', icon: '📄'},
+    ]},
+    {group: 'Khác', items: [
+        {key: 'partners',     href: '/admin/partners',     label: 'Đối tác',       icon: '🤝'},
+        {key: 'certificates', href: '/admin/certificates', label: 'Chứng nhận',    icon: '🏅'},
+    ]},
+];
+%>
+<a class="admin-skip" href="#adminMain">Bỏ qua menu</a>
+
+<aside class="admin-side">
+    <a class="admin-brand" href="/admin">⚙️ Quản trị</a>
+
+    <nav class="admin-nav" aria-label="Menu quản trị">
+        <% adminMenu.forEach(function (g) { %>
+            <p class="admin-nav-group"><%= g.group %></p>
+            <% g.items.forEach(function (it) { %>
+                <a href="<%= it.href %>" class="<%= section === it.key ? 'active' : '' %>"
+                   <%= section === it.key ? 'aria-current="page"' : '' %>>
+                    <span class="admin-nav-icon" aria-hidden="true"><%= it.icon %></span>
+                    <span><%= it.label %></span>
+                </a>
+            <% }) %>
+        <% }) %>
+    </nav>
+
+    <a class="admin-bar-link" href="/" target="_blank" rel="noopener">Xem site ↗</a>
+</aside>

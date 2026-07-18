@@ -1,0 +1,53 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'features'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>Khối Công năng</h1>
+        <a class="btn btn-primary" href="/admin/features/new">+ Thêm mục</a>
+    </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+
+    <!-- Công tắc CẢ KHỐI: tắt thì dải biến mất khỏi trang chủ nhưng
+         trạng thái ẩn/hiện của từng mục bên dưới vẫn giữ nguyên. -->
+    <div class="admin-toggle-bar">
+        <div>
+            <strong>Hiển thị khối trên trang chủ:</strong>
+            <span class="badge-status <%= blockEnabled ? 'on' : 'off' %>"><%= blockEnabled ? 'ĐANG BẬT' : 'ĐANG TẮT' %></span>
+            <span class="admin-hint">Đang hiện <%= activeCount %>/<%= maxItems %> mục.</span>
+        </div>
+        <form method="post" action="/admin/features/toggle">
+            <input type="hidden" name="enabled" value="<%= blockEnabled ? '0' : '1' %>">
+            <button class="btn-sm <%= blockEnabled ? 'danger' : '' %>" type="submit">
+                <%= blockEnabled ? 'Tắt khối' : 'Bật khối' %>
+            </button>
+        </form>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+        <tr><th>#</th><th>Icon</th><th>Tiêu đề (VI)</th><th>Tiêu đề (EN)</th><th>Mô tả (VI)</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!items.length) { %><tr><td colspan="8" class="admin-empty">Chưa có mục công năng nào.</td></tr><% } %>
+        <% items.forEach(function (f) { %>
+            <tr>
+                <td><%= f.id %></td>
+                <td><img class="admin-thumb admin-thumb-icon" src="<%= f.icon %>" alt="" loading="lazy"></td>
+                <td><%= f.title_vi %></td>
+                <td><%= f.title_en || '—' %></td>
+                <td class="admin-cell-clip"><%= f.description_vi || '—' %></td>
+                <td><%= f.sort_order %></td>
+                <td><span class="badge-status <%= f.status ? 'on' : 'off' %>"><%= f.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/features/<%= f.id %>/edit">Sửa</a>
+                    <form method="post" action="/admin/features/<%= f.id %>/delete" data-confirm="Xóa mục này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

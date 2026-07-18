@@ -9,7 +9,7 @@ const Slide = sequelize.define('Slide', {
         autoIncrement: true,
     },
     image: {
-        type: DataTypes.STRING(500),
+        type: DataTypes.TEXT('medium'),
         allowNull: false,
     },
     title_vi: {type: DataTypes.STRING(255), allowNull: true},

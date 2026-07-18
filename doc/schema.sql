@@ -58,6 +58,16 @@ CREATE TABLE IF NOT EXISTS `products` (
     `description_vi` TEXT          NULL,
     `description_en` TEXT          NULL,
     `price`          DECIMAL(12,2) NOT NULL DEFAULT 0,
+    -- Thuộc tính lọc ở trang danh sách (/categories/:id)
+    `material_vi`    VARCHAR(255)  NULL,
+    `material_en`    VARCHAR(255)  NULL,
+    `color_vi`       VARCHAR(255)  NULL,
+    `color_en`       VARCHAR(255)  NULL,
+    -- Kích thước là chuỗi TỰ DO, không tách D×R×C: một sản phẩm có thể gồm
+    -- nhiều món ("Ghế: 10x30x60 · Bàn: 60x70x80"). Lọc bằng khớp chuỗi con.
+    `dimensions_vi`  VARCHAR(500)  NULL,
+    `dimensions_en`  VARCHAR(500)  NULL,
+    `weight`         DECIMAL(10,2) NULL,   -- kg, lọc theo khoảng min/max
     `thumbnail`      VARCHAR(500)  NULL,
     `is_featured`    TINYINT       NOT NULL DEFAULT 0,
     `priority`       INT           NOT NULL DEFAULT 0,
@@ -146,6 +156,101 @@ CREATE TABLE IF NOT EXISTS `certificates` (
     `updated_at` DATETIME     NULL,
     PRIMARY KEY (`id`),
     KEY `idx_certificates_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Khối Công năng dưới slideshow (quản lý ở /admin/features) ─────────────────
+-- `icon` là MEDIUMTEXT vì file admin upload được lưu thành data URI base64 NGAY
+-- TRONG DB. Cố tình không ghi ra ổ đĩa: railway.json không khai báo volume nên
+-- Railway xoá sạch filesystem mỗi lần redeploy — icon upload lên sẽ lặng lẽ mất.
+CREATE TABLE IF NOT EXISTS `features` (
+    `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `icon`           MEDIUMTEXT   NOT NULL,
+    `title_vi`       VARCHAR(255) NOT NULL,
+    `title_en`       VARCHAR(255) NULL,
+    `description_vi` VARCHAR(500) NULL,
+    `description_en` VARCHAR(500) NULL,
+    `sort_order`     INT          NOT NULL DEFAULT 0,
+    `status`         TINYINT      NOT NULL DEFAULT 1,
+    `created_at`     DATETIME     NULL,
+    `updated_at`     DATETIME     NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_features_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Tin tức / bài viết trên trang chủ (quản lý ở /admin/news) ────────────────
+CREATE TABLE IF NOT EXISTS `news` (
+    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    -- MEDIUMTEXT: form admin upload file -> lưu data URI base64 (xem features/gallery)
+    `image`      MEDIUMTEXT   NOT NULL,
+    `title_vi`   VARCHAR(255) NOT NULL,
+    `title_en`   VARCHAR(255) NULL,
+    `excerpt_vi` VARCHAR(800) NULL,
+    `excerpt_en` VARCHAR(800) NULL,
+    -- Nội dung bài viết: Markdown rút gọn, dựng HTML ở app/Helpers/richtext.helper.js.
+    -- KHÔNG lưu HTML thô — repo không có thư viện sanitize, xem chú thích trong helper.
+    `body_vi`      MEDIUMTEXT   NULL,
+    `body_en`      MEDIUMTEXT   NULL,
+    `author`       VARCHAR(120) NULL,
+    `published_at` DATETIME     NULL,
+    `cta_vi`     VARCHAR(255) NULL,
+    `cta_en`     VARCHAR(255) NULL,
+    `link`       VARCHAR(500) NULL,
+    `sort_order` INT          NOT NULL DEFAULT 0,
+    `status`     TINYINT      NOT NULL DEFAULT 1,
+    `created_at` DATETIME     NULL,
+    `updated_at` DATETIME     NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_news_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Trang nội dung tĩnh: Giới thiệu công ty, ... (quản lý ở /admin/pages) ────
+-- Bảng CHUNG chứ không phải bảng riêng cho mỗi trang: thêm "Tuyển dụng" hay
+-- "Chính sách" về sau chỉ là thêm một hàng, không phải viết thêm code.
+-- `body_*` là Markdown rút gọn, dựng HTML ở app/Helpers/richtext.helper.js.
+CREATE TABLE IF NOT EXISTS `pages` (
+    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `slug`       VARCHAR(120) NOT NULL,
+    `title_vi`   VARCHAR(255) NOT NULL,
+    `title_en`   VARCHAR(255) NULL,
+    `excerpt_vi` VARCHAR(800) NULL,
+    `excerpt_en` VARCHAR(800) NULL,
+    `body_vi`    MEDIUMTEXT   NULL,
+    `body_en`    MEDIUMTEXT   NULL,
+    `image`      MEDIUMTEXT   NULL,
+    `status`     TINYINT      NOT NULL DEFAULT 1,
+    `created_at` DATETIME     NULL,
+    `updated_at` DATETIME     NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_pages_slug` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Kho ảnh lưới collage "Style advice" (quản lý ở /admin/gallery) ───────────
+-- Admin up 1–8 ảnh vào ĐÂY; frontend tự phân bổ: 3 ô lớn xoay vòng mỗi 5 giây,
+-- các ô nhỏ lấy phần còn lại và đứng yên. `image` là MEDIUMTEXT vì file upload
+-- được lưu dạng data URI base64 (Railway xoá filesystem mỗi lần redeploy).
+CREATE TABLE IF NOT EXISTS `gallery` (
+    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `image`      MEDIUMTEXT   NOT NULL,
+    `alt_vi`     VARCHAR(255) NULL,
+    `alt_en`     VARCHAR(255) NULL,
+    `sort_order` INT          NOT NULL DEFAULT 0,
+    `status`     TINYINT      NOT NULL DEFAULT 1,
+    `created_at` DATETIME     NULL,
+    `updated_at` DATETIME     NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_gallery_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Cấu hình site dạng key/value (công tắc bật/tắt cả khối, ...) ──────────────
+-- Cần bảng riêng chứ không bulk-update `features.status`: tắt cả khối bằng cách
+-- set status=0 hàng loạt sẽ XOÁ MẤT trạng thái ẩn/hiện của từng mục, bật lại
+-- không biết mục nào vốn đang ẩn.
+CREATE TABLE IF NOT EXISTS `settings` (
+    `key`        VARCHAR(100) NOT NULL,
+    `value`      VARCHAR(500) NULL,
+    `created_at` DATETIME     NULL,
+    `updated_at` DATETIME     NULL,
+    PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- API client mẫu để test /api/auth/login

@@ -11,9 +11,7 @@
             <div><label>Tên (VI) *</label><input name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
             <div><label>Tên (EN)</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
         </div>
-        <label>Ảnh chính (URL)</label>
-        <input name="thumbnail" value="<%= item ? (item.thumbnail || '') : '' %>" placeholder="https://...">
-        <% if (item && item.thumbnail) { %><img class="form-preview" src="<%= item.thumbnail %>" alt=""><% } %>
+        <%- include('_image-field', {name: 'thumbnail', label: 'Ảnh chính', value: item ? (item.thumbnail || '') : '', maxKb: 600}) %>
         <div class="form-2col">
             <div>
                 <label>Danh mục</label>
@@ -40,12 +38,77 @@
                 </select>
             </div>
         </div>
+        <h2 class="admin-subhead">Thuộc tính (dùng cho bộ lọc ở trang danh sách)</h2>
+        <div class="form-2col">
+            <div><label>Chất liệu (VI)</label><input name="material_vi" value="<%= item ? (item.material_vi || '') : '' %>" placeholder="Gỗ sồi · Vải"></div>
+            <div><label>Chất liệu (EN)</label><input name="material_en" value="<%= item ? (item.material_en || '') : '' %>" placeholder="Oak · Fabric"></div>
+            <div><label>Màu (VI)</label><input name="color_vi" value="<%= item ? (item.color_vi || '') : '' %>" placeholder="Nâu cognac"></div>
+            <div><label>Màu (EN)</label><input name="color_en" value="<%= item ? (item.color_en || '') : '' %>" placeholder="Cognac brown"></div>
+        </div>
+        <label>Kích thước (VI)</label>
+        <input name="dimensions_vi" value="<%= item ? (item.dimensions_vi || '') : '' %>" placeholder="Ghế: 10x30x60 · Bàn: 60x70x80">
+        <label>Kích thước (EN)</label>
+        <input name="dimensions_en" value="<%= item ? (item.dimensions_en || '') : '' %>" placeholder="Chair: 10x30x60 · Table: 60x70x80">
+        <label>Khối lượng (kg) — để trống nếu không có</label>
+        <input type="number" step="0.01" min="0" name="weight" value="<%= item && item.weight != null ? Number(item.weight) : '' %>">
+
         <label>Mô tả (VI)</label>
         <textarea name="description_vi" rows="3"><%= item ? (item.description_vi || '') : '' %></textarea>
         <label>Mô tả (EN)</label>
         <textarea name="description_en" rows="3"><%= item ? (item.description_en || '') : '' %></textarea>
+        <h2 class="admin-subhead">Bộ sưu tập hình ảnh</h2>
+        <p class="admin-hint">
+            Ảnh phụ hiện ở trang chi tiết cùng “Ảnh chính”. Bấm “+ Thêm ảnh” để thêm dòng,
+            mỗi dòng chọn được ảnh từ máy hoặc dán đường dẫn. Xoá hết chữ trong ô là ảnh đó bị bỏ khi lưu.
+        </p>
+        <%# Tên trường dạng mảng gallery[] — controller lọc bỏ ô rỗng rồi ghi lại
+            toàn bộ danh sách, nên thêm/xoá/đổi thứ tự đều xử lý được trong một lần lưu. %>
+        <div id="galleryRows" class="gallery-rows">
+            <% (item && item.images ? item.images : []).forEach(function (img, i) { %>
+                <div class="gallery-row">
+                    <img class="gallery-row-thumb" src="<%= img.url %>" alt="" data-preview-for="gal<%= i %>">
+                    <input type="file" accept="image/png,image/jpeg,image/webp" data-encode-to="gal<%= i %>" data-max-kb="600">
+                    <input type="text" id="gal<%= i %>" name="gallery[]" value="<%= img.url %>" placeholder="https://...">
+                    <button type="button" class="btn-sm danger" data-remove-row>Xóa</button>
+                </div>
+            <% }) %>
+        </div>
+        <button type="button" class="btn-sm" id="addGalleryRow">+ Thêm ảnh</button>
+
+        <h2 class="admin-subhead">Thông tin thêm</h2>
+        <p class="admin-hint">
+            Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
+            <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
+        </p>
+        <div class="editor-toolbar" data-editor-for="extra_vi">
+            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="## ">H2</button><button type="button" data-prefix="- ">• Danh sách</button>
+            <button type="button" data-link="1">🔗 Link</button>
+        </div>
+        <textarea id="extra_vi" name="extra_vi" rows="8" class="editor-area"><%= item ? (item.extra_vi || '') : '' %></textarea>
+        <label>Thông tin thêm (EN)</label>
+        <div class="editor-toolbar" data-editor-for="extra_en">
+            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="## ">H2</button><button type="button" data-prefix="- ">• Danh sách</button>
+            <button type="button" data-link="1">🔗 Link</button>
+        </div>
+        <textarea id="extra_en" name="extra_en" rows="8" class="editor-area"><%= item ? (item.extra_en || '') : '' %></textarea>
+
+        <h2 class="admin-subhead">Thông tin vận chuyển</h2>
+        <div class="editor-toolbar" data-editor-for="shipping_vi">
+            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="- ">• Danh sách</button>
+        </div>
+        <textarea id="shipping_vi" name="shipping_vi" rows="6" class="editor-area"><%= item ? (item.shipping_vi || '') : '' %></textarea>
+        <label>Thông tin vận chuyển (EN)</label>
+        <div class="editor-toolbar" data-editor-for="shipping_en">
+            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="- ">• Danh sách</button>
+        </div>
+        <textarea id="shipping_en" name="shipping_en" rows="6" class="editor-area"><%= item ? (item.shipping_en || '') : '' %></textarea>
+
         <% if (item && item.variants && item.variants.length) { %>
-            <p class="admin-note">Biến thể: <%= item.variants.map(function (v) { return v.name; }).join(', ') %> · Ảnh gallery: <%= (item.images || []).length %> (quản lý biến thể/gallery sẽ bổ sung sau).</p>
+            <p class="admin-note">Biến thể hiện có: <%= item.variants.map(function (v) { return v.name; }).join(', ') %> (quản lý biến thể sẽ bổ sung sau).</p>
         <% } %>
         <div class="form-actions">
             <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>

@@ -1,25 +1,131 @@
+<%
+/* Header là partial DÙNG CHUNG, được render từ 8 chỗ — trong đó 4 nhánh 404 chỉ
+   truyền locals tối thiểu (catalog.controller.js:34,44,98,107). EJS ném ReferenceError
+   với biến lạ và error handler sẽ trả JSON thay cho HTML, nên ở đây CHỈ đọc res.locals
+   và luôn có guard `typeof`. Tuyệt đối không đọc local của trang (vd `filters.q`). */
+const navs = (typeof navCategories !== 'undefined' && navCategories) || [];
+const sq = (typeof searchQuery !== 'undefined' && searchQuery) || '';
+const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh; còn lại nằm trong panel
+%>
 <header class="site-header">
-    <div class="container header-inner">
-        <a class="brand" href="/?lang=<%= lang %>">
-            <span class="brand-mark">🛋️</span>
-            <span class="brand-name">web<strong>Furniture</strong></span>
-        </a>
 
-        <nav class="main-nav" id="mainNav">
-            <a href="#"><%= t.common.nav.who %></a>
-            <a href="#categories"><%= t.common.nav.products %></a>
-            <a href="#featured"><%= t.common.nav.collections %></a>
-            <a href="#why"><%= t.common.nav.services %></a>
-            <a href="#partners"><%= t.common.nav.partners %></a>
-            <a href="#"><%= t.common.nav.news %></a>
-            <a href="#footer"><%= t.common.nav.contact %></a>
-        </nav>
-
-        <div class="header-actions">
-            <a class="btn-catalogue" href="#featured"><%= t.common.actions.catalogue %></a>
-            <button class="icon-btn" aria-label="<%= t.common.actions.search %>">🔍</button>
-            <a class="lang-switch" href="?lang=<%= altLang %>" title="<%= t.common.actions.search %>"><%= t.common.langLabel %></a>
-            <button class="icon-btn menu-toggle" id="menuToggle" aria-label="menu">☰</button>
+    <!-- ── Hàng 1: thanh tiện ích ──────────────────────────────────────────── -->
+    <div class="header-utility">
+        <div class="container header-utility-inner">
+            <a class="find-store" href="#footer" aria-label="<%= t.common.findStore %>">
+                <span aria-hidden="true">📍</span>
+                <span class="find-store-text"><%= t.common.findStore %></span>
+            </a>
+            <a class="lang-switch" href="<%= altLangHref %>" title="<%= t.common.langNames[altLang] %>">
+                <%= t.common.langNames[altLang] %>
+            </a>
         </div>
     </div>
+
+    <!-- ── Hàng 2: thanh chính (grid 3 cột -> logo canh giữa tuyệt đối) ────── -->
+    <div class="container header-main-inner">
+        <div class="header-left">
+            <!-- type="button" là BẮT BUỘC: nút không có type mặc định là submit,
+                 lọt vào form tìm kiếm sẽ điều hướng sang /search thay vì mở panel. -->
+            <button class="nav-toggle" type="button" data-nav-toggle
+                    aria-controls="navPanel" aria-expanded="false"
+                    aria-label="<%= t.common.actions.menu %>"><span aria-hidden="true">☰</span></button>
+
+            <nav class="nav-cats" aria-label="<%= t.common.actions.menu %>">
+                <% inlineCats.forEach(function (c) { %>
+                    <a href="/categories/<%= c.id %>"><%= pick(c, 'name') %></a>
+                <% }) %>
+                <% if (navs.length > inlineCats.length) { %>
+                    <button class="nav-more" type="button" data-nav-toggle
+                            aria-controls="navPanel" aria-expanded="false"><%= t.common.actions.more %></button>
+                <% } %>
+            </nav>
+        </div>
+
+        <a class="brand" href="/">
+            <span class="brand-name"><strong><%= t.common.brandMain %></strong> <%= t.common.brandSub %></span>
+        </a>
+
+        <div class="header-right">
+            <form class="header-search" action="/search" method="get" role="search">
+                <input class="header-search-input" type="search" name="q" value="<%= sq %>"
+                       placeholder="<%= t.common.actions.searchPlaceholder %>"
+                       aria-label="<%= t.common.actions.search %>">
+                <button class="header-search-btn" type="submit" aria-label="<%= t.common.actions.search %>">
+                    <span aria-hidden="true">🔍</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
 </header>
+
+<!-- ══ DRAWER MENU — trượt từ trái, ☰ và "Xem thêm" cùng mở ══════════════════ -->
+<!-- Dùng thuộc tính `hidden` làm nguồn sự thật (không phải class) để drawer bị
+     loại khỏi cây trợ năng và khỏi thứ tự tab khi đóng. -->
+<div class="drawer-scrim" id="drawerScrim" hidden></div>
+
+<aside class="drawer" id="navPanel" role="dialog" aria-modal="true"
+       aria-label="<%= t.common.actions.menu %>" hidden>
+
+    <!-- ── Cột trái: luôn hiển thị ─────────────────────────────────────────── -->
+    <div class="drawer-main">
+        <button class="drawer-close" type="button" data-drawer-close
+                aria-label="<%= t.common.menu.close %>"><span aria-hidden="true">✕</span></button>
+
+        <div class="drawer-promo">
+            <span class="drawer-promo-text"><%= t.common.menu.promo %></span>
+            <a class="drawer-promo-cta" href="/#footer"><%= t.common.menu.promoCta %></a>
+        </div>
+
+        <nav class="drawer-group" aria-label="<%= t.common.actions.menu %>">
+            <% navs.forEach(function (c) { %>
+                <% if ((c.children || []).length) { %>
+                    <button class="drawer-item drawer-item-lg" type="button"
+                            data-drawer-to="cat-<%= c.id %>"
+                            aria-expanded="false" aria-controls="sub-cat-<%= c.id %>">
+                        <span class="drawer-item-label"><%= pick(c, 'name') %></span>
+                        <span class="drawer-chev" aria-hidden="true">›</span>
+                    </button>
+                <% } else { %>
+                    <a class="drawer-item drawer-item-lg" href="/categories/<%= c.id %>">
+                        <span class="drawer-item-label"><%= pick(c, 'name') %></span>
+                    </a>
+                <% } %>
+            <% }) %>
+        </nav>
+
+        <nav class="drawer-group drawer-group-sm">
+            <% (typeof menuLinks !== 'undefined' ? menuLinks : []).forEach(function (l) { %>
+                <a class="drawer-item" href="<%= l.href %>">
+                    <span class="drawer-item-label"><%= t.common.menu.links[l.key] %></span>
+                </a>
+            <% }) %>
+        </nav>
+    </div>
+
+    <!-- ── Cột phải: mở kề bên khi chọn danh mục cấp 1 ─────────────────────── -->
+    <div class="drawer-sub" id="drawerSub" hidden>
+        <% navs.filter(function (c) { return (c.children || []).length; }).forEach(function (c) { %>
+            <div class="drawer-sub-level" id="sub-cat-<%= c.id %>" data-level="cat-<%= c.id %>" hidden>
+                <button class="drawer-back" type="button" data-drawer-back>
+                    <span class="drawer-chev" aria-hidden="true">‹</span>
+                    <span><%= t.common.menu.back %></span>
+                </button>
+
+                <h2 class="drawer-sub-title"><%= pick(c, 'name') %></h2>
+                <a class="drawer-sub-all" href="/categories/<%= c.id %>"><%= pick(c, 'name') %></a>
+
+                <nav class="drawer-sub-list" aria-label="<%= pick(c, 'name') %>">
+                    <% c.children.forEach(function (ch) { %>
+                        <a class="drawer-sub-item" href="/categories/<%= ch.id %>">
+                            <span class="drawer-sub-thumb"
+                                  style="background-image:url('<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/300/240') %>')"></span>
+                            <span class="drawer-sub-name"><%= pick(ch, 'name') %></span>
+                        </a>
+                    <% }) %>
+                </nav>
+            </div>
+        <% }) %>
+    </div>
+</aside>

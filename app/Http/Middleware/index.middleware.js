@@ -36,7 +36,10 @@ function applyApiMiddlewares(app) {
 
     // 1. Body parser
     app.use(express.json({limit: process.env.BODY_LIMIT || '1mb'}));
-    app.use(express.urlencoded({extended: true}));
+    // `limit` là BẮT BUỘC ở đây: body-parser mặc định chặn urlencoded ở 100KB
+    // (KHÔNG kế thừa BODY_LIMIT như express.json ở trên), nên form admin có icon
+    // base64 sẽ bị trả 413 dạng JSON thô thay vì báo lỗi trên form.
+    app.use(express.urlencoded({extended: true, limit: process.env.BODY_LIMIT || '1mb'}));
 
     // 2. Header bảo mật cơ bản (CSP nới cho trang render EJS: ảnh ngoài, google fonts, inline)
     app.use(helmet({
@@ -52,7 +55,10 @@ function applyApiMiddlewares(app) {
     }));
 
     // 3. Chống HTTP Parameter Pollution
-    app.use(hpp());
+    // `whitelist` là BẮT BUỘC cho các field vốn dĩ là mảng: hpp mặc định gộp
+    // mọi tham số trùng tên về GIÁ TRỊ CUỐI, nên form gửi gallery[]=a&gallery[]=b
+    // sẽ chỉ còn "b" và admin lưu 5 ảnh xong chỉ thấy 1 ảnh, không báo lỗi gì.
+    app.use(hpp({whitelist: ['gallery']}));
 
     // 4. CORS
     app.use(cors({
