@@ -111,6 +111,34 @@ Lưu xong Railway **tự redeploy**.
 
 ---
 
+## ⚠️ Nâng cấp một database ĐÃ CÓ DỮ LIỆU (bắt buộc đọc)
+
+`doc/schema.sql` chỉ dùng `CREATE TABLE IF NOT EXISTS`, nên trên database đã có
+sẵn bảng cũ nó **KHÔNG thêm cột mới** vào những bảng đó. Chạy mỗi `schema.sql`
+lên production sẽ tạo được bảng mới nhưng thiếu toàn bộ cột mới của `products`
+và `categories` → Sequelize ném `Unknown column ... in 'field list'` → **500
+trang chủ, trang danh sách, trang chi tiết và tìm kiếm**.
+
+Thứ tự đúng, chạy **TRƯỚC khi deploy code mới**:
+
+```bash
+# 1) tạo các bảng mới
+mysql -h <MYSQLHOST> -P <MYSQLPORT> -u <MYSQLUSER> -p <MYSQLDATABASE> < doc/schema.sql
+
+# 2) thêm cột mới vào bảng cũ  ← BƯỚC HAY BỊ QUÊN
+mysql -h <MYSQLHOST> -P <MYSQLPORT> -u <MYSQLUSER> -p <MYSQLDATABASE> < doc/migrations/2026-07-19-site-rebuild.sql
+```
+
+Dùng **`MYSQL_PUBLIC_URL`** của service MySQL (host `*.proxy.rlwy.net`) để chạy
+từ máy cá nhân — `mysql.railway.internal` chỉ các service bên trong Railway thấy.
+
+File migration **an toàn khi chạy lại nhiều lần**: mỗi thao tác đều kiểm tra
+`information_schema` trước, cột đã có thì bỏ qua.
+
+> **KHÔNG chạy `doc/seed.sql` trên production.** Nó có
+> `ON DUPLICATE KEY UPDATE image = VALUES(image)` — sẽ ghi đè ảnh thật đã upload
+> bằng ảnh placeholder của picsum.
+
 ## Bước 5 — Nạp schema + seed vào MySQL (chỉ làm 1 lần)
 
 DB Railway lúc mới tạo **trống rỗng** — chưa có bảng nào. Phải nạp `doc/schema.sql` + `doc/seed.sql`.
