@@ -1,6 +1,6 @@
 // Homepage-specific UI strings
 module.exports = {
-    meta: {title: 'webFurniture — Italian furniture design'},
+    meta: {title: 'Huong Sơn entertaimain — Italian furniture design'},
     hero: [
         {badge: 'Danish design', title: 'End Season Sale: Now On'},
         {badge: 'New collection', title: 'Modern Living Spaces'},
@@ -16,6 +16,18 @@ module.exports = {
         ],
     },
     categories: {title: 'Product categories', sub: 'Our furniture across Europe for the last 40 years.'},
+    // "Style advice" image grid — text is HARDCODED per spec, not admin-editable.
+    // Still lives in the lang files (not inline in the .ejs) so VI gets a translation.
+    gallery: {
+        title: 'Style advice. Buying guides. Expert tips.',
+        sub: 'Everything you need to feel confident finding furniture that fits your style and space.',
+    },
+    // Defaults used when the matching field is left blank in /admin/content
+    news: {
+        title: 'Trends of the season',
+        sub: 'Every season brings new inspiration for the home. Explore the trends shaping modern interiors, from expressive colour palettes to warm, contemporary design.',
+        cta: 'Explore trends',
+    },
     partners: {title: 'Our partners', sub: 'Our Partners'},
     featured: {title: 'Featured products', sub: 'HOME FURNITURE', productsWord: 'products'},
     certs: {

@@ -1,44 +1,60 @@
+<%
+/* Footer là partial DÙNG CHUNG, render cả từ 4 nhánh 404 với locals tối thiểu,
+   nên ở đây chỉ đọc `t` (do locale.middleware gắn vào res.locals cho mọi request).
+   Địa chỉ bản đồ nằm trong file ngôn ngữ như phần còn lại của footer.
+
+   PHẢI dùng /maps/embed?pb=... — KHÔNG dùng /maps?q=...&output=embed.
+   Google đã chặn dạng cũ: nó trả 301 kèm `X-Frame-Options: SAMEORIGIN` nên
+   trình duyệt từ chối nhúng, iframe ra ô xám kèm icon lỗi. Dạng /maps/embed
+   trả 200 và không có header đó (đã kiểm chứng bằng curl cho cả vi lẫn en),
+   và vẫn KHÔNG cần API key. */
+const mapQ = t.common.footer.mapQuery;
+const mapSrc = 'https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s' + encodeURIComponent(mapQ);
+%>
 <footer class="site-footer" id="footer">
     <div class="container footer-grid">
+
+        <%# Ô 1 — thông tin công ty %>
         <div class="footer-col">
-            <span class="brand-name light">web<strong>Furniture</strong></span>
+            <span class="brand-name"><strong><%= t.common.brandMain %></strong> <%= t.common.brandSub %></span>
             <p class="footer-desc"><%= t.common.tagline %></p>
-            <p><%= t.common.footer.address %></p>
-            <p><%= t.common.footer.email %></p>
             <p><%= t.common.footer.website %></p>
+            <p><%= t.common.footer.tax %></p>
         </div>
 
-        <div class="footer-col">
-            <h4><%= t.common.footer.services %></h4>
-            <ul>
-                <% t.common.footer.svcList.forEach(function (s) { %>
-                    <li><a href="#"><%= s %></a></li>
-                <% }) %>
-            </ul>
-        </div>
-
+        <%# Ô 2 — thông tin liên hệ %>
         <div class="footer-col">
             <h4><%= t.common.footer.contact %></h4>
             <p><%= t.common.footer.address %></p>
             <p><%= t.common.footer.phone %></p>
             <p><%= t.common.footer.email %></p>
             <div class="socials">
-                <a href="#" aria-label="facebook">f</a>
-                <a href="#" aria-label="youtube">▶</a>
-                <a href="#" aria-label="instagram">◎</a>
+                <a href="#" aria-label="Facebook">f</a>
+                <a href="#" aria-label="YouTube">▶</a>
+                <a href="#" aria-label="Instagram">◎</a>
             </div>
         </div>
 
-        <div class="footer-col hotline-col">
-            <h4><%= t.common.footer.hotline %></h4>
-            <p class="hotline"><%= t.common.footer.phone %></p>
-            <p><%= t.common.footer.tax %></p>
+        <%# Ô 3+4 — Google Maps, chiếm trọn 2 cột cuối %>
+        <div class="footer-col footer-map">
+            <h4><%= t.common.footer.mapTitle %></h4>
+            <iframe class="footer-map-frame" src="<%= mapSrc %>"
+                    title="<%= t.common.footer.mapTitle %> — <%= mapQ %>"
+                    loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen></iframe>
         </div>
     </div>
 
     <div class="footer-bottom">
         <div class="container footer-bottom-inner">
-            <span>© 2026 webFurniture. <%= t.common.footer.rights %> · <%= t.common.footer.tax %></span>
+            <%# Danh sách chính sách chuyển xuống đây: bố cục mới không còn cột
+                "Dịch vụ và hỗ trợ", nhưng xoá hẳn thì mất nội dung. %>
+            <nav class="footer-policies">
+                <% t.common.footer.svcList.forEach(function (s) { %>
+                    <a href="#"><%= s %></a>
+                <% }) %>
+            </nav>
+            <span>© 2026 <%= t.common.brand %>. <%= t.common.footer.rights %></span>
             <a class="footer-admin" href="/admin">🔒 <%= t.common.footer.admin %></a>
         </div>
     </div>

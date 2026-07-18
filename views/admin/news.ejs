@@ -1,0 +1,36 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'news'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>Tin tức</h1>
+        <a class="btn btn-primary" href="/admin/news/new">+ Thêm bài viết</a>
+    </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+    <table class="admin-table">
+        <thead>
+        <tr><th>#</th><th>Ảnh</th><th>Tiêu đề (VI)</th><th>Tiêu đề (EN)</th><th>Mô tả (VI)</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!items.length) { %><tr><td colspan="8" class="admin-empty">Chưa có bài viết nào.</td></tr><% } %>
+        <% items.forEach(function (n) { %>
+            <tr>
+                <td><%= n.id %></td>
+                <td><img class="admin-thumb" src="<%= n.image %>" alt="" loading="lazy"></td>
+                <td><%= n.title_vi %></td>
+                <td><%= n.title_en || '—' %></td>
+                <td class="admin-cell-clip"><%= n.excerpt_vi || '—' %></td>
+                <td><%= n.sort_order %></td>
+                <td><span class="badge-status <%= n.status ? 'on' : 'off' %>"><%= n.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/news/<%= n.id %>/edit">Sửa</a>
+                    <form method="post" action="/admin/news/<%= n.id %>/delete" data-confirm="Xóa bài viết này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

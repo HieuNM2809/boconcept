@@ -24,24 +24,37 @@
             <span class="sep">/</span><span class="crumb-current"><%= pick(product, 'name') %></span>
         </nav>
 
+        <%
+        /* Gallery: hiện tối đa 7 ảnh. Nếu còn ảnh nữa thì ảnh thứ 7 bị làm mờ và
+           gắn nút "Xem thêm" ở giữa để xổ phần còn lại. */
+        const VISIBLE = 7;
+        const shown = gallery.slice(0, VISIBLE);
+        const hidden = gallery.slice(VISIBLE);
+        %>
         <div class="pd-top">
-            <!-- Gallery: 1 hình gốc + item con (giống shopee) -->
-            <div class="gallery">
-                <div class="gallery-main" id="galleryMain" style="background-image:url('<%= gallery[0] %>')"></div>
-                <div class="gallery-thumbs">
-                    <button class="g-arrow" data-gdir="-1" aria-label="prev">&lsaquo;</button>
-                    <div class="g-thumb-track" id="gThumbs">
-                        <% gallery.forEach(function (src, i) { %>
-                            <button class="g-thumb <%= i === 0 ? 'active' : '' %>" data-image="<%= src %>"
-                                    style="background-image:url('<%= src %>')" aria-label="image <%= i + 1 %>"></button>
-                        <% }) %>
-                    </div>
-                    <button class="g-arrow" data-gdir="1" aria-label="next">&rsaquo;</button>
-                </div>
+            <div class="pd-gallery" id="pdGallery">
+                <% shown.forEach(function (src, i) { %>
+                    <%# Ảnh đầu chiếm trọn bề ngang, các ảnh sau xếp lưới 2 cột %>
+                    <figure class="pdg-cell <%= i === 0 ? 'is-wide' : '' %> <%= (hidden.length && i === shown.length - 1) ? 'is-teaser' : '' %>">
+                        <img src="<%= src %>" alt="<%= pick(product, 'name') %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>">
+                    </figure>
+                <% }) %>
+
+                <% if (hidden.length) { %>
+                    <button class="pdg-more" type="button" id="pdgMore" aria-controls="pdGallery" aria-expanded="false">
+                        <span aria-hidden="true">⌄</span> <%= t.product.showMore %>
+                    </button>
+                    <%# Ảnh còn lại render sẵn nhưng ẩn — bấm là hiện ngay, không phải tải thêm %>
+                    <% hidden.forEach(function (src) { %>
+                        <figure class="pdg-cell pdg-extra" hidden>
+                            <img src="<%= src %>" alt="<%= pick(product, 'name') %>" loading="lazy">
+                        </figure>
+                    <% }) %>
+                <% } %>
             </div>
 
-            <!-- Info -->
-            <div class="pd-info">
+            <%# Cột phải GHIM CỐ ĐỊNH khi cuộn gallery bên trái %>
+            <div class="pd-info is-sticky">
                 <h1 class="pd-name"><%= pick(product, 'name') %></h1>
                 <div class="pd-price" id="pdPrice"><%= money(initPrice) %></div>
                 <p class="pd-desc"><%= pick(product, 'description') || t.product.noDescription %></p>
@@ -79,28 +92,50 @@
 
         <!-- Tabs -->
         <div class="tabs">
+            <%# Bỏ tab "Câu hỏi thường gặp", giữ "Đóng gói & vận chuyển" %>
             <div class="tab-nav">
                 <button class="tab-btn active" data-tab="additional"><%= t.product.tabs.additional %></button>
                 <button class="tab-btn" data-tab="packaging"><%= t.product.tabs.packaging %></button>
-                <button class="tab-btn" data-tab="faq"><%= t.product.tabs.faq %></button>
             </div>
 
             <div class="tab-panel active" id="tab-additional">
                 <div class="tab-2col">
                     <div>
                         <h3 class="tab-h"><%= t.product.specsTitle %></h3>
+                        <%
+                        /* Ưu tiên thông số THẬT từ DB; sản phẩm chưa nhập thì mới
+                           rơi về bảng mẫu trong file ngôn ngữ. */
+                        const realSpecs = [
+                            {label: t.product.attrs.size, value: pick(product, 'dimensions')},
+                            {label: t.product.attrs.weight, value: product.weight != null ? Number(product.weight) + ' kg' : ''},
+                            {label: t.product.attrs.material, value: pick(product, 'material')},
+                            {label: t.product.attrs.color, value: pick(product, 'color')},
+                        ].filter(function (s) { return s.value; });
+                        const specRows = realSpecs.length ? realSpecs : t.product.specs;
+                        %>
                         <table class="spec-table">
-                            <% t.product.specs.forEach(function (s) { %>
+                            <% specRows.forEach(function (s) { %>
                                 <tr><th><%= s.label %></th><td><%= s.value %></td></tr>
                             <% }) %>
                         </table>
                     </div>
                     <div class="tab-img" style="background-image:url('<%= gallery[0] %>')"></div>
                 </div>
+
+                <%# Thông tin thêm do admin soạn. bodyHtml dựng từ richtext.helper
+                    (escape trước, sinh thẻ sau) nên in thô ở đây là an toàn. %>
+                <% if (extraHtml) { %>
+                    <div class="article-body tab-richtext"><%- extraHtml %></div>
+                <% } %>
             </div>
 
             <div class="tab-panel" id="tab-packaging">
-                <p class="tab-desc"><%= t.product.packagingDesc %></p>
+                <%# Nội dung vận chuyển admin nhập được ưu tiên; chưa nhập thì dùng chữ mẫu %>
+                <% if (shippingHtml) { %>
+                    <div class="article-body tab-richtext"><%- shippingHtml %></div>
+                <% } else { %>
+                    <p class="tab-desc"><%= t.product.packagingDesc %></p>
+                <% } %>
                 <table class="spec-table">
                     <% t.product.packaging.forEach(function (s) { %>
                         <tr><th><%= s.label %></th><td><%= s.value %></td></tr>
@@ -109,16 +144,32 @@
                 <a class="btn btn-outline pd-cta" href="#footer"><%= t.product.contact %> &rarr;</a>
             </div>
 
-            <div class="tab-panel" id="tab-faq">
-                <% t.product.faq.forEach(function (f) { %>
-                    <details class="faq-item"><summary><%= f.q %></summary><p><%= f.a %></p></details>
-                <% }) %>
-            </div>
         </div>
+
+        <%# Sản phẩm liên quan — ngẫu nhiên cùng danh mục (RAND() ở SQL) %>
+        <% if (related.length) { %>
+            <section class="pd-related">
+                <h2 class="pd-related-title"><%= t.product.related %></h2>
+                <div class="product-grid">
+                    <% related.forEach(function (p) { %>
+                        <a class="product-card" href="/products/<%= p.id %>">
+                            <div class="product-thumb" style="background-image:url('<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/400') %>')">
+                                <% if (p.is_featured) { %><span class="badge-hot">HOT</span><% } %>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name"><%= pick(p, 'name') %></h3>
+                                <% if (pick(p, 'material')) { %><p class="product-attr"><%= pick(p, 'material') %></p><% } %>
+                                <span class="product-price"><%= money(p.price) %></span>
+                            </div>
+                        </a>
+                    <% }) %>
+                </div>
+            </section>
+        <% } %>
     </div>
 <% } %>
 
 <%- include('partials/footer') %>
-<script src="/static/js/main.js"></script>
+<script src="/static/js/main.js?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>"></script>
 </body>
 </html>

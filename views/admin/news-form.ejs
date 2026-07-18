@@ -1,0 +1,89 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'news'}) %>
+<main class="admin-wrap admin-narrow">
+    <div class="admin-head">
+        <h1><%= item ? ('Sửa bài viết #' + item.id) : 'Thêm bài viết' %></h1>
+        <a class="btn-sm" href="/admin/news">← Quay lại</a>
+    </div>
+    <form class="admin-form" method="post" action="<%= action %>">
+
+        <label>Ảnh *</label>
+        <div class="form-upload">
+            <%# 400KB: base64 phình ~33% -> ~533KB, cộng các field khác vẫn dưới
+                giới hạn 1mb của express.urlencoded. Để 600KB là chạm trần. %>
+            <input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/svg+xml" data-encode-to="image" data-max-kb="400">
+            <span class="admin-hint">Chọn file (tối đa 400KB) hoặc dán đường dẫn vào ô dưới.</span>
+        </div>
+        <input name="image" id="image" required value="<%= item ? item.image : '' %>" placeholder="https://...">
+        <img class="form-preview" id="imagePreview"
+             src="<%= item && item.image ? item.image : '' %>"
+             alt="" <%= (item && item.image) ? '' : 'hidden' %>>
+
+        <div class="form-2col">
+            <div><label>Tiêu đề (VI) *</label><input name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
+            <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+            <div><label>Mô tả (VI)</label><textarea name="excerpt_vi" rows="4" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
+            <div><label>Mô tả (EN)</label><textarea name="excerpt_en" rows="4" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
+            <div><label>Nhãn link (VI)</label><input name="cta_vi" value="<%= item ? (item.cta_vi || '') : '' %>" placeholder="Khám phá thêm"></div>
+            <div><label>Nhãn link (EN)</label><input name="cta_en" value="<%= item ? (item.cta_en || '') : '' %>" placeholder="Discover more"></div>
+        </div>
+
+        <div class="form-2col">
+            <div><label>Tác giả</label><input name="author" value="<%= item ? (item.author || '') : '' %>" placeholder="Nguyễn Văn A"></div>
+            <div><label>Ngày đăng</label>
+                <%# datetime-local cần định dạng YYYY-MM-DDTHH:mm, không nhận ISO có 'Z' %>
+                <input type="datetime-local" name="published_at"
+                       value="<%= item && item.published_at ? new Date(new Date(item.published_at).getTime() - new Date(item.published_at).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '' %>">
+            </div>
+        </div>
+
+        <h2 class="admin-subhead">Nội dung bài viết</h2>
+        <p class="admin-hint">
+            Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
+            <code>- gạch đầu dòng</code> · <code>[chữ](https://...)</code>. Dòng trống để ngăn đoạn.
+            Thẻ HTML gõ vào sẽ hiện ra dạng chữ, không chạy — đây là chủ ý để chặn mã độc.
+        </p>
+        <div class="editor-toolbar" data-editor-for="body_vi">
+            <button type="button" data-wrap="**">B</button>
+            <button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="## ">H2</button>
+            <button type="button" data-prefix="### ">H3</button>
+            <button type="button" data-prefix="- ">• Danh sách</button>
+            <button type="button" data-link="1">🔗 Link</button>
+        </div>
+        <textarea id="body_vi" name="body_vi" rows="14" class="editor-area"><%= item ? (item.body_vi || '') : '' %></textarea>
+
+        <label>Nội dung (EN)</label>
+        <div class="editor-toolbar" data-editor-for="body_en">
+            <button type="button" data-wrap="**">B</button>
+            <button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="## ">H2</button>
+            <button type="button" data-prefix="### ">H3</button>
+            <button type="button" data-prefix="- ">• Danh sách</button>
+            <button type="button" data-link="1">🔗 Link</button>
+        </div>
+        <textarea id="body_en" name="body_en" rows="14" class="editor-area"><%= item ? (item.body_en || '') : '' %></textarea>
+
+        <label>Link ngoài (để trống thì nút trên trang chủ trỏ vào bài viết này)</label>
+        <input name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://...">
+
+        <div class="form-2col">
+            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
+            <div><label>Trạng thái</label>
+                <select name="status">
+                    <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+            <a class="btn btn-outline" href="/admin/news">Hủy</a>
+        </div>
+    </form>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

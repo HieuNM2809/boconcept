@@ -27,6 +27,11 @@ class ProductService {
             max_price = null,
             status = 1,
             sort = 'newest',
+            // Bộ lọc trang danh sách theo loại
+            material = null,
+            dimensions = null,
+            min_weight = null,
+            max_weight = null,
         } = filters;
 
         const _page = Math.max(parseInt(page, 10) || 1, 1);
@@ -48,6 +53,29 @@ class ProductService {
         if (min_price !== null && min_price !== '') priceWhere[Op.gte] = parseFloat(min_price);
         if (max_price !== null && max_price !== '') priceWhere[Op.lte] = parseFloat(max_price);
         if (Object.getOwnPropertySymbols(priceWhere).length) where.price = priceWhere;
+
+        // Chất liệu / kích thước: khớp chuỗi con trên cả hai ngôn ngữ, để khách
+        // gõ "gỗ" hay "oak" đều ra. Gom vào Op.and chứ KHÔNG gán thẳng where[Op.or]
+        // — `q` ở trên đã chiếm Op.or, ghi đè sẽ làm mất bộ lọc tên.
+        const andGroups = [];
+        if (material) {
+            andGroups.push({[Op.or]: [
+                {material_vi: {[Op.like]: `%${material}%`}},
+                {material_en: {[Op.like]: `%${material}%`}},
+            ]});
+        }
+        if (dimensions) {
+            andGroups.push({[Op.or]: [
+                {dimensions_vi: {[Op.like]: `%${dimensions}%`}},
+                {dimensions_en: {[Op.like]: `%${dimensions}%`}},
+            ]});
+        }
+        if (andGroups.length) where[Op.and] = andGroups;
+
+        const weightWhere = {};
+        if (min_weight !== null && min_weight !== '') weightWhere[Op.gte] = parseFloat(min_weight);
+        if (max_weight !== null && max_weight !== '') weightWhere[Op.lte] = parseFloat(max_weight);
+        if (Object.getOwnPropertySymbols(weightWhere).length) where.weight = weightWhere;
 
         const order = SORT_MAP[sort] || SORT_MAP.newest;
 
@@ -71,6 +99,28 @@ class ProductService {
                 last_page: Math.max(Math.ceil(count / _perPage), 1),
             },
         };
+    }
+
+    /**
+     * Sản phẩm liên quan: NGẪU NHIÊN trong cùng danh mục, trừ chính nó.
+     * Dùng sequelize.random() (MySQL -> RAND()) thay vì lấy N cái đầu rồi xáo ở JS,
+     * vì xáo ở JS chỉ ngẫu nhiên trong N cái đó, danh mục nhiều hàng sẽ luôn ra
+     * cùng một nhóm.
+     */
+    static async getRelated(categoryId, excludeId, {limit = 4} = {}) {
+        if (!categoryId) return [];
+        return Product.findAll({
+            where: {
+                category_id: categoryId,
+                status: 1,
+                id: {[Op.ne]: excludeId},
+            },
+            order: sequelize.random(),
+            limit: Math.min(Math.max(parseInt(limit, 10) || 4, 1), 12),
+            include: [
+                {model: Category, as: 'category', attributes: ['id', 'name_vi', 'name_en', 'slug']},
+            ],
+        });
     }
 
     static async getById(id) {
@@ -110,12 +160,25 @@ class ProductService {
                 slug: data.slug ?? null,
                 description_vi: data.description_vi ?? null,
                 description_en: data.description_en ?? null,
+                extra_vi: data.extra_vi ?? null,
+                extra_en: data.extra_en ?? null,
+                shipping_vi: data.shipping_vi ?? null,
+                shipping_en: data.shipping_en ?? null,
                 price: data.price ?? 0,
+                material_vi: data.material_vi ?? null,
+                material_en: data.material_en ?? null,
+                color_vi: data.color_vi ?? null,
+                color_en: data.color_en ?? null,
+                dimensions_vi: data.dimensions_vi ?? null,
+                dimensions_en: data.dimensions_en ?? null,
+                weight: data.weight ?? null,
                 thumbnail: data.thumbnail ?? null,
                 is_featured: data.is_featured ?? 0,
                 priority: data.priority ?? 0,
                 status: data.status ?? 1,
             }, {transaction: t});
+
+            await ProductService._syncImages(product.id, data.gallery, t);
 
             if (Array.isArray(data.variants) && data.variants.length) {
                 await ProductVariant.bulkCreate(
@@ -150,10 +213,30 @@ class ProductService {
         return ProductService.getById(productId);
     }
 
+    /**
+     * Ghi lại TOÀN BỘ bộ sưu tập ảnh của sản phẩm theo danh sách url gửi lên.
+     * Xoá sạch rồi chèn lại thay vì so từng dòng: form gửi lên đúng trạng thái
+     * cuối cùng mà admin thấy, nên đồng bộ một chiều là đủ và không sinh trường
+     * hợp "sửa nửa vời" khi admin vừa xoá vừa đổi thứ tự trong một lần lưu.
+     */
+    static async _syncImages(productId, urls, t) {
+        if (!Array.isArray(urls)) return; // không gửi field -> giữ nguyên ảnh cũ
+        const clean = urls.map((u) => String(u || '').trim()).filter(Boolean);
+        await ProductImage.destroy({where: {product_id: productId}, transaction: t});
+        if (!clean.length) return;
+        await ProductImage.bulkCreate(
+            clean.map((url, i) => ({product_id: productId, url, sort_order: i})),
+            {transaction: t},
+        );
+    }
+
     static async update(id, data) {
         const item = await Product.findByPk(id);
         if (!item) throw Object.assign(new Error('Product not found'), {status: 404});
-        await item.update(data);
+        await sequelize.transaction(async (t) => {
+            await item.update(data, {transaction: t});
+            await ProductService._syncImages(item.id, data.gallery, t);
+        });
         return ProductService.getById(id);
     }
 

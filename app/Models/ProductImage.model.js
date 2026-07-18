@@ -13,7 +13,7 @@ const ProductImage = sequelize.define('ProductImage', {
         allowNull: false,
     },
     url: {
-        type: DataTypes.STRING(500),
+        type: DataTypes.TEXT('medium'),
         allowNull: false,
     },
     sort_order: {

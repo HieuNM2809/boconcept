@@ -5,13 +5,16 @@ module.exports = {
     sku: 'SKU',
     categories: 'Categories',
     contact: 'Contact for advice',
+    showMore: 'Show more',
+    related: 'Related products',
+    attrs: {size: 'Dimensions', weight: 'Weight', material: 'Material', color: 'Colour'},
     tabs: {
         additional: 'Additional information',
         packaging: 'Packaging & shipping',
-        faq: 'FAQ',
+        // FAQ tab removed per spec — "Packaging & shipping" is kept.
     },
     specsTitle: 'Specifications',
-    // Placeholder — TODO: add spec columns to the products table for real data
+    // Used when the product has no real specs in the DB yet
     specs: [
         {label: 'Dimensions', value: '160 × 90 × 8.2 cm'},
         {label: 'Weight', value: '44.5 kg'},

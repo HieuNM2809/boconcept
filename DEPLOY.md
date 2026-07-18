@@ -1,113 +1,212 @@
-# Deploy lên Railway (để có link web công khai)
+# Hướng dẫn deploy BoConcept lên Railway (chi tiết từng bước)
 
-App này là **Express + MySQL + EJS**. Railway chạy được cả Node lẫn MySQL trong 1 project,
-nên phù hợp hơn Vercel (Vercel serverless không host MySQL, không chạy cron).
+App này là **Node.js + Express + MySQL + EJS**. Railway host được cả web (Node) lẫn MySQL
+trong 1 project → phù hợp hơn Vercel (Vercel serverless không host MySQL, không chạy cron).
 
 > File `railway.json` ở gốc repo đã cấu hình sẵn: chạy `npm start`, health check `/health`,
 > tự restart khi lỗi. Bạn chỉ cần làm theo các bước dưới.
 
 ---
 
-## 1. Đẩy code lên GitHub
+## ⭐ Điều QUAN TRỌNG NHẤT phải nhớ
 
-Railway deploy từ một repo GitHub. Nếu chưa có remote:
+Một project Railway có **2 service riêng biệt**:
+
+| Service | Icon | Vai trò | Biến cần đặt ở đây |
+|---|---|---|---|
+| **boconcept** | GitHub (mèo) | Web/API (chạy `node index.js`) | **TẤT CẢ biến `DB_*`, `JWT_SECRET`…** |
+| **MySQL** | Cá heo 🐬 | Database | Railway tự sinh (`MYSQLHOST`…), **KHÔNG đụng vào** |
+
+❌ **Lỗi phổ biến nhất:** đặt biến `DB_*` vào service **MySQL** → web không đọc được →
+báo `connect ECONNREFUSED 127.0.0.1:3306`. Biến `DB_*` **BẮT BUỘC** nằm trên service **boconcept**.
+
+---
+
+## Bước 1 — Đẩy code lên GitHub
+
+Railway deploy từ repo GitHub. (Repo này đã có sẵn remote `HieuNM2809/boconcept`.)
 
 ```bash
 git add .
-git commit -m "chore: add railway deploy config"
-# tạo repo trên github.com trước, rồi:
-git remote add origin https://github.com/<user>/<repo>.git
-git push -u origin main
+git commit -m "chore: railway deploy"
+git push origin main
 ```
 
-## 2. Tạo project trên Railway
+---
 
-1. Vào https://railway.app → đăng nhập bằng GitHub.
-2. **New Project → Deploy from GitHub repo** → chọn repo vừa push.
-3. Railway tự phát hiện Node (Nixpacks) và build theo `railway.json`.
-   Lần deploy đầu sẽ **fail** vì chưa có MySQL — bình thường, làm tiếp bước 3.
+## Bước 2 — Tạo project trên Railway
 
-## 3. Thêm MySQL
+1. Vào https://railway.app → đăng nhập bằng **GitHub**.
+2. **New Project → Deploy from GitHub repo** → chọn repo `boconcept`.
+3. Railway tự nhận diện Node (Nixpacks) và build theo `railway.json`.
+4. Lần deploy đầu **sẽ Failed** vì chưa có MySQL — **bình thường**, làm tiếp Bước 3.
 
-1. Trong project → **New → Database → Add MySQL**.
-2. Railway tạo service MySQL kèm sẵn các biến: `MYSQLHOST`, `MYSQLPORT`,
-   `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`.
+---
 
-## 4. Cấu hình biến môi trường cho web service
+## Bước 3 — Thêm database MySQL
 
-Mở service Node (không phải MySQL) → tab **Variables** → thêm:
+1. Trong project → nút **New** (hoặc **Create**) → **Database → Add MySQL**.
+2. Đợi service MySQL chuyển trạng thái **Online** (chấm xanh).
+3. Railway tự sinh các biến trên service MySQL: `MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`,
+   `MYSQLPASSWORD`, `MYSQLDATABASE`, `MYSQL_PUBLIC_URL`… — **để nguyên, không sửa**.
+
+---
+
+## Bước 4 — Đặt biến môi trường cho service **boconcept** (KHÔNG phải MySQL)
+
+1. Ở sơ đồ, bấm vào ô **boconcept** (icon GitHub) — **KHÔNG bấm ô MySQL cá heo**.
+2. Mở tab **Variables**.
+3. Bấm **Raw Editor** → dán nguyên khối dưới đây → **Save**:
 
 ```
-NODE_ENV=production
-APP_ENV=production
-
-# JWT — ĐỔI thành chuỗi ngẫu nhiên dài
-JWT_SECRET=<chuoi-bi-mat-that-dai-ngau-nhien>
-TOKEN_EXPIRES_IN=24h
-
-# MySQL — tham chiếu sang service MySQL của Railway (dùng đúng cú pháp ${{...}})
-DB_HOST=${{MySQL.MYSQLHOST}}
-DB_PORT=${{MySQL.MYSQLPORT}}
+DB_HOST=mysql.railway.internal
+DB_PORT=3306
+DB_NAME=railway
+DB_USER=root
+DB_PASS=<lấy từ MYSQLPASSWORD của service MySQL>
 DB_DIALECT=mysql
-DB_NAME=${{MySQL.MYSQLDATABASE}}
-DB_USER=${{MySQL.MYSQLUSER}}
-DB_PASS=${{MySQL.MYSQLPASSWORD}}
-
-# HTTP / bảo mật
+JWT_SECRET=<chuỗi ngẫu nhiên dài, tự sinh>
+TOKEN_EXPIRES_IN=24h
 CORS_ORIGIN=*
 BODY_LIMIT=1mb
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX=300
-
-# Admin (Basic Auth cho /admin) — ĐỔI mật khẩu
 ADMIN_USER=admin
-ADMIN_PASS=<mat-khau-admin-manh>
+ADMIN_PASS=<mật khẩu admin mạnh>
 ```
 
-> **Redis không bắt buộc** — bỏ qua các biến `REDIS_*`. App chỉ log cảnh báo, không crash.
-> Nếu sau này cần, thêm service Redis trên Railway rồi map `REDIS_HOST/REDIS_PORT/REDIS_PASSWORD`.
+**Giải thích từng biến (lấy giá trị ở đâu):**
 
-Railway sẽ tự **redeploy** sau khi lưu biến.
+| Biến | Giá trị | Nguồn |
+|---|---|---|
+| `DB_HOST` | `mysql.railway.internal` | = `MYSQLHOST` của service MySQL. Đây là **host nội bộ**, chỉ 2 service Railway thấy nhau — nhanh & miễn phí. **Không** dùng host public ở đây. |
+| `DB_PORT` | `3306` | = `MYSQLPORT` |
+| `DB_NAME` | `railway` | = `MYSQLDATABASE` (Railway mặc định tên DB là `railway`). **Dễ quên — bắt buộc có.** |
+| `DB_USER` | `root` | = `MYSQLUSER` |
+| `DB_PASS` | (chuỗi Railway sinh) | = `MYSQLPASSWORD`. Copy từ tab Variables của service MySQL. |
+| `DB_DIALECT` | `mysql` | Cố định (app dùng MySQL). |
+| `JWT_SECRET` | (ngẫu nhiên) | Tự sinh, xem Bước 4b. |
+| `TOKEN_EXPIRES_IN` | `24h` | Mặc định dự án. |
 
-## 5. Nạp schema + seed vào MySQL
+> **Vì sao phải đổi tên `MYSQLHOST` → `DB_HOST`?** Vì code đọc `process.env.DB_HOST`
+> (xem `config/mysql.js`), **không** đọc `MYSQLHOST`. Nên phải tạo biến `DB_*` trỏ tới đúng giá trị.
 
-Schema/seed chỉ tự chạy khi dùng Docker local. Trên Railway phải nạp thủ công **một lần**.
+### Bước 4b — Sinh `JWT_SECRET` ngẫu nhiên
 
-1. Mở service MySQL → tab **Variables** → lấy `MYSQL_PUBLIC_URL`
-   (hoặc host/port public ở tab **Connect**).
-2. Từ máy bạn (cần cài `mysql` client), nạp lần lượt:
+Chạy trên máy bạn (có Node):
 
 ```bash
-# thay bằng thông tin public từ Railway
-mysql --default-character-set=utf8mb4 -h <PUBLIC_HOST> -P <PUBLIC_PORT> -u <USER> -p<PASS> railway < doc/schema.sql
-mysql --default-character-set=utf8mb4 -h <PUBLIC_HOST> -P <PUBLIC_PORT> -u <USER> -p<PASS> railway < doc/seed.sql
+node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 ```
 
-> `<DB_NAME>` trên Railway thường là `railway`. Không để khoảng trắng giữa `-p` và mật khẩu.
+Copy kết quả dán vào `JWT_SECRET`.
 
-## 6. Bật link công khai
+### ✅ Cách kiểm tra đã đặt đúng service
 
-Service Node → **Settings → Networking → Generate Domain**.
-Railway cấp domain dạng `https://<ten>.up.railway.app` → **đây là link trang web của bạn**.
+- **Đúng:** panel Variables ghi tiêu đề **boconcept** + icon GitHub.
+- **Sai:** ghi **MySQL** + icon cá heo → xoá biến ở đó, làm lại trên boconcept.
+- Trên service boconcept **không** nên thấy các dòng `MYSQLHOST/MYSQLPASSWORD` (đó là của MySQL).
+
+Lưu xong Railway **tự redeploy**.
+
+---
+
+## Bước 5 — Nạp schema + seed vào MySQL (chỉ làm 1 lần)
+
+DB Railway lúc mới tạo **trống rỗng** — chưa có bảng nào. Phải nạp `doc/schema.sql` + `doc/seed.sql`.
+Vì host nội bộ không truy cập được từ máy bạn, phải dùng **URL public**.
+
+1. Vào service **MySQL** → tab **Variables** → copy `MYSQL_PUBLIC_URL`
+   (dạng `mysql://root:<pass>@<host>.proxy.rlwy.net:<port>/railway`).
+2. Cách A — dùng script Node có sẵn `mysql2` trong project (khỏi cài `mysql` client):
+
+   Tạo file `scripts/load-db.js`:
+   ```js
+   const fs = require('fs');
+   const mysql = require('mysql2/promise');
+   (async () => {
+     const conn = await mysql.createConnection({
+       uri: process.env.MYSQL_PUBLIC_URL,   // dán URL public vào biến môi trường khi chạy
+       multipleStatements: true,
+       charset: 'utf8mb4',
+     });
+     for (const f of ['doc/schema.sql', 'doc/seed.sql']) {
+       await conn.query(fs.readFileSync(f, 'utf8'));
+       console.log('Applied', f);
+     }
+     await conn.end();
+     console.log('DONE');
+   })().catch(e => { console.error(e.message); process.exit(1); });
+   ```
+   Chạy (thay URL public thật):
+   ```bash
+   MYSQL_PUBLIC_URL="mysql://root:xxx@yyy.proxy.rlwy.net:12345/railway" node scripts/load-db.js
+   ```
+
+3. Cách B — nếu máy có sẵn `mysql` client:
+   ```bash
+   mysql --default-character-set=utf8mb4 -h <PUBLIC_HOST> -P <PUBLIC_PORT> -u root -p<PASS> railway < doc/schema.sql
+   mysql --default-character-set=utf8mb4 -h <PUBLIC_HOST> -P <PUBLIC_PORT> -u root -p<PASS> railway < doc/seed.sql
+   ```
+
+> ⚠️ Luôn dùng **`utf8mb4`**, nếu không tiếng Việt sẽ thành `?`/`�`.
+> Kết quả đúng: tạo 9 bảng, seed 7 categories + 3 products + 1 api_client (`demo-client`).
+
+---
+
+## Bước 6 — Xác nhận deploy thành công
+
+Vào service **boconcept** → tab **Deploy Logs**. Phải thấy:
+
+```
+> node index.js
+Kết nối MySQL thành công
+Server đang chạy tại http://localhost:3000
+```
+
+Nếu vẫn thấy `ECONNREFUSED 127.0.0.1:3306` → biến `DB_*` **chưa nằm trên service boconcept**
+(quay lại Bước 4).
+
+---
+
+## Bước 7 — Bật domain công khai (lấy link web)
+
+1. Service **boconcept** → **Settings → Networking → Generate Domain**.
+2. Railway cấp link dạng `https://<tên>.up.railway.app` → **đây là link trang web của bạn**.
 
 Kiểm tra:
-- `https://<domain>/health` → phải trả `ok`
-- `https://<domain>/` → trang chủ BoConcept
-- `https://<domain>/api/products` → danh sách sản phẩm (JSON)
+- `https://<domain>/health` → trả `ok`
+- `https://<domain>/` → trang chủ BoConcept (có sản phẩm)
+- `https://<domain>/api/products` → JSON danh sách sản phẩm
 
 ---
 
 ## (Tuỳ chọn) Chạy cron jobs
 
-`npm run schedule` cần một process riêng. Thêm service thứ 2:
-**New → Empty Service → Deploy from same repo**, đặt **Start Command** = `npm run schedule`,
-và copy các biến DB giống service web.
+`npm run schedule` cần process riêng. Thêm service thứ 2:
+**New → GitHub Repo (cùng repo)** → **Settings → Deploy → Start Command** = `npm run schedule`,
+rồi copy các biến `DB_*` y như service boconcept.
 
-## Sự cố thường gặp
+---
 
-| Triệu chứng | Nguyên nhân / cách xử lý |
-|---|---|
-| Deploy fail, log `Unable to connect to MySQL` | Biến `DB_*` sai hoặc chưa map `${{MySQL.*}}`. Kiểm tra tab Variables. |
-| Trang trắng / `500` khi mở `/` | Chưa nạp `schema.sql`/`seed.sql` (bước 5). |
-| Tiếng Việt bị lỗi ký tự | Nạp SQL thiếu `--default-character-set=utf8mb4`. Nạp lại. |
-| App restart liên tục | Xem **Deploy Logs**; thường do thiếu `JWT_SECRET` hoặc DB chưa sẵn sàng. |
+## Bảng lỗi thường gặp
+
+| Log / triệu chứng | Nguyên nhân | Cách sửa |
+|---|---|---|
+| `connect ECONNREFUSED 127.0.0.1:3306` | Biến `DB_*` đặt sai service (trên MySQL) hoặc chưa đặt | Đặt `DB_*` trên service **boconcept** (Bước 4) |
+| `ER_BAD_DB_ERROR: Unknown database` | Thiếu/sai `DB_NAME` | Đặt `DB_NAME=railway` |
+| `Access denied for user` | Sai `DB_USER`/`DB_PASS` | Copy lại từ `MYSQLUSER`/`MYSQLPASSWORD` |
+| Trang chủ `500` / trống | Chưa nạp schema/seed | Làm Bước 5 |
+| Tiếng Việt thành `?`/`�` | Nạp SQL thiếu `utf8mb4` | Nạp lại với `--default-character-set=utf8mb4` |
+| App restart liên tục | Thiếu `JWT_SECRET` hoặc DB chưa Online | Kiểm tra biến + trạng thái MySQL |
+| `npm warn config production…` | Chỉ là cảnh báo | Bỏ qua, vô hại |
+
+---
+
+## ⚠️ Bảo mật
+
+- **Không commit `.env`** lên GitHub (repo đã thêm `.env` vào `.gitignore`). Bí mật chỉ đặt trong
+  tab Variables của Railway.
+- Nếu mật khẩu DB từng bị lộ (dán vào chat, commit nhầm…): vào service MySQL → **Settings** đổi
+  mật khẩu, rồi cập nhật lại `DB_PASS` trên boconcept.
+- Cân nhắc tắt **public networking** của MySQL sau khi nạp xong schema (chỉ để mạng nội bộ).

@@ -1,0 +1,98 @@
+<%- include('partials/head') %>
+<body>
+<%- include('partials/header') %>
+
+<div class="container listing">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <a href="/"><%= t.search.home %></a>
+        <span class="sep">/</span>
+        <a href="/search"><%= t.search.title %></a>
+    </nav>
+
+    <% if (!q) { %>
+        <!-- Bấm tìm với ô trống -->
+        <div class="listing-head">
+            <h1 class="listing-title"><%= t.search.noQuery %></h1>
+        </div>
+        <p class="empty listing-empty"><%= t.search.noQueryHint %></p>
+        <p><a class="btn btn-outline" href="/"><%= t.search.backHome %></a></p>
+
+    <% } else { %>
+        <div class="listing-head">
+            <h1 class="listing-title"><%= t.search.resultsFor(meta.total, q) %></h1>
+        </div>
+
+        <% if (products.length) { %>
+            <!-- Toolbar: sắp xếp + mỗi trang -->
+            <div class="toolbar">
+                <div class="sort-chips">
+                    <span class="toolbar-label"><%= t.catalog.sortBy %></span>
+                    <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+                    <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+                    <select class="select" data-nav aria-label="<%= t.catalog.sort.price %>">
+                        <option value="" disabled <%= (filters.sort !== 'price_asc' && filters.sort !== 'price_desc') ? 'selected' : '' %>><%= t.catalog.sort.price %></option>
+                        <option value="<%= linkFor({sort: 'price_asc', page: 1}) %>" <%= filters.sort === 'price_asc' ? 'selected' : '' %>><%= t.catalog.sort.price_asc %></option>
+                        <option value="<%= linkFor({sort: 'price_desc', page: 1}) %>" <%= filters.sort === 'price_desc' ? 'selected' : '' %>><%= t.catalog.sort.price_desc %></option>
+                    </select>
+                </div>
+
+                <div class="toolbar-right">
+                    <label class="toolbar-label"><%= t.catalog.perPage %></label>
+                    <select class="select" data-nav aria-label="<%= t.catalog.perPage %>">
+                        <% [12, 24, 40, 60].forEach(function (n) { %>
+                            <option value="<%= linkFor({per_page: n, page: 1}) %>" <%= Number(filters.per_page) === n ? 'selected' : '' %>><%= n %></option>
+                        <% }) %>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Lưới sản phẩm -->
+            <div class="product-grid listing-grid">
+                <% products.forEach(function (p) { %>
+                    <a class="product-card" href="/products/<%= p.id %>">
+                        <div class="product-thumb" style="background-image:url('<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/400') %>')">
+                            <% if (p.is_featured) { %><span class="badge-hot">HOT</span><% } %>
+                        </div>
+                        <div class="product-info">
+                            <% if (p.category) { %><span class="product-cat"><%= pick(p.category, 'name') %></span><% } %>
+                            <h3 class="product-name"><%= pick(p, 'name') %></h3>
+                            <span class="product-price"><%= money(p.price) %></span>
+                        </div>
+                    </a>
+                <% }) %>
+            </div>
+
+            <!-- Phân trang -->
+            <% if (meta.last_page > 1) { %>
+                <nav class="pagination">
+                    <% if (meta.current_page > 1) { %>
+                        <a class="pg-arrow" href="<%= linkFor({page: meta.current_page - 1}) %>">&lsaquo;</a>
+                    <% } else { %><span class="pg-arrow disabled">&lsaquo;</span><% } %>
+
+                    <% pages.forEach(function (p) { %>
+                        <% if (p === '…') { %>
+                            <span class="pg-ellipsis">…</span>
+                        <% } else { %>
+                            <a class="pg-num <%= p === meta.current_page ? 'active' : '' %>" href="<%= linkFor({page: p}) %>"><%= p %></a>
+                        <% } %>
+                    <% }) %>
+
+                    <% if (meta.current_page < meta.last_page) { %>
+                        <a class="pg-arrow" href="<%= linkFor({page: meta.current_page + 1}) %>">&rsaquo;</a>
+                    <% } else { %><span class="pg-arrow disabled">&rsaquo;</span><% } %>
+                </nav>
+            <% } %>
+        <% } else { %>
+            <p class="empty listing-empty"><%= t.search.empty %></p>
+            <p class="listing-empty-hint"><%= t.search.emptyHint %></p>
+            <p><a class="btn btn-outline" href="/"><%= t.search.backHome %></a></p>
+        <% } %>
+    <% } %>
+</div>
+
+<%- include('partials/footer') %>
+<script src="/static/js/main.js?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>"></script>
+</body>
+</html>

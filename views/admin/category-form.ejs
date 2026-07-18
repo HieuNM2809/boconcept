@@ -11,9 +11,17 @@
             <div><label>Tên (VI) *</label><input name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
             <div><label>Tên (EN)</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
         </div>
-        <label>Ảnh (URL)</label>
-        <input name="image" value="<%= item ? (item.image || '') : '' %>" placeholder="https://...">
-        <% if (item && item.image) { %><img class="form-preview" src="<%= item.image %>" alt=""><% } %>
+        <%- include('_image-field', {name: 'image', label: 'Ảnh loại sản phẩm', value: item ? (item.image || '') : ''}) %>
+
+        <h2 class="admin-subhead">Tiêu đề & mô tả (hiện ở đầu trang danh sách)</h2>
+        <p class="admin-hint">Để trống thì trang dùng luôn “Tên” ở trên làm tiêu đề.</p>
+        <div class="form-2col">
+            <div><label>Tiêu đề (VI)</label><input name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>"></div>
+            <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+            <div><label>Mô tả (VI)</label><textarea name="description_vi" rows="3" maxlength="1000"><%= item ? (item.description_vi || '') : '' %></textarea></div>
+            <div><label>Mô tả (EN)</label><textarea name="description_en" rows="3" maxlength="1000"><%= item ? (item.description_en || '') : '' %></textarea></div>
+        </div>
+
         <div class="form-2col">
             <div>
                 <label>Danh mục cha</label>

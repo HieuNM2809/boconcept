@@ -3,6 +3,10 @@ const ProductService = require('../../Services/Api/product.service');
 const SlideService = require('../../Services/Api/slide.service');
 const PartnerService = require('../../Services/Api/partner.service');
 const CertificateService = require('../../Services/Api/certificate.service');
+const FeatureService = require('../../Services/Api/feature.service');
+const NewsService = require('../../Services/Api/news.service');
+const GalleryService = require('../../Services/Api/gallery.service');
+const SettingService = require('../../Services/Api/setting.service');
 const {logger} = require('../../../config/log4js');
 
 // Dữ liệu KHÔNG dịch (ảnh/icon/tên thương hiệu) — phần chữ lấy từ resources/lang.
@@ -32,23 +36,75 @@ async function index(req, res) {
     const home = res.locals.t.home;
 
     try {
-        const [cats, featuredCats, slides, partnersRows, certRows] = await Promise.all([
+        // CẢNH BÁO: cả Promise.all này nằm trong MỘT try/catch, nên bất kỳ query nào
+        // ném lỗi là hạ nguyên trang chủ (hero, danh mục, sản phẩm...) kèm thông báo
+        // "Kiểm tra kết nối MySQL" — sai hướng hoàn toàn khi nguyên nhân là thiếu bảng.
+        // Bảng `features`/`settings` là bảng MỚI, mà doc/schema.sql chỉ tự chạy khi
+        // volume docker còn trắng và production không có migration runner. Vì vậy hai
+        // query dưới tự nuốt lỗi và degrade, giống navigation.middleware.js đang làm.
+        const softFail = (label, fallback) => (err) => {
+            logger.error(`Home: ${label} lỗi, bỏ qua`, {error: {message: err.message}});
+            return fallback;
+        };
+
+        const [cats, featuredCats, slides, partnersRows, certRows, featureRows, featuresOn, showcaseRows,
+            catContent, newsRows, galleryRows] = await Promise.all([
             CategoryService.getAll({status: 1}),      // danh mục từ DB
             CategoryService.getWithProductCounts(),   // loại sản phẩm + số lượng (mục "nổi bật")
             SlideService.getActiveOrdered(),          // slide hero từ DB (quản lý ở /admin/slides)
             PartnerService.getActiveOrdered(),        // đối tác từ DB (quản lý ở /admin/partners)
             CertificateService.getActiveOrdered(),    // chứng nhận từ DB (quản lý ở /admin/certificates)
+            FeatureService.getActiveOrdered().catch(softFail('features', [])),
+            SettingService.getBool(SettingService.KEYS.FEATURES_BLOCK).catch(softFail('settings', true)),
+            // Lấy 8 để nút qua/lại có việc làm: showcase hiện 4 ảnh cùng lúc.
+            ProductService.getFeatured({limit: 8}).catch(softFail('showcase', [])),
+            // Nội dung khối "Loại sản phẩm" + "Tin tức" (sửa ở /admin/content)
+            SettingService.getMany(Object.values(SettingService.KEYS)).catch(softFail('content', {})),
+            NewsService.getActiveOrdered({limit: 4}).catch(softFail('news', [])),
+            GalleryService.getActiveOrdered().catch(softFail('gallery', [])),
         ]);
 
         const heroSlides = slides.length ? toPlain(slides) : FALLBACK_SLIDES;
         const partners = partnersRows.length ? toPlain(partnersRows) : FALLBACK_PARTNERS;
         const certificates = certRows.length ? toPlain(certRows) : FALLBACK_CERTS;
 
+        // Gắn danh mục con cấp 2 vào từng danh mục gốc để card hover xổ ra được.
+        // Lọc `parent_id === null` trên danh sách PHẲNG chứ không dùng getAll({tree:true}):
+        // ở chế độ cây, con có cha đang ẩn sẽ bị đẩy lên thành danh mục gốc.
+        const allCats = toPlain(cats);
+        const childrenOf = new Map();
+        allCats.forEach((c) => {
+            if (c.parent_id == null) return;
+            if (!childrenOf.has(c.parent_id)) childrenOf.set(c.parent_id, []);
+            childrenOf.get(c.parent_id).push(c);
+        });
+        const rootCats = allCats
+            .filter((c) => c.parent_id == null)
+            .map((c) => ({...c, children: childrenOf.get(c.id) || []}));
+
+        const lang = res.locals.lang;
+        const K = SettingService.KEYS;
+        // Admin bỏ trống -> quay về chữ mặc định trong resources/lang.
+        const pickContent = (viKey, enKey, fallback) =>
+            (catContent[lang === 'en' ? enKey : viKey] || catContent[viKey] || fallback);
+
         res.render('home', {
             pageTitle: home.meta.title,
-            categories: toPlain(cats).filter((c) => !c.parent_id),
+            categories: rootCats,
+            categoriesTitle: pickContent(K.CAT_TITLE_VI, K.CAT_TITLE_EN, home.categories.title),
+            categoriesDesc: pickContent(K.CAT_DESC_VI, K.CAT_DESC_EN, home.categories.sub),
+            news: toPlain(newsRows),
+            newsTitle: pickContent(K.NEWS_TITLE_VI, K.NEWS_TITLE_EN, home.news.title),
+            newsDesc: pickContent(K.NEWS_DESC_VI, K.NEWS_DESC_EN, home.news.sub),
+            newsCta: pickContent(K.NEWS_CTA_VI, K.NEWS_CTA_EN, home.news.cta),
+            newsCtaLink: catContent[K.NEWS_CTA_LINK] || '#news',
+            gallery: toPlain(galleryRows),
             featuredCategories: featuredCats,
             heroSlides,
+            // Khối Công năng: rỗng khi công tắc tổng tắt HOẶC không có mục nào hiện.
+            // View chỉ cần kiểm tra features.length, không phải hai điều kiện.
+            features: featuresOn ? toPlain(featureRows) : [],
+            showcase: toPlain(showcaseRows),
             whyUs: home.why.items.map((it, i) => ({...it, icon: WHY_ICONS[i % WHY_ICONS.length]})),
             whyImage: WHY_IMAGE,
             partners,

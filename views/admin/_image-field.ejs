@@ -1,0 +1,28 @@
+<%
+/* Ô chọn ảnh dùng chung cho MỌI form admin.
+   Tham số: name (bắt buộc), label, value, required, maxKb
+
+   File được mã hoá base64 NGAY TẠI TRÌNH DUYỆT rồi đổ vào ô text bên dưới —
+   không upload multipart lên server. Lý do: railway.json không khai báo volume
+   nên Railway xoá sạch filesystem mỗi lần redeploy; ảnh ghi ra đĩa sẽ lặng lẽ
+   biến mất, còn data URI nằm trong MySQL thì không.
+   Vẫn giữ ô dán URL để dùng ảnh có sẵn trên mạng. */
+const f = {
+    name: name,
+    label: typeof label !== 'undefined' ? label : 'Ảnh',
+    value: typeof value !== 'undefined' && value ? value : '',
+    required: typeof required !== 'undefined' ? required : false,
+    maxKb: typeof maxKb !== 'undefined' ? maxKb : 400,
+};
+%>
+<label for="<%= f.name %>"><%= f.label %><%= f.required ? ' *' : '' %></label>
+<div class="form-upload">
+    <input type="file" id="<%= f.name %>File"
+           accept="image/png,image/jpeg,image/webp,image/svg+xml"
+           data-encode-to="<%= f.name %>" data-max-kb="<%= f.maxKb %>">
+    <span class="admin-hint">Chọn ảnh từ máy (tối đa <%= f.maxKb %>KB) hoặc dán đường dẫn vào ô dưới.</span>
+</div>
+<input name="<%= f.name %>" id="<%= f.name %>" value="<%= f.value %>"
+       placeholder="https://..." <%= f.required ? 'required' : '' %>>
+<img class="form-preview" id="<%= f.name %>Preview"
+     src="<%= f.value %>" alt="" <%= f.value ? '' : 'hidden' %>>

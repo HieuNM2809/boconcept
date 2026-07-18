@@ -1,0 +1,50 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'features'}) %>
+<main class="admin-wrap admin-narrow">
+    <div class="admin-head">
+        <h1><%= item ? ('Sửa mục #' + item.id) : 'Thêm mục công năng' %></h1>
+        <a class="btn-sm" href="/admin/features">← Quay lại</a>
+    </div>
+    <form class="admin-form" method="post" action="<%= action %>">
+
+        <!-- Icon: tải file lên HOẶC dán URL. File được mã hoá base64 ngay tại trình
+             duyệt rồi nhét vào chính ô `icon` bên dưới, nên không cần multipart,
+             không cần thư viện upload, và ảnh nằm trong DB nên sống sót redeploy. -->
+        <label>Icon *</label>
+        <div class="form-upload">
+            <input type="file" id="iconFile" accept="image/svg+xml,image/png,image/jpeg,image/webp" data-encode-to="icon" data-max-kb="200">
+            <span class="admin-hint">Chọn file (SVG/PNG tối đa 200KB) hoặc dán đường dẫn vào ô dưới.</span>
+        </div>
+        <input name="icon" id="icon" required value="<%= item ? item.icon : '' %>" placeholder="/static/icons/leaf.svg">
+        <img class="form-preview form-preview-icon" id="iconPreview"
+             src="<%= item && item.icon ? item.icon : '' %>"
+             alt="" <%= (item && item.icon) ? '' : 'hidden' %>>
+
+        <div><label>Tiêu đề (VI) *</label><input name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
+        <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+
+        <div><label>Mô tả (VI) — chỉ hiện khi di chuột vào</label>
+            <textarea name="description_vi" rows="2" maxlength="500"><%= item ? (item.description_vi || '') : '' %></textarea></div>
+        <div><label>Mô tả (EN)</label>
+            <textarea name="description_en" rows="2" maxlength="500"><%= item ? (item.description_en || '') : '' %></textarea></div>
+
+        <div class="form-2col">
+            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
+            <div><label>Trạng thái</label>
+                <select name="status">
+                    <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+            <a class="btn btn-outline" href="/admin/features">Hủy</a>
+        </div>
+    </form>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

@@ -4,7 +4,7 @@ const sequelize = require('../../lib/database');
 // Giấy chứng nhận công ty (hiển thị ở trang chủ, song ngữ).
 const Certificate = sequelize.define('Certificate', {
     id: {type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true},
-    image: {type: DataTypes.STRING(500), allowNull: false},
+    image: {type: DataTypes.TEXT('medium'), allowNull: false},
     title_vi: {type: DataTypes.STRING(255), allowNull: true},
     title_en: {type: DataTypes.STRING(255), allowNull: true},
     sort_order: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},

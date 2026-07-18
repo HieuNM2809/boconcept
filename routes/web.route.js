@@ -2,12 +2,35 @@ const {Router} = require('express');
 const router = Router();
 const homeController = require('../app/Http/Controllers/home.controller');
 const catalogController = require('../app/Http/Controllers/catalog.controller');
+const newsController = require('../app/Http/Controllers/news.controller');
+const pageController = require('../app/Http/Controllers/page.controller');
 const adminController = require('../app/Http/Controllers/admin.controller');
 const adminCategoryController = require('../app/Http/Controllers/admin.category.controller');
 const adminPartnerController = require('../app/Http/Controllers/admin.partner.controller');
 const adminProductController = require('../app/Http/Controllers/admin.product.controller');
 const adminCertificateController = require('../app/Http/Controllers/admin.certificate.controller');
+const adminFeatureController = require('../app/Http/Controllers/admin.feature.controller');
+const adminContentController = require('../app/Http/Controllers/admin.content.controller');
+const adminNewsController = require('../app/Http/Controllers/admin.news.controller');
+const adminGalleryController = require('../app/Http/Controllers/admin.gallery.controller');
+const adminPageController = require('../app/Http/Controllers/admin.page.controller');
 const adminAuth = require('../app/Http/Middleware/adminAuth.middleware');
+const navigation = require('../app/Http/Middleware/navigation.middleware');
+
+// Danh mục cho header (partial dùng chung) -> res.locals.navCategories.
+// Đặt ở đây (không phải app-level) nên không bao giờ chạm /api — router đó được
+// mount riêng ở routes/index
+// .route.js — và /static đã do express.static xử lý trước.
+router.use(navigation);
+
+// Trang HTML phải REVALIDATE mỗi lần tải. Không có dòng này, trình duyệt dùng lại
+// HTML cũ trong cache -> HTML đó trỏ tới style.css?v=<phiên bản cũ> -> người dùng
+// thấy giao diện cũ dù server đã đổi, và Ctrl+F5 mới chịu cập nhật.
+// Chỉ đặt cho HTML; /static vẫn do express.static xử lý với ETag riêng.
+router.use((req, res, next) => {
+    res.set('Cache-Control', 'no-cache');
+    next();
+});
 
 // Trang chủ (render EJS, load dữ liệu từ DB)
 router.get('/', (req, res) => homeController.index(req, res));
@@ -17,6 +40,17 @@ router.get('/categories/:id', (req, res) => catalogController.category(req, res)
 
 // Trang chi tiết sản phẩm
 router.get('/products/:id', (req, res) => catalogController.product(req, res));
+
+// Trang kết quả tìm kiếm (ô tìm kiếm trên header)
+router.get('/search', (req, res) => catalogController.search(req, res));
+
+// Tin tức — danh sách + chi tiết
+router.get('/news', (req, res) => newsController.index(req, res));
+router.get('/news/:id', (req, res) => newsController.detail(req, res));
+
+// Trang nội dung tĩnh — /about là trang hệ thống, phần còn lại admin tự tạo
+router.get('/about', (req, res) => pageController.about(req, res));
+router.get('/pages/:slug', (req, res) => pageController.bySlug(req, res));
 
 // ───── Admin (Basic Auth) — quản lý slideshow ────────────────────────────────
 const adminRouter = Router();
@@ -47,6 +81,17 @@ crudRoutes('categories', adminCategoryController);
 crudRoutes('partners', adminPartnerController);
 crudRoutes('products', adminProductController);
 crudRoutes('certificates', adminCertificateController);
+// Công tắc bật/tắt cả khối — phải khai TRƯỚC crudRoutes('features'), nếu không
+// POST /admin/features/toggle sẽ khớp vào POST /admin/features/:id (update).
+adminRouter.post('/features/toggle', (req, res) => adminFeatureController.toggleBlock(req, res));
+crudRoutes('features', adminFeatureController);
+crudRoutes('news', adminNewsController);
+crudRoutes('gallery', adminGalleryController);
+crudRoutes('pages', adminPageController);
+
+// Nội dung trang chủ (settings key/value) — không theo contract crudRoutes.
+adminRouter.get('/content', (req, res) => adminContentController.index(req, res));
+adminRouter.post('/content', (req, res) => adminContentController.save(req, res));
 
 router.use('/admin', adminRouter);
 

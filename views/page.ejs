@@ -1,0 +1,48 @@
+<%- include('partials/head') %>
+<body>
+<%- include('partials/header') %>
+
+<% if (!page) { %>
+    <section class="section">
+        <div class="container center">
+            <h2 class="section-title"><%= t.page.notFound %></h2>
+            <a class="btn btn-outline" href="/"><%= t.page.backHome %></a>
+        </div>
+    </section>
+<% } else { %>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="/"><%= t.page.home %></a>
+            <span class="sep">/</span><span class="crumb-current"><%= pick(page, 'title') %></span>
+        </nav>
+
+        <article class="article">
+            <h1 class="article-title"><%= pick(page, 'title') %></h1>
+
+            <% if (pick(page, 'excerpt')) { %>
+                <p class="article-lead"><%= pick(page, 'excerpt') %></p>
+            <% } %>
+
+            <% if (page.image) { %>
+                <figure class="article-hero">
+                    <img src="<%= page.image %>" alt="<%= pick(page, 'title') %>">
+                </figure>
+            <% } %>
+
+            <%# bodyHtml do richtext.helper dựng ra: escape toàn bộ đầu vào rồi mới
+                sinh một tập thẻ cố định, nên in thô ở đây KHÔNG mở đường cho XSS. %>
+            <div class="article-body">
+                <% if (bodyHtml) { %>
+                    <%- bodyHtml %>
+                <% } else { %>
+                    <p class="empty"><%= t.page.noBody %></p>
+                <% } %>
+            </div>
+        </article>
+    </div>
+<% } %>
+
+<%- include('partials/footer') %>
+<script src="/static/js/main.js?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>"></script>
+</body>
+</html>

@@ -24,8 +24,13 @@ const Category = sequelize.define('Category', {
         type: DataTypes.STRING(255),
         allowNull: true,
     },
+    // Tiêu đề + mô tả riêng cho trang danh sách (để trống thì dùng `name`)
+    title_vi: {type: DataTypes.STRING(255), allowNull: true},
+    title_en: {type: DataTypes.STRING(255), allowNull: true},
+    description_vi: {type: DataTypes.STRING(1000), allowNull: true},
+    description_en: {type: DataTypes.STRING(1000), allowNull: true},
     image: {
-        type: DataTypes.STRING(500),
+        type: DataTypes.TEXT('medium'),
         allowNull: true,
     },
     sort_order: {

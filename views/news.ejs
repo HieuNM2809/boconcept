@@ -1,0 +1,73 @@
+<%- include('partials/head') %>
+<body>
+<%- include('partials/header') %>
+
+<div class="container listing">
+    <nav class="breadcrumb">
+        <a href="/"><%= t.news.home %></a>
+        <span class="sep">/</span><span class="crumb-current"><%= t.news.title %></span>
+    </nav>
+
+    <div class="news-head news-head-page">
+        <h1 class="news-title"><%= t.news.title %></h1>
+        <p class="news-desc"><%= t.news.sub %></p>
+    </div>
+
+    <% if (posts.length) { %>
+        <div class="news-grid news-grid-3">
+            <% posts.forEach(function (n) { %>
+                <article class="news-card">
+                    <a class="news-card-media" href="/news/<%= n.id %>">
+                        <img src="<%= n.image %>" alt="<%= pick(n, 'title') %>" loading="lazy">
+                    </a>
+                    <p class="news-card-meta">
+                        <% if (n.published_at) { %>
+                            <time datetime="<%= new Date(n.published_at).toISOString() %>">
+                                <%= new Date(n.published_at).toLocaleDateString(lang === 'en' ? 'en-GB' : 'vi-VN') %>
+                            </time>
+                        <% } %>
+                        <% if (n.author) { %>
+                            <% if (n.published_at) { %><span class="sep">·</span><% } %>
+                            <%= t.news.by %> <%= n.author %>
+                        <% } %>
+                    </p>
+                    <h2 class="news-card-title"><a href="/news/<%= n.id %>"><%= pick(n, 'title') %></a></h2>
+                    <% if (pick(n, 'excerpt')) { %>
+                        <p class="news-card-desc"><%= pick(n, 'excerpt') %></p>
+                    <% } %>
+                    <a class="news-card-cta" href="/news/<%= n.id %>">
+                        <span aria-hidden="true">&rarr;</span> <%= t.news.readMore %>
+                    </a>
+                </article>
+            <% }) %>
+        </div>
+
+        <% if (meta.last_page > 1) { %>
+            <nav class="pagination">
+                <% if (meta.current_page > 1) { %>
+                    <a class="pg-arrow" href="<%= linkFor(meta.current_page - 1) %>">&lsaquo;</a>
+                <% } else { %><span class="pg-arrow disabled">&lsaquo;</span><% } %>
+
+                <% pages.forEach(function (p) { %>
+                    <% if (p === '…') { %>
+                        <span class="pg-ellipsis">…</span>
+                    <% } else { %>
+                        <a class="pg-num <%= p === meta.current_page ? 'active' : '' %>" href="<%= linkFor(p) %>"><%= p %></a>
+                    <% } %>
+                <% }) %>
+
+                <% if (meta.current_page < meta.last_page) { %>
+                    <a class="pg-arrow" href="<%= linkFor(meta.current_page + 1) %>">&rsaquo;</a>
+                <% } else { %><span class="pg-arrow disabled">&rsaquo;</span><% } %>
+            </nav>
+        <% } %>
+    <% } else { %>
+        <p class="empty"><%= t.news.empty %></p>
+        <p><a class="btn btn-outline" href="/"><%= t.news.backHome %></a></p>
+    <% } %>
+</div>
+
+<%- include('partials/footer') %>
+<script src="/static/js/main.js?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>"></script>
+</body>
+</html>

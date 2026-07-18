@@ -1,0 +1,48 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'pages'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>Trang nội dung</h1>
+        <a class="btn btn-primary" href="/admin/pages/new">+ Thêm trang</a>
+    </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+
+    <div class="admin-toggle-bar">
+        <div><span class="admin-hint">
+            Trang “Giới thiệu” (slug <code>about</code>) là trang hệ thống — sửa nội dung được
+            nhưng không đổi slug hay xóa được, vì địa chỉ <code>/about</code> phụ thuộc vào nó.
+            Trang tự thêm sẽ có địa chỉ <code>/pages/&lt;slug&gt;</code>.
+        </span></div>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+        <tr><th>#</th><th>Slug</th><th>Tiêu đề (VI)</th><th>Tiêu đề (EN)</th><th>Địa chỉ</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!items.length) { %><tr><td colspan="7" class="admin-empty">Chưa có trang nào.</td></tr><% } %>
+        <% items.forEach(function (p) { %>
+            <% const isSys = protectedSlugs.indexOf(p.slug) !== -1; %>
+            <% const url = isSys ? '/' + p.slug : '/pages/' + p.slug; %>
+            <tr>
+                <td><%= p.id %></td>
+                <td><code><%= p.slug %></code><% if (isSys) { %> <span class="badge-status on">hệ thống</span><% } %></td>
+                <td><%= p.title_vi %></td>
+                <td><%= p.title_en || '—' %></td>
+                <td><a href="<%= url %>" target="_blank" rel="noopener"><%= url %> ↗</a></td>
+                <td><span class="badge-status <%= p.status ? 'on' : 'off' %>"><%= p.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/pages/<%= p.id %>/edit">Sửa</a>
+                    <% if (!isSys) { %>
+                        <form method="post" action="/admin/pages/<%= p.id %>/delete" data-confirm="Xóa trang này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                    <% } %>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

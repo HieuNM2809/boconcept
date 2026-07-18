@@ -36,8 +36,23 @@ const Product = sequelize.define('Product', {
         allowNull: false,
         defaultValue: 0,
     },
+    // Markdown rút gọn — dựng HTML qua app/Helpers/richtext.helper.js
+    extra_vi: {type: DataTypes.TEXT('medium'), allowNull: true},
+    extra_en: {type: DataTypes.TEXT('medium'), allowNull: true},
+    shipping_vi: {type: DataTypes.TEXT('medium'), allowNull: true},
+    shipping_en: {type: DataTypes.TEXT('medium'), allowNull: true},
+    // ── Thuộc tính lọc ở trang danh sách theo loại (/categories/:id) ──────────
+    material_vi: {type: DataTypes.STRING(255), allowNull: true},
+    material_en: {type: DataTypes.STRING(255), allowNull: true},
+    color_vi: {type: DataTypes.STRING(255), allowNull: true},
+    color_en: {type: DataTypes.STRING(255), allowNull: true},
+    // Chuỗi TỰ DO, không tách D×R×C: một sản phẩm có thể gồm nhiều món
+    // ("Ghế: 10x30x60 · Bàn: 60x70x80"). Lọc bằng khớp chuỗi con.
+    dimensions_vi: {type: DataTypes.STRING(500), allowNull: true},
+    dimensions_en: {type: DataTypes.STRING(500), allowNull: true},
+    weight: {type: DataTypes.DECIMAL(10, 2), allowNull: true}, // kg
     thumbnail: {
-        type: DataTypes.STRING(500),
+        type: DataTypes.TEXT('medium'),
         allowNull: true,
     },
     is_featured: {

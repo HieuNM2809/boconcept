@@ -1,0 +1,81 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'pages'}) %>
+<main class="admin-wrap admin-narrow">
+    <% const isSys = item && protectedSlugs.indexOf(item.slug) !== -1; %>
+    <div class="admin-head">
+        <h1><%= item ? ('Sửa trang: ' + item.title_vi) : 'Thêm trang' %></h1>
+        <a class="btn-sm" href="/admin/pages">← Quay lại</a>
+    </div>
+
+    <form class="admin-form" method="post" action="<%= action %>">
+        <label>Slug (địa chỉ) *</label>
+        <input name="slug" required value="<%= item ? item.slug : '' %>" placeholder="gioi-thieu"
+               <%= isSys ? 'readonly' : '' %>>
+        <p class="admin-hint">
+            <% if (isSys) { %>
+                Trang hệ thống — slug khóa cố định vì địa chỉ <code>/<%= item.slug %></code> phụ thuộc vào nó.
+            <% } else { %>
+                Chỉ chữ thường, số và gạch ngang. Trang sẽ nằm ở <code>/pages/&lt;slug&gt;</code>.
+            <% } %>
+        </p>
+
+        <div class="form-2col">
+            <div><label>Tiêu đề (VI) *</label><input name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
+            <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+            <div><label>Mô tả nhỏ (VI)</label><textarea name="excerpt_vi" rows="3" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
+            <div><label>Mô tả nhỏ (EN)</label><textarea name="excerpt_en" rows="3" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
+        </div>
+
+        <label>Ảnh đại diện</label>
+        <div class="form-upload">
+            <input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp" data-encode-to="image" data-max-kb="400">
+            <span class="admin-hint">Chọn file (tối đa 400KB) hoặc dán đường dẫn vào ô dưới.</span>
+        </div>
+        <input name="image" id="image" value="<%= item ? (item.image || '') : '' %>" placeholder="https://...">
+        <img class="form-preview" id="imagePreview"
+             src="<%= item && item.image ? item.image : '' %>"
+             alt="" <%= (item && item.image) ? '' : 'hidden' %>>
+
+        <h2 class="admin-subhead">Nội dung (VI)</h2>
+        <p class="admin-hint">
+            Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
+            <code>- gạch đầu dòng</code> · <code>[chữ](https://...)</code>. Dòng trống để ngăn đoạn.
+            Thẻ HTML gõ vào sẽ hiện ra dạng chữ, không chạy — đây là chủ ý để chặn mã độc.
+        </p>
+        <div class="editor-toolbar" data-editor-for="body_vi">
+            <button type="button" data-wrap="**">B</button>
+            <button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="## ">H2</button>
+            <button type="button" data-prefix="### ">H3</button>
+            <button type="button" data-prefix="- ">• Danh sách</button>
+            <button type="button" data-link="1">🔗 Link</button>
+        </div>
+        <textarea id="body_vi" name="body_vi" rows="16" class="editor-area"><%= item ? (item.body_vi || '') : '' %></textarea>
+
+        <h2 class="admin-subhead">Nội dung (EN)</h2>
+        <div class="editor-toolbar" data-editor-for="body_en">
+            <button type="button" data-wrap="**">B</button>
+            <button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="## ">H2</button>
+            <button type="button" data-prefix="### ">H3</button>
+            <button type="button" data-prefix="- ">• Danh sách</button>
+            <button type="button" data-link="1">🔗 Link</button>
+        </div>
+        <textarea id="body_en" name="body_en" rows="16" class="editor-area"><%= item ? (item.body_en || '') : '' %></textarea>
+
+        <label>Trạng thái</label>
+        <select name="status">
+            <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
+            <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
+        </select>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+            <a class="btn btn-outline" href="/admin/pages">Hủy</a>
+        </div>
+    </form>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>
