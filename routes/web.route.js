@@ -54,7 +54,7 @@ router.get('/pages/:slug', (req, res) => pageController.bySlug(req, res));
 
 // ───── Admin (Basic Auth) — quản lý slideshow ────────────────────────────────
 const adminRouter = Router();
-adminRouter.use(adminAuth);
+// adminRouter.use(adminAuth);
 // Chặn id không hợp lệ (vd /admin/products/abc/edit) -> 404 thay vì 500
 adminRouter.param('id', (req, res, next, id) => {
     if (!/^[1-9][0-9]*$/.test(id)) return res.status(404).send('ID không hợp lệ.');
