@@ -20,6 +20,7 @@ SET NAMES utf8mb4;
 
 DROP PROCEDURE IF EXISTS _mig_add_col;
 DROP PROCEDURE IF EXISTS _mig_mod_col;
+DROP PROCEDURE IF EXISTS _mig_add_idx;
 
 DELIMITER //
 
@@ -44,6 +45,18 @@ BEGIN
           AND COLUMN_NAME = p_col AND DATA_TYPE <> p_type
     ) THEN
         SET @sql = CONCAT('ALTER TABLE `', p_table, '` MODIFY `', p_col, '` ', p_def);
+        PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+    END IF;
+END //
+
+-- Thêm chỉ mục nếu chưa có
+CREATE PROCEDURE _mig_add_idx(IN p_table VARCHAR(64), IN p_idx VARCHAR(64), IN p_def TEXT)
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = p_table AND INDEX_NAME = p_idx
+    ) THEN
+        SET @sql = CONCAT('ALTER TABLE `', p_table, '` ADD ', p_def);
         PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
     END IF;
 END //
@@ -92,6 +105,9 @@ CALL _mig_mod_col('certificates',   'image',     'mediumtext', 'MEDIUMTEXT NOT N
 CALL _mig_mod_col('products',       'thumbnail', 'mediumtext', 'MEDIUMTEXT NULL');
 CALL _mig_mod_col('product_images', 'url',       'mediumtext', 'MEDIUMTEXT NOT NULL');
 CALL _mig_mod_col('news',           'image',     'mediumtext', 'MEDIUMTEXT NOT NULL');
+-- Biến thể chưa sửa được trong admin nên chưa ai vấp, nhưng để nguyên VARCHAR(500)
+-- là mìn chờ: ngày thêm form sửa biến thể, mọi lần upload sẽ chết y như news.image.
+CALL _mig_mod_col('product_variants','image',    'mediumtext', 'MEDIUMTEXT NULL');
 
 -- ── Mô tả loại sản phẩm: VARCHAR(1000) -> TEXT ──────────────────────────────
 -- Ô này giờ soạn bằng trình định dạng (**đậm**, - danh sách...), phần đánh dấu
@@ -99,8 +115,18 @@ CALL _mig_mod_col('news',           'image',     'mediumtext', 'MEDIUMTEXT NOT N
 CALL _mig_mod_col('categories', 'description_vi', 'text', 'TEXT NULL');
 CALL _mig_mod_col('categories', 'description_en', 'text', 'TEXT NULL');
 
+-- ── gallery: khe ảnh cố định cho lưới "Style advice" ────────────────────────
+-- Bảng `gallery` có từ trước thời có khe, nên trên DB cũ CREATE TABLE IF NOT
+-- EXISTS bỏ qua nó và cột `slot` không bao giờ được tạo -> /admin/gallery chết
+-- với "Unknown column 'slot' in 'field list'".
+-- UNIQUE nhưng NULL-able: MySQL cho phép nhiều NULL trong khoá UNIQUE, nên các
+-- hàng cũ (đều nhận NULL) không xung đột; mỗi khe 1|2|3 vẫn chỉ giữ được 1 hàng.
+CALL _mig_add_col('gallery', 'slot', 'TINYINT UNSIGNED NULL DEFAULT NULL');
+CALL _mig_add_idx('gallery', 'uk_gallery_slot', 'UNIQUE KEY `uk_gallery_slot` (`slot`)');
+
 DROP PROCEDURE IF EXISTS _mig_add_col;
 DROP PROCEDURE IF EXISTS _mig_mod_col;
+DROP PROCEDURE IF EXISTS _mig_add_idx;
 
 -- ── Trang "Giới thiệu" là trang HỆ THỐNG: /about phụ thuộc vào hàng slug='about'
 -- Chỉ chèn khung rỗng, admin tự soạn nội dung ở /admin/pages.

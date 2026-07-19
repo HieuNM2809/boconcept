@@ -319,7 +319,11 @@ body.drawer-open { overflow: hidden; }
 .feature-item {
     position: relative;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 148px;
+    /* --lift: icon+tiêu đề nhích lên bao nhiêu khi hover.
+       Đặt thành biến để quy tắc hover và công thức `top` của .feature-desc bên
+       dưới không bao giờ lệch nhau — sửa một chỗ là cả hai theo. */
+    --lift: 28px;
+    min-height: 180px;
     text-align: center; padding: 8px 24px; border-left: 1px solid var(--line); outline-offset: -2px;
 }
 .feature-item:first-child { border-left: 0; }
@@ -332,10 +336,15 @@ body.drawer-open { overflow: hidden; }
     text-transform: uppercase; letter-spacing: 2px; color: var(--ink);
     transition: transform .25s ease;
 }
-/* Ghim đáy ô: mô tả nằm NGOÀI luồng nên hiện ra không đẩy icon/tiêu đề đi đâu.
-   Chúng chỉ nhích lên nhờ transform, tự nó không chiếm thêm chỗ. */
+/* Neo theo TÂM ô chứ không ghim đáy: ghim đáy thì khoảng hở với tiêu đề phụ
+   thuộc vào việc mô tả dài 1 hay 2 dòng — mô tả 2 dòng cao lên là mép trên trèo
+   ngược vào chữ tiêu đề, đúng lỗi dính chữ đang thấy.
+   Mốc tính: icon 44 + lề 14 + dòng tiêu đề 19.2 = 77.2px, canh giữa nên đáy
+   tiêu đề ở 50% + 38.6px; trừ --lift (28) rồi chừa ~23px hở -> 50% + 34px.
+   Tiêu đề dài phải xuống 2 dòng thì hở còn ~14px — vẫn không dính.
+   Vẫn absolute nên hiện ra không đẩy icon/tiêu đề đi đâu. */
 .feature-desc {
-    position: absolute; left: 24px; right: 24px; bottom: 14px; margin: 0;
+    position: absolute; left: 24px; right: 24px; top: calc(50% + 34px); margin: 0;
     color: var(--muted); font-size: 14px; line-height: 1.6;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     transition: opacity .25s ease, transform .25s ease;
@@ -344,7 +353,7 @@ body.drawer-open { overflow: hidden; }
 /* Việc ẨN mới nằm trong media query, không phải việc HIỆN.
    Mặc định = luôn đọc được; chỉ thiết bị có chuột thật mới giấu đi.
    Làm ngược lại là màn cảm ứng mất trắng nội dung vì không bao giờ hover được. */
-.feature-icon, .feature-title { transform: translateY(-16px); }
+.feature-icon, .feature-title { transform: translateY(calc(-1 * var(--lift))); }
 @media (hover: hover) and (pointer: fine) {
     /* Nghỉ: mô tả ẩn, icon + tiêu đề về đúng giữa ô */
     .feature-desc { opacity: 0; transform: translateY(6px); }
@@ -356,7 +365,7 @@ body.drawer-open { overflow: hidden; }
     .feature-item:hover .feature-icon,
     .feature-item:hover .feature-title,
     .feature-item:focus-within .feature-icon,
-    .feature-item:focus-within .feature-title { transform: translateY(-16px); }
+    .feature-item:focus-within .feature-title { transform: translateY(calc(-1 * var(--lift))); }
 }
 /* Dùng opacity chứ không display:none — chữ vẫn nằm trong cây trợ năng (WCAG 1.4.13). */
 @media (prefers-reduced-motion: reduce) {
