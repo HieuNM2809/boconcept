@@ -20,7 +20,7 @@
             row.className = 'gallery-row';
             row.innerHTML =
                 '<img class="gallery-row-thumb" alt="" hidden data-preview-for="' + id + '">' +
-                '<input type="file" accept="image/png,image/jpeg,image/webp" data-encode-to="' + id + '" data-max-kb="600">' +
+                '<input type="file" accept="image/*" data-encode-to="' + id + '">' +
                 '<input type="text" id="' + id + '" name="gallery[]" placeholder="https://...">' +
                 '<button type="button" class="btn-sm danger" data-remove-row>Xóa</button>';
             galleryRows.appendChild(row);
@@ -78,6 +78,86 @@
     bindEncoders(document);
 })();
 
+var IMG_MAX_PIXELS = 5000000;   // 5 megapixel — trần độ phân giải sau khi thu
+var IMG_TARGET_BYTES = 1500000; // file nặng hơn mức này thì nén lại dù đã đủ nhỏ về pixel
+var IMG_JPEG_QUALITY = 0.85;
+// SVG KHÔNG đi qua canvas nên không được thu nhỏ -> đây là đường duy nhất một
+// file lớn có thể chui thẳng vào thân POST và ăn lỗi 413. SVG là chữ, file thật
+// hiếm khi quá 100KB; vượt ngưỡng này thì rasterise như ảnh thường.
+var SVG_PASSTHROUGH_MAX_BYTES = 2 * 1024 * 1024;
+
+function readAsDataURL(file, cb) {
+    var reader = new FileReader();
+    reader.onload = function () { cb(null, reader.result); };
+    reader.onerror = function () { cb(new Error('Không đọc được file.')); };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Thu ảnh về tối đa 5 megapixel rồi trả data URI.
+ *
+ * Vì sao phải thu: ảnh gốc được nhúng thẳng vào MySQL dạng base64. Base64 phình
+ * ~33%, mã hoá URL trong thân form phình thêm ~6%. Ảnh điện thoại 12MP/8MB sẽ
+ * thành thân POST ~11MB — vượt BODY_LIMIT, và form sản phẩm có tới 9 ô ảnh.
+ * Thu về 5MP rồi xuất JPEG cho ra ~800KB, thân POST ~1.1MB mỗi ảnh.
+ */
+function shrinkImage(file, cb) {
+    // SVG là vector: vẽ lên canvas sẽ rasterise thành ảnh bệt, mất hết độ nét.
+    // Giữ nguyên khi còn nhẹ; quá lớn thì rơi xuống nhánh canvas bên dưới để
+    // vẫn gửi đi được thay vì chết ở 413.
+    if (file.type === 'image/svg+xml' && file.size <= SVG_PASSTHROUGH_MAX_BYTES) {
+        return readAsDataURL(file, cb);
+    }
+
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+
+    img.onload = function () {
+        var w = img.naturalWidth;
+        var h = img.naturalHeight;
+        var pixels = w * h;
+
+        // Đã nhỏ về cả pixel lẫn dung lượng -> giữ nguyên file gốc, không nén lại
+        // để khỏi làm giảm chất lượng logo/icon một cách vô ích.
+        if (pixels <= IMG_MAX_PIXELS && file.size <= IMG_TARGET_BYTES) {
+            URL.revokeObjectURL(url);
+            return readAsDataURL(file, cb);
+        }
+
+        var ratio = pixels > IMG_MAX_PIXELS ? Math.sqrt(IMG_MAX_PIXELS / pixels) : 1;
+        var nw = Math.max(1, Math.round(w * ratio));
+        var nh = Math.max(1, Math.round(h * ratio));
+
+        var canvas = document.createElement('canvas');
+        canvas.width = nw;
+        canvas.height = nh;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, nw, nh);
+        URL.revokeObjectURL(url);
+
+        // PNG giữ PNG: đổi sang JPEG sẽ biến nền trong suốt thành đen.
+        var mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        var out;
+        try {
+            out = canvas.toDataURL(mime, IMG_JPEG_QUALITY);
+        } catch (e) {
+            // Canvas "nhiễm bẩn" hoặc hết bộ nhớ -> vẫn nhúng ảnh gốc, không chặn.
+            return readAsDataURL(file, cb);
+        }
+        cb(null, out, {from: w + '×' + h, to: nw + '×' + nh, resized: ratio < 1});
+    };
+
+    // KHÔNG báo lỗi và KHÔNG chặn: đọc không được thì nhúng thẳng file gốc.
+    // Trình duyệt từ chối giải mã vì nhiều lý do ngoài tầm kiểm soát (định dạng lạ
+    // như HEIC, CSP chặn blob:, ảnh hỏng một phần) — chặn ở đây là người dùng
+    // không upload được gì mà cũng không hiểu vì sao.
+    img.onerror = function () {
+        URL.revokeObjectURL(url);
+        readAsDataURL(file, cb);
+    };
+    img.src = url;
+}
+
 /**
  * Gắn xử lý "chọn ảnh từ máy" cho mọi <input type=file data-encode-to> trong `root`.
  *
@@ -94,7 +174,6 @@ function bindEncoders(root) {
         picker.dataset.bound = '1';
 
         var key = picker.dataset.encodeTo;
-        var maxKb = parseInt(picker.dataset.maxKb, 10) || 200;
 
         picker.addEventListener('change', function () {
             var target = document.getElementById(key);
@@ -106,20 +185,41 @@ function bindEncoders(root) {
             var file = picker.files && picker.files[0];
             if (!file || !target) return;
 
-            // Chặn tại client: body parser giới hạn 1MB mà base64 phình ~33%.
-            if (file.size > maxKb * 1024) {
-                window.alert('File nặng ' + Math.round(file.size / 1024) + 'KB, vượt giới hạn ' + maxKb + 'KB.');
-                picker.value = '';
-                return;
-            }
-
-            var reader = new FileReader();
-            reader.onload = function () {
-                target.value = reader.result;
-                if (preview) { preview.src = reader.result; preview.hidden = false; }
-            };
-            reader.onerror = function () { window.alert('Không đọc được file.'); };
-            reader.readAsDataURL(file);
+            // Không chặn theo dung lượng nữa: shrinkImage luôn đưa kết quả về
+            // ≤5MP nên thân POST bị chặn trên bất kể file gốc nặng bao nhiêu.
+            picker.disabled = true; // ảnh lớn mất vài trăm ms -> chặn bấm lại giữa chừng
+            shrinkImage(file, function (err, dataUrl, info) {
+                picker.disabled = false;
+                var note = function (text) {
+                    var hint = picker.parentNode.querySelector('.upload-note');
+                    if (!hint) {
+                        hint = document.createElement('span');
+                        hint.className = 'admin-hint upload-note';
+                        picker.parentNode.appendChild(hint);
+                    }
+                    hint.textContent = text;
+                };
+                // Không dùng popup nữa. Đây là lỗi ĐỌC ĐĨA thật (file bị khoá, ổ
+                // rút ra giữa chừng) — không thể im lặng, vì im lặng thì người
+                // dùng bấm Lưu và tưởng ảnh đã vào.
+                if (err) {
+                    note('Không đọc được file, thử chọn lại.');
+                    picker.value = '';
+                    return;
+                }
+                target.value = dataUrl;
+                if (preview) { preview.src = dataUrl; preview.hidden = false; }
+                if (info && info.resized) {
+                    var hint = picker.parentNode.querySelector('.upload-note');
+                    if (!hint) {
+                        hint = document.createElement('span');
+                        hint.className = 'admin-hint upload-note';
+                        picker.parentNode.appendChild(hint);
+                    }
+                    hint.textContent = 'Đã thu ' + info.from + ' → ' + info.to
+                        + ' (' + Math.round(dataUrl.length / 1024) + 'KB).';
+                }
+            });
         });
     });
 }

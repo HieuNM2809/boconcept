@@ -12,7 +12,7 @@
         <div class="form-upload">
             <%# 400KB: base64 phình ~33% -> ~533KB, cộng các field khác vẫn dưới
                 giới hạn 1mb của express.urlencoded. Để 600KB là chạm trần. %>
-            <input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/svg+xml" data-encode-to="image" data-max-kb="400">
+            <input type="file" id="imageFile" accept="image/*" data-encode-to="image">
             <span class="admin-hint">Chọn file (tối đa 400KB) hoặc dán đường dẫn vào ô dưới.</span>
         </div>
         <input name="image" id="image" required value="<%= item ? item.image : '' %>" placeholder="https://...">

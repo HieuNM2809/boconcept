@@ -45,4 +45,9 @@ module.exports = {
     empty: 'Không tìm thấy sản phẩm phù hợp.',
     notFound: 'Không tìm thấy loại sản phẩm.',
     backHome: 'Về trang chủ',
+    // Dải "Nội thất thiết kế" ngay dưới breadcrumb ở trang danh sách theo loại
+    design: {
+        title: 'Nội thất thiết kế',
+        cta: 'Khám phá các bộ sưu tập',
+    },
 };

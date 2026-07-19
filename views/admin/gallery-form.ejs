@@ -3,7 +3,7 @@
 <%- include('_nav', {section: 'gallery'}) %>
 <main class="admin-wrap admin-narrow">
     <div class="admin-head">
-        <h1><%= item ? ('Sửa ảnh #' + item.id) : 'Thêm ảnh' %></h1>
+        <h1><%= label %></h1>
         <a class="btn-sm" href="/admin/gallery">← Quay lại</a>
     </div>
     <form class="admin-form" method="post" action="<%= action %>">
@@ -11,28 +11,19 @@
         <label>Ảnh *</label>
         <div class="form-upload">
             <%# 400KB: base64 phình ~33% -> ~533KB, vẫn dưới giới hạn 1mb của body parser %>
-            <input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp" data-encode-to="image" data-max-kb="400">
+            <input type="file" id="imageFile" accept="image/*" data-encode-to="image">
             <span class="admin-hint">Chọn file (tối đa 400KB) hoặc dán đường dẫn vào ô dưới.</span>
         </div>
-        <input name="image" id="image" required value="<%= item ? item.image : '' %>" placeholder="https://...">
-        <img class="form-preview" id="imagePreview"
-             src="<%= item && item.image ? item.image : '' %>"
-             alt="" <%= (item && item.image) ? '' : 'hidden' %>>
+        <input name="image" id="image" required value="<%= item.image %>" placeholder="https://...">
+        <img class="form-preview" id="imagePreview" src="<%= item.image %>" alt="">
 
         <div class="form-2col">
-            <div><label>Mô tả ảnh (VI)</label><input name="alt_vi" value="<%= item ? (item.alt_vi || '') : '' %>" placeholder="Dùng cho trình đọc màn hình"></div>
-            <div><label>Mô tả ảnh (EN)</label><input name="alt_en" value="<%= item ? (item.alt_en || '') : '' %>"></div>
-            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
-            <div><label>Trạng thái</label>
-                <select name="status">
-                    <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
-                    <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
-                </select>
-            </div>
+            <div><label>Mô tả ảnh (VI)</label><input name="alt_vi" value="<%= item.alt_vi || '' %>" placeholder="Dùng cho trình đọc màn hình"></div>
+            <div><label>Mô tả ảnh (EN)</label><input name="alt_en" value="<%= item.alt_en || '' %>"></div>
         </div>
 
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+            <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
             <a class="btn btn-outline" href="/admin/gallery">Hủy</a>
         </div>
     </form>

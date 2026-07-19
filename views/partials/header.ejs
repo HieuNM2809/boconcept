@@ -16,8 +16,13 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
                 <span aria-hidden="true">📍</span>
                 <span class="find-store-text"><%= t.common.findStore %></span>
             </a>
-            <a class="lang-switch" href="<%= altLangHref %>" title="<%= t.common.langNames[altLang] %>">
-                <%= t.common.langNames[altLang] %>
+            <%# Cờ hiện là ngôn ngữ SẼ chuyển sang (giữ đúng ngữ nghĩa của bản chữ trước đây).
+                Link chỉ có icon -> BẮT BUỘC có aria-label, nếu không trình đọc màn hình
+                sẽ đọc thành "link" trống. %>
+            <a class="lang-switch" href="<%= altLangHref %>"
+               title="<%= t.common.langFull[altLang] %>"
+               aria-label="<%= t.common.langFull[altLang] %>">
+                <%- include('_flag', {flagCode: altLang}) %>
             </a>
         </div>
     </div>
@@ -42,8 +47,9 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
             </nav>
         </div>
 
-        <a class="brand" href="/">
-            <span class="brand-name"><strong><%= t.common.brandMain %></strong> <%= t.common.brandSub %></span>
+        <a class="brand" href="/" aria-label="<%= t.common.brandMain %> <%= t.common.brandSub %>">
+            <img class="brand-logo" src="/static/images/logo.png"
+                 alt="<%= t.common.brandMain %> <%= t.common.brandSub %>">
         </a>
 
         <div class="header-right">

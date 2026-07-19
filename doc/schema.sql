@@ -36,14 +36,25 @@ CREATE TABLE IF NOT EXISTS `categories` (
     `name_vi`    VARCHAR(255) NOT NULL,
     `name_en`    VARCHAR(255) NULL,
     `slug`       VARCHAR(255) NULL,
-    `image`      VARCHAR(500) NULL,
+    -- Tiêu đề + mô tả riêng cho đầu trang danh sách (để trống thì dùng `name`)
+    `title_vi`       VARCHAR(255)  NULL,
+    `title_en`       VARCHAR(255)  NULL,
+    -- TEXT: mô tả soạn bằng trình định dạng, phần đánh dấu ăn thêm ký tự
+    `description_vi` TEXT          NULL,
+    `description_en` TEXT          NULL,
+    -- MEDIUMTEXT chứ không VARCHAR: admin upload ảnh từ máy, ảnh được mã hoá
+    -- thành data URI base64 -> ảnh chỉ ~370 byte đã vượt VARCHAR(500).
+    `image`      MEDIUMTEXT   NULL,
     `sort_order` INT          NOT NULL DEFAULT 0,
+    -- Ghim danh mục lên đầu khối "Loại sản phẩm" ở trang chủ
+    `is_featured` TINYINT     NOT NULL DEFAULT 0,
     `status`     TINYINT      NOT NULL DEFAULT 1,
     `created_at` DATETIME     NULL,
     `updated_at` DATETIME     NULL,
     `deleted_at` DATETIME     NULL,
     PRIMARY KEY (`id`),
     KEY `idx_categories_parent_id` (`parent_id`),
+    KEY `idx_categories_is_featured` (`is_featured`),
     KEY `idx_categories_status` (`status`),
     CONSTRAINT `fk_categories_parent` FOREIGN KEY (`parent_id`)
         REFERENCES `categories` (`id`) ON DELETE SET NULL
@@ -68,7 +79,12 @@ CREATE TABLE IF NOT EXISTS `products` (
     `dimensions_vi`  VARCHAR(500)  NULL,
     `dimensions_en`  VARCHAR(500)  NULL,
     `weight`         DECIMAL(10,2) NULL,   -- kg, lọc theo khoảng min/max
-    `thumbnail`      VARCHAR(500)  NULL,
+    -- Nội dung soạn thảo ở tab chi tiết sản phẩm
+    `extra_vi`       MEDIUMTEXT    NULL,
+    `extra_en`       MEDIUMTEXT    NULL,
+    `shipping_vi`    MEDIUMTEXT    NULL,
+    `shipping_en`    MEDIUMTEXT    NULL,
+    `thumbnail`      MEDIUMTEXT    NULL,   -- data URI base64, xem ghi chú ở `categories`.`image`
     `is_featured`    TINYINT       NOT NULL DEFAULT 0,
     `priority`       INT           NOT NULL DEFAULT 0,
     `status`         TINYINT       NOT NULL DEFAULT 1,
@@ -224,20 +240,26 @@ CREATE TABLE IF NOT EXISTS `pages` (
     UNIQUE KEY `uq_pages_slug` (`slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ── Kho ảnh lưới collage "Style advice" (quản lý ở /admin/gallery) ───────────
--- Admin up 1–8 ảnh vào ĐÂY; frontend tự phân bổ: 3 ô lớn xoay vòng mỗi 5 giây,
--- các ô nhỏ lấy phần còn lại và đứng yên. `image` là MEDIUMTEXT vì file upload
--- được lưu dạng data URI base64 (Railway xoá filesystem mỗi lần redeploy).
+-- ── 3 ô LỚN của lưới collage "Style advice" (quản lý ở /admin/gallery) ───────
+-- Bảng này chỉ chứa ĐÚNG 3 hàng, mỗi hàng khoá vào một khe: slot = 1|2|3 tương
+-- ứng ô lớn trái / giữa / phải. Admin chỉ SỬA được ảnh của từng khe, không thêm
+-- không xoá. 5 ô nhỏ đóng cứng trong code (home.controller.js · SMALL_TILES).
+-- `image` là MEDIUMTEXT vì file upload lưu dạng data URI base64 (Railway xoá
+-- filesystem mỗi lần redeploy).
 CREATE TABLE IF NOT EXISTS `gallery` (
-    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `image`      MEDIUMTEXT   NOT NULL,
-    `alt_vi`     VARCHAR(255) NULL,
-    `alt_en`     VARCHAR(255) NULL,
-    `sort_order` INT          NOT NULL DEFAULT 0,
-    `status`     TINYINT      NOT NULL DEFAULT 1,
-    `created_at` DATETIME     NULL,
-    `updated_at` DATETIME     NULL,
+    `id`         INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `slot`       TINYINT UNSIGNED NULL DEFAULT NULL,
+    `image`      MEDIUMTEXT       NOT NULL,
+    `alt_vi`     VARCHAR(255)     NULL,
+    `alt_en`     VARCHAR(255)     NULL,
+    `sort_order` INT              NOT NULL DEFAULT 0,
+    `status`     TINYINT          NOT NULL DEFAULT 1,
+    `created_at` DATETIME         NULL,
+    `updated_at` DATETIME         NULL,
     PRIMARY KEY (`id`),
+    -- NULL-able + UNIQUE: khoá quan hệ 1 khe ↔ 1 hàng, đồng thời cho phép nhiều
+    -- hàng cũ (từ thời bảng này còn là "kho ảnh") cùng nằm ngoài khe với slot NULL.
+    UNIQUE KEY `uk_gallery_slot` (`slot`),
     KEY `idx_gallery_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

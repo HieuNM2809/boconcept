@@ -6,14 +6,10 @@ module.exports = {
         {badge: 'New collection', title: 'Modern Living Spaces'},
         {badge: 'Bedroom', title: 'Rest, Redefined'},
     ],
+    // Company intro strip — heading + a single centered paragraph.
     why: {
-        title: 'Why 230,000 businesses build their store with us?',
-        items: [
-            {title: 'Boost brand trust', desc: 'A professional storefront that impresses and earns customer trust.'},
-            {title: 'Reach more customers', desc: 'Sell anytime, anywhere — no time or geography limits.'},
-            {title: 'Save time & cost', desc: 'Centralized product/order management, automated operations.'},
-            {title: 'Higher conversion', desc: 'A smooth shopping journey that turns visits into orders.'},
-        ],
+        title: 'We Specialize in Furniture and Pottery Planter',
+        body: 'Huong Son International Co., Ltd. is a Vietnam-based manufacturer and exporter specializing in furniture and ceramic pottery. We are committed to delivering high-quality products that combine excellent craftsmanship, modern design, and lasting durability. Serving customers worldwide, we offer reliable manufacturing, strict quality control, and professional export services to meet the diverse needs of global markets. Our mission is to provide value-driven products while building long-term partnerships based on trust, quality, and sustainability.',
     },
     categories: {title: 'Product categories', sub: 'Our furniture across Europe for the last 40 years.'},
     // "Style advice" image grid — text is HARDCODED per spec, not admin-editable.

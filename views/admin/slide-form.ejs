@@ -9,7 +9,7 @@
     </div>
 
     <form class="admin-form" method="post" action="<%= action %>">
-        <%- include('_image-field', {name: 'image', label: 'Ảnh slide', value: slide ? slide.image : '', required: true, maxKb: 600}) %>
+        <%- include('_image-field', {name: 'image', label: 'Ảnh slide', value: slide ? slide.image : '', required: true}) %>
 
         <div class="form-2col">
             <div>

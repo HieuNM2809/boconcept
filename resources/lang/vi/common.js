@@ -36,6 +36,8 @@ module.exports = {
     // (Bỏ `langLabel` cũ: nó chỉ trả về locale ĐANG dùng, và cờ 🇻🇳/🇬🇧 không
     //  render trên Windows — Chrome/Edge hiện ra chữ "VN"/"GB".)
     langNames: {vi: 'VI', en: 'EN'},
+    // Tên đầy đủ: dùng cho title/aria-label của nút cờ (link chỉ có icon).
+    langFull: {vi: 'Tiếng Việt', en: 'English'},
     empty: 'Chưa có dữ liệu.',
     footer: {
         contact: 'Thông tin liên hệ',

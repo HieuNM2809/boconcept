@@ -68,6 +68,10 @@ CALL _mig_add_col('categories', 'title_vi',       'VARCHAR(255) NULL');
 CALL _mig_add_col('categories', 'title_en',       'VARCHAR(255) NULL');
 CALL _mig_add_col('categories', 'description_vi', 'VARCHAR(1000) NULL');
 CALL _mig_add_col('categories', 'description_en', 'VARCHAR(1000) NULL');
+-- Ghim danh mục lên đầu khối "Loại sản phẩm" ở trang chủ.
+-- DEFAULT 0 -> hàng cũ tự nhận 0, trang chủ giữ nguyên thứ tự cho tới khi admin
+-- đánh dấu mục đầu tiên.
+CALL _mig_add_col('categories', 'is_featured',    'TINYINT NOT NULL DEFAULT 0');
 
 -- ── news: nội dung bài viết + tác giả + ngày đăng ────────────────────────────
 -- (bảng `news` do schema.sql tạo mới nên thường đã đủ cột; giữ ở đây phòng
@@ -88,6 +92,12 @@ CALL _mig_mod_col('certificates',   'image',     'mediumtext', 'MEDIUMTEXT NOT N
 CALL _mig_mod_col('products',       'thumbnail', 'mediumtext', 'MEDIUMTEXT NULL');
 CALL _mig_mod_col('product_images', 'url',       'mediumtext', 'MEDIUMTEXT NOT NULL');
 CALL _mig_mod_col('news',           'image',     'mediumtext', 'MEDIUMTEXT NOT NULL');
+
+-- ── Mô tả loại sản phẩm: VARCHAR(1000) -> TEXT ──────────────────────────────
+-- Ô này giờ soạn bằng trình định dạng (**đậm**, - danh sách...), phần đánh dấu
+-- ăn thêm ký tự nên 1000 hết rất nhanh.
+CALL _mig_mod_col('categories', 'description_vi', 'text', 'TEXT NULL');
+CALL _mig_mod_col('categories', 'description_en', 'text', 'TEXT NULL');
 
 DROP PROCEDURE IF EXISTS _mig_add_col;
 DROP PROCEDURE IF EXISTS _mig_mod_col;

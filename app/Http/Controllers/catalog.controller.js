@@ -34,7 +34,7 @@ async function category(req, res) {
     if (!Number.isInteger(id) || id < 1) {
         return res.status(404).render('category', {
             pageTitle: t.catalog.notFound,
-            category: null, breadcrumb: [], children: [],
+            category: null, breadcrumb: [], children: [], descriptionHtml: '',
             products: [], meta: null, pages: [], filters: {}, linkFor: () => '#',
         });
     }
@@ -101,6 +101,7 @@ async function category(req, res) {
             category: current,
             breadcrumb: chain,
             children,
+            descriptionHtml: richtext.render(res.locals.pick(current, 'description')),
             products: toPlain(result.data),
             meta: result.meta,
             pages: buildPageList(current_page, last_page),

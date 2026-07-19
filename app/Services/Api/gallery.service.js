@@ -1,26 +1,38 @@
 const {Gallery} = require('../../Models/index.model');
 
-const MAX_ITEMS = 8; // spec: admin cấu hình từ 1 đến 8 ảnh cho khu vực này
+// 3 khe cố định cho 3 ô lớn của lưới collage trang chủ (trái · giữa · phải).
+const SLOTS = [1, 2, 3];
+
+// Ảnh dự phòng khi khe chưa có hàng trong DB (database mới tinh, hoặc admin
+// chưa chạy migration). Trang chủ vẫn phải ra đủ 3 ô chứ không được vỡ lưới.
+const SLOT_FALLBACK = {
+    1: {image: 'https://picsum.photos/seed/insp-sofa/900/700', alt_vi: 'Sofa ngoài trời bên hồ bơi', alt_en: 'Outdoor sofa by the pool'},
+    2: {image: 'https://picsum.photos/seed/insp-dining/900/700', alt_vi: 'Bàn ăn ngoài trời view biển', alt_en: 'Outdoor dining with sea view'},
+    3: {image: 'https://picsum.photos/seed/insp-garden/900/700', alt_vi: 'Góc vườn với chậu hoa', alt_en: 'Garden corner with planters'},
+};
 
 class GalleryService {
-    static async getActiveOrdered() {
-        return Gallery.findAll({
-            where: {status: 1},
-            order: [['sort_order', 'ASC'], ['id', 'ASC']],
-            limit: MAX_ITEMS,
-        });
+    static isValidSlot(slot) {
+        return SLOTS.includes(parseInt(slot, 10));
     }
 
-    static async getAll() {
-        return Gallery.findAll({order: [['sort_order', 'ASC'], ['id', 'ASC']]});
+    static async getBySlot(slot) {
+        return Gallery.findOne({where: {slot: parseInt(slot, 10)}});
     }
 
-    static async getById(id) {
-        return Gallery.findByPk(id);
+    /** 3 khe toàn ảnh dự phòng — dùng khi không đọc nổi DB. Đồng bộ, không throw. */
+    static fallbackSlots() {
+        return SLOTS.map((slot) => ({id: null, slot, ...SLOT_FALLBACK[slot]}));
     }
 
-    static async countActive() {
-        return Gallery.count({where: {status: 1}});
+    /**
+     * Luôn trả ĐÚNG 3 phần tử theo thứ tự khe 1,2,3 — khe nào chưa có hàng thì
+     * lấp bằng SLOT_FALLBACK. Nhờ vậy view chỉ cần lặp, không phải kiểm tra rỗng.
+     */
+    static async getSlots() {
+        const rows = await Gallery.findAll({where: {slot: SLOTS}, order: [['slot', 'ASC']]});
+        const bySlot = new Map(rows.map((r) => [r.slot, r.get({plain: true})]));
+        return SLOTS.map((slot) => bySlot.get(slot) || {id: null, slot, ...SLOT_FALLBACK[slot]});
     }
 
     static _normalize(d = {}) {
@@ -29,47 +41,27 @@ class GalleryService {
             image: (d.image || '').trim(),
             alt_vi: str(d.alt_vi),
             alt_en: str(d.alt_en),
-            sort_order: parseInt(d.sort_order, 10) || 0,
-            status: String(d.status) === '0' ? 0 : 1,
         };
     }
 
-    static async create(d) {
+    /**
+     * Ghi ảnh cho một khe. Upsert chứ không phải update: khe có thể chưa tồn tại
+     * hàng nào (đang chạy bằng ảnh dự phòng), lần lưu đầu tiên phải tạo được.
+     */
+    static async saveSlot(slot, d) {
+        const s = parseInt(slot, 10);
+        if (!GalleryService.isValidSlot(s)) {
+            throw Object.assign(new Error('Khe ảnh không hợp lệ'), {status: 400});
+        }
         const n = GalleryService._normalize(d);
         if (!n.image) throw Object.assign(new Error('Ảnh là bắt buộc'), {status: 400});
-        // Chặn lúc TẠO chứ không cắt lúc đọc: cắt lúc đọc thì admin thấy 9 dòng
-        // "Hiện" mà ảnh thứ 9 không bao giờ lên site, không hiểu vì sao.
-        if (n.status === 1 && (await GalleryService.countActive()) >= MAX_ITEMS) {
-            throw Object.assign(
-                new Error(`Tối đa ${MAX_ITEMS} ảnh đang hiện. Hãy ẩn bớt một ảnh trước khi thêm.`),
-                {status: 400},
-            );
-        }
-        return Gallery.create(n);
-    }
 
-    static async update(id, d) {
-        const row = await Gallery.findByPk(id);
-        if (!row) throw Object.assign(new Error('Gallery item not found'), {status: 404});
-        const n = GalleryService._normalize(d);
-        if (!n.image) throw Object.assign(new Error('Ảnh là bắt buộc'), {status: 400});
-        // Chỉ tính lại khi chuyển ẩn -> hiện; sửa ảnh vốn đã hiện thì không chặn.
-        if (n.status === 1 && row.status === 0 && (await GalleryService.countActive()) >= MAX_ITEMS) {
-            throw Object.assign(
-                new Error(`Tối đa ${MAX_ITEMS} ảnh đang hiện. Hãy ẩn bớt một ảnh trước.`),
-                {status: 400},
-            );
-        }
-        return row.update(n);
-    }
-
-    static async delete(id) {
-        const row = await Gallery.findByPk(id);
-        if (!row) throw Object.assign(new Error('Gallery item not found'), {status: 404});
-        await row.destroy();
+        const row = await GalleryService.getBySlot(s);
+        if (row) return row.update(n);
+        return Gallery.create({...n, slot: s, sort_order: s, status: 1});
     }
 }
 
-GalleryService.MAX_ITEMS = MAX_ITEMS;
+GalleryService.SLOTS = SLOTS;
 
 module.exports = GalleryService;

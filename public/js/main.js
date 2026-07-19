@@ -75,82 +75,77 @@
         });
     }
 
-    // ── Lưới ảnh collage: 3 ô lớn tự đổi ảnh mỗi 5s, chuyển cảnh mờ dần ────────
-    const collage = document.getElementById('collage');
-    const poolTag = document.getElementById('collagePool');
-    if (collage && poolTag) {
-        let pool = [];
-        try { pool = JSON.parse(poolTag.textContent) || []; } catch (e) { pool = []; }
-
-        const bigCells = Array.from(collage.querySelectorAll('.collage-cell.is-big'));
-        // Cần nhiều ảnh HƠN số ô lớn thì xoay vòng mới có nghĩa: 3 ảnh cho 3 ô thì
-        // mỗi lần "đổi" lại ra đúng ảnh cũ, chỉ tổ nháy màn hình vô ích.
-        if (pool.length > bigCells.length) {
-            let tick = 0;
-
-            const swap = () => {
-                tick += 1;
-                bigCells.forEach((cell, slot) => {
-                    const imgs = cell.querySelectorAll('.collage-img');
-                    if (imgs.length < 2) return;
-                    const shown = cell.querySelector('.collage-img.is-active') || imgs[0];
-                    const hidden = imgs[0] === shown ? imgs[1] : imgs[0];
-
-                    // slot lệch nhau nên 3 ô luôn ra 3 ảnh KHÁC nhau (pool > 3 ô).
-                    const next = pool[(tick * bigCells.length + slot) % pool.length];
-                    if (!next || shown.getAttribute('src') === next.src) return;
-
-                    // Chỉ đổi lớp hiển thị SAU khi ảnh mới tải xong, nếu không sẽ
-                    // fade sang một khung trống rồi ảnh mới bụp vào.
-                    const reveal = () => {
-                        hidden.alt = next.alt || '';
-                        hidden.classList.add('is-active');
-                        shown.classList.remove('is-active');
-                        shown.setAttribute('aria-hidden', 'true');
-                        hidden.removeAttribute('aria-hidden');
-                    };
-                    hidden.onload = reveal;
-                    hidden.onerror = () => { hidden.onload = null; }; // ảnh hỏng -> giữ nguyên ảnh cũ
-                    hidden.src = next.src;
-                });
-            };
-
-            let timer = setInterval(swap, 5000);
-            // Tab ẩn thì dừng: tránh dồn hàng loạt lần đổi khi người dùng quay lại.
-            document.addEventListener('visibilitychange', () => {
-                clearInterval(timer);
-                if (!document.hidden) timer = setInterval(swap, 5000);
-            });
-        }
-    }
-
     // ── Hero slideshow (auto + arrows + dots) ──────────────────────────────────
     const track = document.getElementById('heroTrack');
-    if (track) {
-        const slides = track.children.length;
+    if (track && track.children.length) {
         const dots = Array.from(document.querySelectorAll('#heroDots .dot'));
-        let idx = 0;
+        const real = track.children.length;   // số slide THẬT (chưa tính bản sao)
+        let pos = 0;                          // vị trí trong track (ĐÃ tính bản sao)
         let timer = null;
+        let busy = false;                     // đang chạy hiệu ứng -> chặn bấm dồn
 
-        const go = (i) => {
-            idx = (i + slides) % slides;
-            track.style.transform = `translateX(-${idx * 100}%)`;
-            dots.forEach((d, k) => d.classList.toggle('active', k === idx));
+        // Đặt transform mà KHÔNG chạy hiệu ứng (dùng lúc khởi tạo và lúc nhảy ngầm).
+        const snapTo = (p) => {
+            pos = p;
+            track.style.transition = 'none';
+            track.style.transform = `translateX(-${pos * 100}%)`;
+            void track.offsetWidth;           // ép vẽ lại trước khi bật transition
+            track.style.transition = '';      // trả về transition khai báo trong CSS
         };
-        const start = () => { timer = setInterval(() => go(idx + 1), 5000); };
+
+        // Chạy vòng vô tận: nhân bản 2 đầu -> [sn'] s1 s2 … sn [s1']
+        // Tới cuối thì trượt tiếp sang bản sao của s1 (mắt thấy liền mạch), xong
+        // hiệu ứng mới nhảy ngầm về s1 thật. Không còn cảnh tua ngược về đầu.
+        if (real > 1) {
+            const headClone = track.children[0].cloneNode(true);
+            const tailClone = track.children[real - 1].cloneNode(true);
+            // Bản sao chỉ để nhìn -> giấu khỏi trình đọc màn hình, tránh đọc lặp tiêu đề.
+            headClone.setAttribute('aria-hidden', 'true');
+            tailClone.setAttribute('aria-hidden', 'true');
+            track.appendChild(headClone);
+            track.insertBefore(tailClone, track.firstElementChild);
+            snapTo(1);                        // s1 thật nằm ở vị trí 1
+        }
+
+        const paint = () => {
+            const active = ((pos - 1) % real + real) % real;
+            dots.forEach((d, k) => d.classList.toggle('active', k === active));
+        };
+
+        const go = (next) => {
+            // `next === pos` phải chặn ở đây: bấm lại đúng dấu chấm đang active sẽ
+            // KHÔNG sinh transition -> transitionend không bao giờ chạy -> `busy`
+            // kẹt true và slideshow đứng hình vĩnh viễn.
+            if (real < 2 || busy || next === pos) return;
+            busy = true;
+            pos = next;
+            track.style.transform = `translateX(-${pos * 100}%)`;
+            paint();
+        };
+
+        track.addEventListener('transitionend', (e) => {
+            if (e.target !== track || e.propertyName !== 'transform') return;
+            busy = false;
+            if (pos > real) snapTo(1);        // vừa tới bản sao của s1 -> về s1 thật
+            else if (pos < 1) snapTo(real);   // vừa tới bản sao của sn -> về sn thật
+        });
+
         const stop = () => clearInterval(timer);
+        // stop() trước: chuột rê ra/vào liên tục sẽ chồng nhiều interval, ảnh chạy giật.
+        const start = () => { if (real > 1) { stop(); timer = setInterval(() => go(pos + 1), 5000); } };
         const restart = () => { stop(); start(); };
 
         document.querySelectorAll('.hero-arrow').forEach((btn) => {
-            btn.addEventListener('click', () => { go(idx + Number(btn.dataset.dir)); restart(); });
+            btn.addEventListener('click', () => { go(pos + Number(btn.dataset.dir)); restart(); });
         });
-        dots.forEach((d) => d.addEventListener('click', () => { go(Number(d.dataset.idx)); restart(); }));
+        dots.forEach((d) => d.addEventListener('click', () => { go(Number(d.dataset.idx) + 1); restart(); }));
 
         const hero = document.querySelector('.hero');
         hero.addEventListener('mouseenter', stop);
         hero.addEventListener('mouseleave', start);
 
-        if (slides > 1) start();
+        paint();
+        start();
     }
 
     // ── Horizontal scroll (categories) ─────────────────────────────────────────
@@ -169,6 +164,28 @@
             }
             el.scrollBy({left: Number(btn.dataset.dir) * step, behavior: 'smooth'});
         });
+    });
+
+    // ── Dải "Nội thất thiết kế": mờ nút khi đã trượt hết đường ─────────────────
+    // Không có phần này thì tới đầu/cuối dải, nút vẫn sáng như thường nhưng bấm
+    // không nhúc nhích — người dùng tưởng hỏng.
+    document.querySelectorAll('.design-rail').forEach((rail) => {
+        const track = rail.querySelector('.design-track');
+        const prev = rail.querySelector('.design-arrow.prev');
+        const next = rail.querySelector('.design-arrow.next');
+        if (!track || !prev || !next) return;
+
+        const sync = () => {
+            // -1 chứ không phải 0: bề rộng cuộn hay lẻ vài phần trăm pixel nên
+            // scrollLeft không bao giờ chạm đúng giá trị lớn nhất.
+            const max = track.scrollWidth - track.clientWidth;
+            prev.classList.toggle('is-off', track.scrollLeft <= 1);
+            next.classList.toggle('is-off', track.scrollLeft >= max - 1);
+        };
+
+        track.addEventListener('scroll', sync, {passive: true});
+        window.addEventListener('resize', sync);
+        sync();
     });
 
     // ── Tìm loại sản phẩm: lọc chip ngay tại chỗ, không tải lại trang ──────────

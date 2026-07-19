@@ -21,6 +21,49 @@
             <% }) %>
         </nav>
 
+        <%
+        /* Dải "Nội thất thiết kế": chữ bên trái, băng ảnh loại sản phẩm cuộn ngang bên phải.
+
+           Lấy từ `navCategories` (navigation.middleware) chứ KHÔNG thêm biến mới ở
+           controller: middleware đó chạy cho mọi request và không bao giờ throw, nên
+           không phát sinh nguy cơ thiếu biến. Vẫn guard `typeof` cho chắc.
+
+           Bỏ chính loại đang xem ra khỏi dải — hiện lại đúng trang người ta đang
+           đứng thì vừa thừa vừa dễ tưởng bấm nhầm. */
+        const designCats = ((typeof navCategories !== 'undefined' && navCategories) || [])
+            .filter(function (c) { return c.id !== category.id; });
+        %>
+        <% if (designCats.length) { %>
+            <section class="design-strip">
+                <div class="design-intro">
+                    <h2 class="design-title"><%= t.catalog.design.title %></h2>
+                    <a class="design-cta" href="/#categories">
+                        <span class="design-cta-icon" aria-hidden="true">→</span><%= t.catalog.design.cta %>
+                    </a>
+                </div>
+
+                <div class="design-rail">
+                    <div class="design-track" id="designTrack">
+                        <% designCats.forEach(function (c) { %>
+                            <a class="design-card" href="/categories/<%= c.id %>">
+                                <span class="design-card-media"
+                                      style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/500/500') %>')"></span>
+                                <span class="design-card-label"><%= pick(c, 'name') %></span>
+                            </a>
+                        <% }) %>
+                    </div>
+                    <% if (designCats.length > 2) { %>
+                        <button class="design-arrow prev" type="button"
+                                data-scroll="designTrack" data-scroll-by-item data-dir="-1"
+                                aria-label="<%= t.common.actions.prev %>">&lsaquo;</button>
+                        <button class="design-arrow next" type="button"
+                                data-scroll="designTrack" data-scroll-by-item data-dir="1"
+                                aria-label="<%= t.common.actions.next %>">&rsaquo;</button>
+                    <% } %>
+                </div>
+            </section>
+        <% } %>
+
         <!-- Đầu trang: danh mục con BÊN TRÁI, tên loại sản phẩm BÊN PHẢI -->
         <div class="cat-header">
             <nav class="cat-subnav" aria-label="<%= t.catalog.subCategoriesTitle %>">
@@ -33,8 +76,10 @@
             <%# Tiêu đề riêng nếu admin có nhập, không thì dùng tên loại %>
             <div class="cat-heading-wrap">
                 <h1 class="cat-heading"><%= pick(category, 'title') || pick(category, 'name') %></h1>
-                <% if (pick(category, 'description')) { %>
-                    <p class="cat-heading-desc"><%= pick(category, 'description') %></p>
+                <%# <div> chứ không <p>: richtext.render sinh ra <p>/<ul>/<h2>,
+                    lồng <ul> trong <p> là HTML sai, trình duyệt sẽ tự tách thẻ và vỡ layout. %>
+                <% if (descriptionHtml) { %>
+                    <div class="cat-heading-desc"><%- descriptionHtml %></div>
                 <% } %>
             </div>
         </div>

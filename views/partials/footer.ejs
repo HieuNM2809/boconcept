@@ -1,32 +1,35 @@
 <%
 /* Footer là partial DÙNG CHUNG, render cả từ 4 nhánh 404 với locals tối thiểu,
    nên ở đây chỉ đọc `t` (do locale.middleware gắn vào res.locals cho mọi request).
-   Địa chỉ bản đồ nằm trong file ngôn ngữ như phần còn lại của footer.
 
-   PHẢI dùng /maps/embed?pb=... — KHÔNG dùng /maps?q=...&output=embed.
-   Google đã chặn dạng cũ: nó trả 301 kèm `X-Frame-Options: SAMEORIGIN` nên
-   trình duyệt từ chối nhúng, iframe ra ô xám kèm icon lỗi. Dạng /maps/embed
-   trả 200 và không có header đó (đã kiểm chứng bằng curl cho cả vi lẫn en),
-   và vẫn KHÔNG cần API key. */
-const mapQ = t.common.footer.mapQuery;
-const mapSrc = 'https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s' + encodeURIComponent(mapQ);
+   Bản đồ ĐÓNG CỨNG: link nhúng do người dùng lấy trực tiếp từ Google Maps
+   (nút Share -> Embed a map), đã ghim đúng pin của công ty. Trước đây link được
+   tự ghép từ chuỗi địa chỉ trong file ngôn ngữ — cách đó chỉ tìm gần đúng theo
+   tên, không ghim được đúng toạ độ.
+
+   Vẫn là dạng /maps/embed?pb=... nên không cần API key và không dính
+   `X-Frame-Options: SAMEORIGIN` như dạng /maps?q=...&output=embed đã bị Google chặn. */
+const mapSrc = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.061288321471!2d106.9040649!3d10.9587431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174dd0006efcc97%3A0x9026ae197ec75635!2sHUONG%20SON%20INTERNATIONAL%20CO.%2C%20LTD!5e0!3m2!1sen!2s!4v1784436190852!5m2!1sen!2s';
 %>
 <footer class="site-footer" id="footer">
     <div class="container footer-grid">
 
-        <%# Ô 1 — thông tin công ty %>
-        <div class="footer-col">
-            <span class="brand-name"><strong><%= t.common.brandMain %></strong> <%= t.common.brandSub %></span>
-            <p class="footer-desc"><%= t.common.tagline %></p>
-            <p><%= t.common.footer.website %></p>
-            <p><%= t.common.footer.tax %></p>
+        <%# Ô 1 — thông tin công ty.
+            ĐÓNG CỨNG theo yêu cầu: không lấy từ resources/lang nữa, nên giống hệt
+            nhau ở cả bản VI và EN. Muốn sửa thì sửa thẳng ở đây. %>
+        <div class="footer-col footer-company">
+            <p class="footer-company-name">HUONG SON INTERNATIONAL COMPANY LTD</p>
+            <p>No. 100A/3 - Group 10 - Quarter 3 – Ho Nai Ward - Dong Nai City - Viet Nam</p>
+            <p class="footer-label">Cellphone:</p>
+            <p>+ 84 90 143 3979 / + 84 90 370 8191</p>
+            <p class="footer-label">AMFORI ID # 704-001594-000</p>
+            <p class="footer-label">CERTIFICATE SGSHK-COC-370254</p>
         </div>
 
-        <%# Ô 2 — thông tin liên hệ %>
+        <%# Ô 2 — liên hệ. Địa chỉ và điện thoại đã nằm ở ô 1 nên bỏ khỏi đây,
+            tránh hiện hai lần cạnh nhau. %>
         <div class="footer-col">
             <h4><%= t.common.footer.contact %></h4>
-            <p><%= t.common.footer.address %></p>
-            <p><%= t.common.footer.phone %></p>
             <p><%= t.common.footer.email %></p>
             <div class="socials">
                 <a href="#" aria-label="Facebook">f</a>
@@ -39,7 +42,7 @@ const mapSrc = 'https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s' + e
         <div class="footer-col footer-map">
             <h4><%= t.common.footer.mapTitle %></h4>
             <iframe class="footer-map-frame" src="<%= mapSrc %>"
-                    title="<%= t.common.footer.mapTitle %> — <%= mapQ %>"
+                    title="<%= t.common.footer.mapTitle %> — HUONG SON INTERNATIONAL CO., LTD"
                     loading="lazy" referrerpolicy="no-referrer-when-downgrade"
                     allowfullscreen></iframe>
         </div>

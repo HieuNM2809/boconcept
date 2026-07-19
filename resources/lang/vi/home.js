@@ -6,14 +6,10 @@ module.exports = {
         {badge: 'Bộ sưu tập mới', title: 'Không gian sống hiện đại'},
         {badge: 'Phòng ngủ', title: 'Giấc ngủ trọn vẹn mỗi ngày'},
     ],
+    // Dải giới thiệu doanh nghiệp — tiêu đề + 1 đoạn văn, căn giữa.
     why: {
-        title: 'Tại sao 230.000 doanh nghiệp chọn thiết kế website với chúng tôi?',
-        items: [
-            {title: 'Tăng uy tín thương hiệu', desc: 'Website chuyên nghiệp giúp doanh nghiệp gây ấn tượng và tạo niềm tin với khách hàng.'},
-            {title: 'Mở rộng tiếp cận khách hàng', desc: 'Bán hàng mọi lúc mọi nơi, không giới hạn thời gian và địa lý.'},
-            {title: 'Tiết kiệm thời gian, chi phí', desc: 'Quản lý sản phẩm, đơn hàng tập trung, tự động hóa vận hành.'},
-            {title: 'Tăng tỷ lệ chuyển đổi', desc: 'Trải nghiệm mua sắm mượt mà giúp tăng đơn hàng thành công.'},
-        ],
+        title: 'Chúng tôi chuyên về Nội thất và Chậu gốm',
+        body: 'Công ty TNHH Quốc tế Hương Sơn là nhà sản xuất và xuất khẩu tại Việt Nam, chuyên về nội thất và gốm sứ. Chúng tôi cam kết mang đến những sản phẩm chất lượng cao, kết hợp tay nghề thủ công tinh xảo, thiết kế hiện đại và độ bền lâu dài. Phục vụ khách hàng trên toàn thế giới, chúng tôi cung cấp dịch vụ sản xuất tin cậy, kiểm soát chất lượng nghiêm ngặt và dịch vụ xuất khẩu chuyên nghiệp, đáp ứng nhu cầu đa dạng của thị trường quốc tế. Sứ mệnh của chúng tôi là tạo ra sản phẩm giàu giá trị, đồng thời xây dựng quan hệ hợp tác lâu dài dựa trên sự tin cậy, chất lượng và tính bền vững.',
     },
     categories: {title: 'Loại sản phẩm', sub: 'Nội thất của chúng tôi trên khắp châu Âu suốt 40 năm qua.'},
     // Lưới ảnh "Style advice" — chữ ĐÓNG CỨNG theo yêu cầu, admin KHÔNG sửa được.
