@@ -13,12 +13,20 @@ const {logger} = require('../../../config/log4js');
 // TODO: chuyển hero/partners/certs sang bảng DB (content module) khi cần admin sửa.
 // Fallback khi DB chưa có slide nào (slide được quản lý ở /admin/slides)
 const FALLBACK_SLIDES = [
-    {image: 'https://picsum.photos/seed/hero-danish/1600/720', title_vi: 'Ưu đãi cuối mùa: Đang diễn ra', title_en: 'End Season Sale: Now On', badge_vi: 'Thiết kế Đan Mạch', badge_en: 'Danish design', link: '#featured'},
-    {image: 'https://picsum.photos/seed/hero-living/1600/720', title_vi: 'Không gian sống hiện đại', title_en: 'Modern Living Spaces', badge_vi: 'Bộ sưu tập mới', badge_en: 'New collection', link: '#featured'},
-    {image: 'https://picsum.photos/seed/hero-bed/1600/720', title_vi: 'Giấc ngủ trọn vẹn mỗi ngày', title_en: 'Rest, Redefined', badge_vi: 'Phòng ngủ', badge_en: 'Bedroom', link: '#featured'},
+    {image: 'https://picsum.photos/seed/hero-danish/1600/720', title_vi: 'Ưu đãi cuối mùa: Đang diễn ra', title_en: 'End Season Sale: Now On', badge_vi: 'Thiết kế Đan Mạch', badge_en: 'Danish design'},
+    {image: 'https://picsum.photos/seed/hero-living/1600/720', title_vi: 'Không gian sống hiện đại', title_en: 'Modern Living Spaces', badge_vi: 'Bộ sưu tập mới', badge_en: 'New collection'},
+    {image: 'https://picsum.photos/seed/hero-bed/1600/720', title_vi: 'Giấc ngủ trọn vẹn mỗi ngày', title_en: 'Rest, Redefined', badge_vi: 'Phòng ngủ', badge_en: 'Bedroom'},
 ];
-const WHY_ICONS = ['🏅', '🌐', '⏱️', '📈'];
-const WHY_IMAGE = 'https://picsum.photos/seed/why-business/760/620'; // ảnh minh họa (placeholder, có thể thay)
+// 5 ô NHỎ của lưới collage "Style advice" — ĐÓNG CỨNG theo yêu cầu, admin không
+// sửa được. Chỉ 3 ô lớn lấy từ DB (/admin/gallery). Thứ tự ở đây khớp .small-1
+// .. .small-5 trong style.css, đổi thứ tự là đổi vị trí ảnh trên lưới.
+const SMALL_TILES = [
+    {image: 'https://picsum.photos/seed/insp-bath/700/900', alt_vi: 'Góc phòng tắm', alt_en: 'Bathroom corner'},
+    {image: 'https://picsum.photos/seed/insp-chair/700/700', alt_vi: 'Ghế thư giãn cạnh cửa sổ', alt_en: 'Lounge chair by the window'},
+    {image: 'https://picsum.photos/seed/insp-patio/800/700', alt_vi: 'Bộ bàn ghế sân vườn', alt_en: 'Patio furniture set'},
+    {image: 'https://picsum.photos/seed/insp-chairs/700/900', alt_vi: 'Ghế ăn gỗ tự nhiên', alt_en: 'Natural wood dining chairs'},
+    {image: 'https://picsum.photos/seed/insp-lounger/800/700', alt_vi: 'Ghế nằm cạnh hồ bơi', alt_en: 'Sun loungers by the pool'},
+];
 // Fallback khi DB chưa có chứng nhận (quản lý ở /admin/certificates)
 const FALLBACK_CERTS = [
     {image: 'https://picsum.photos/seed/cert1/400/560', title_vi: 'Giấy phép kinh doanh', title_en: 'Business license'},
@@ -47,10 +55,9 @@ async function index(req, res) {
             return fallback;
         };
 
-        const [cats, featuredCats, slides, partnersRows, certRows, featureRows, featuresOn, showcaseRows,
+        const [cats, slides, partnersRows, certRows, featureRows, featuresOn, showcaseRows,
             catContent, newsRows, galleryRows] = await Promise.all([
             CategoryService.getAll({status: 1}),      // danh mục từ DB
-            CategoryService.getWithProductCounts(),   // loại sản phẩm + số lượng (mục "nổi bật")
             SlideService.getActiveOrdered(),          // slide hero từ DB (quản lý ở /admin/slides)
             PartnerService.getActiveOrdered(),        // đối tác từ DB (quản lý ở /admin/partners)
             CertificateService.getActiveOrdered(),    // chứng nhận từ DB (quản lý ở /admin/certificates)
@@ -61,7 +68,9 @@ async function index(req, res) {
             // Nội dung khối "Loại sản phẩm" + "Tin tức" (sửa ở /admin/content)
             SettingService.getMany(Object.values(SettingService.KEYS)).catch(softFail('content', {})),
             NewsService.getActiveOrdered({limit: 4}).catch(softFail('news', [])),
-            GalleryService.getActiveOrdered().catch(softFail('gallery', [])),
+            // Luôn trả đúng 3 khe (tự lấp ảnh dự phòng), nên softFail cũng phải
+            // trả 3 phần tử — [] sẽ làm lưới collage mất hẳn 3 ô lớn.
+            GalleryService.getSlots().catch(softFail('gallery', GalleryService.fallbackSlots())),
         ]);
 
         const heroSlides = slides.length ? toPlain(slides) : FALLBACK_SLIDES;
@@ -78,9 +87,14 @@ async function index(req, res) {
             if (!childrenOf.has(c.parent_id)) childrenOf.set(c.parent_id, []);
             childrenOf.get(c.parent_id).push(c);
         });
+        // Danh mục "nổi bật" (đánh dấu ở /admin/categories) được GHIM lên đầu khối,
+        // các mục còn lại giữ nguyên phía sau — cố ý KHÔNG lọc bỏ, để khi chưa ai
+        // đánh dấu gì thì trang chủ trông y như cũ thay vì trống trơn.
+        // sort ổn định: trong cùng nhóm vẫn theo sort_order/id mà service đã xếp.
         const rootCats = allCats
             .filter((c) => c.parent_id == null)
-            .map((c) => ({...c, children: childrenOf.get(c.id) || []}));
+            .map((c) => ({...c, children: childrenOf.get(c.id) || []}))
+            .sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
 
         const lang = res.locals.lang;
         const K = SettingService.KEYS;
@@ -98,15 +112,14 @@ async function index(req, res) {
             newsDesc: pickContent(K.NEWS_DESC_VI, K.NEWS_DESC_EN, home.news.sub),
             newsCta: pickContent(K.NEWS_CTA_VI, K.NEWS_CTA_EN, home.news.cta),
             newsCtaLink: catContent[K.NEWS_CTA_LINK] || '#news',
-            gallery: toPlain(galleryRows),
-            featuredCategories: featuredCats,
+            // Lưới collage: 3 ô lớn từ DB (khe cố định), 5 ô nhỏ đóng cứng.
+            galleryBig: galleryRows,
+            gallerySmall: SMALL_TILES,
             heroSlides,
             // Khối Công năng: rỗng khi công tắc tổng tắt HOẶC không có mục nào hiện.
             // View chỉ cần kiểm tra features.length, không phải hai điều kiện.
             features: featuresOn ? toPlain(featureRows) : [],
             showcase: toPlain(showcaseRows),
-            whyUs: home.why.items.map((it, i) => ({...it, icon: WHY_ICONS[i % WHY_ICONS.length]})),
-            whyImage: WHY_IMAGE,
             partners,
             certificates,
         });

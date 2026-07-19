@@ -111,24 +111,20 @@ VALUES
     (1, 'https://picsum.photos/seed/news-colour/900/675', 'Sắc màu của mùa', 'Colours of the season',
      'Mùa này mời gọi sắc màu vào ngôi nhà theo cách tinh tế và giàu biểu cảm. Tông màu đậm và sắc trung tính nhẹ kết hợp tạo nên không gian tươi mới, cân bằng và đậm dấu ấn cá nhân.',
      'This season invites colour into the home in a refined and expressive way. Rich tones and soft neutrals work together to create interiors that feel fresh, balanced and personal.',
-     'Khám phá sắc màu của mùa', 'Discover the colours of the season', '#news', 1, 1, NOW(), NOW()),
+     'Khám phá sắc màu của mùa', 'Discover the colours of the season', NULL, 1, 1, NOW(), NOW()),
     (2, 'https://picsum.photos/seed/news-modern/900/675', 'Hiện đại ấm áp', 'Warm modernism',
      'Hiện đại ấm áp kết hợp sự mạch lạc của thiết kế đương đại với cảm giác dễ chịu của vật liệu tự nhiên. Đường nét gọn gàng gặp gỡ tông màu mộc, tạo nên không gian điềm tĩnh và tinh tế.',
      'Warm modernism blends the clarity of modern design with the comfort of natural materials and inviting textures. Clean lines meet earthy tones, creating interiors that feel calm and sophisticated.',
-     'Khám phá Hiện đại ấm áp', 'Explore Warm Modernism', '#news', 2, 1, NOW(), NOW())
+     'Khám phá Hiện đại ấm áp', 'Explore Warm Modernism', NULL, 2, 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE `title_vi` = VALUES(`title_vi`), `image` = VALUES(`image`), `updated_at` = NOW();
 
--- Kho ảnh lưới collage "Style advice" (tối đa 8; 3 ảnh đầu vào 3 ô lớn xoay vòng)
-INSERT INTO `gallery` (`id`, `image`, `alt_vi`, `alt_en`, `sort_order`, `status`, `created_at`, `updated_at`)
+-- 3 ô LỚN của lưới collage "Style advice" — đúng 3 hàng, khoá theo `slot`.
+-- 5 ô nhỏ KHÔNG nằm ở đây: chúng đóng cứng trong home.controller.js (SMALL_TILES).
+INSERT INTO `gallery` (`id`, `slot`, `image`, `alt_vi`, `alt_en`, `sort_order`, `status`, `created_at`, `updated_at`)
 VALUES
-    (1, 'https://picsum.photos/seed/insp-sofa/900/700',    'Sofa ngoài trời bên hồ bơi', 'Outdoor sofa by the pool',   1, 1, NOW(), NOW()),
-    (2, 'https://picsum.photos/seed/insp-dining/900/700',  'Bàn ăn ngoài trời view biển','Outdoor dining with sea view',2, 1, NOW(), NOW()),
-    (3, 'https://picsum.photos/seed/insp-garden/900/700',  'Góc vườn với chậu hoa',      'Garden corner with planters',3, 1, NOW(), NOW()),
-    (4, 'https://picsum.photos/seed/insp-bath/700/900',    'Góc phòng tắm',              'Bathroom corner',            4, 1, NOW(), NOW()),
-    (5, 'https://picsum.photos/seed/insp-chair/700/700',   'Ghế thư giãn cạnh cửa sổ',   'Lounge chair by the window', 5, 1, NOW(), NOW()),
-    (6, 'https://picsum.photos/seed/insp-patio/800/700',   'Bộ bàn ghế sân vườn',        'Patio furniture set',        6, 1, NOW(), NOW()),
-    (7, 'https://picsum.photos/seed/insp-chairs/700/900',  'Ghế ăn gỗ tự nhiên',         'Natural wood dining chairs', 7, 1, NOW(), NOW()),
-    (8, 'https://picsum.photos/seed/insp-lounger/800/700', 'Ghế nằm cạnh hồ bơi',        'Sun loungers by the pool',   8, 1, NOW(), NOW())
+    (1, 1, 'https://picsum.photos/seed/insp-sofa/900/700',   'Sofa ngoài trời bên hồ bơi', 'Outdoor sofa by the pool',    1, 1, NOW(), NOW()),
+    (2, 2, 'https://picsum.photos/seed/insp-dining/900/700', 'Bàn ăn ngoài trời view biển','Outdoor dining with sea view', 2, 1, NOW(), NOW()),
+    (3, 3, 'https://picsum.photos/seed/insp-garden/900/700', 'Góc vườn với chậu hoa',      'Garden corner with planters',  3, 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE `image` = VALUES(`image`), `alt_vi` = VALUES(`alt_vi`), `updated_at` = NOW();
 
 -- Cấu hình site: công tắc khối Công năng + nội dung khối "Loại sản phẩm".

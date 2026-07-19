@@ -86,8 +86,13 @@ crudRoutes('certificates', adminCertificateController);
 adminRouter.post('/features/toggle', (req, res) => adminFeatureController.toggleBlock(req, res));
 crudRoutes('features', adminFeatureController);
 crudRoutes('news', adminNewsController);
-crudRoutes('gallery', adminGalleryController);
 crudRoutes('pages', adminPageController);
+
+// Lưới ảnh trang chủ KHÔNG theo contract crudRoutes: chỉ có 3 khe cố định
+// (slot 1|2|3), admin sửa chứ không thêm/xoá được.
+adminRouter.get('/gallery', (req, res) => adminGalleryController.index(req, res));
+adminRouter.get('/gallery/:slot/edit', (req, res) => adminGalleryController.form(req, res));
+adminRouter.post('/gallery/:slot', (req, res) => adminGalleryController.update(req, res));
 
 // Nội dung trang chủ (settings key/value) — không theo contract crudRoutes.
 adminRouter.get('/content', (req, res) => adminContentController.index(req, res));

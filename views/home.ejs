@@ -62,7 +62,6 @@
                     <div class="showcase-info">
                         <% if (p.category) { %><span class="showcase-cat"><%= pick(p.category, 'name') %></span><% } %>
                         <h3 class="showcase-name"><%= pick(p, 'name') %></h3>
-                        <span class="showcase-price"><%= money(p.price) %></span>
                     </div>
                 </a>
             <% }) %>
@@ -78,27 +77,11 @@
     </section>
 <% } %>
 
-<!-- ── Why us (spec 3.2 · Thông tin doanh nghiệp) — ảnh trái + list phải ────── -->
+<!-- ── Why us (spec 3.2 · Thông tin doanh nghiệp) — tiêu đề + 1 đoạn, căn giữa ─ -->
 <section class="section why" id="why">
-    <div class="container why-layout">
-        <div class="why-media">
-            <img src="<%= whyImage %>" alt="" loading="lazy">
-        </div>
-        <div class="why-content">
-            <h2 class="section-title"><%= t.home.why.title %></h2>
-            <ul class="why-list">
-                <% whyUs.forEach(function (f) { %>
-                    <li class="why-item">
-                        <span class="why-item-icon"><%= f.icon %></span>
-                        <div class="why-item-text">
-                            <h3><%= f.title %></h3>
-                            <p><%= f.desc %></p>
-                        </div>
-                    </li>
-                <% }) %>
-            </ul>
-            <a class="btn btn-outline" href="#"><%= t.common.actions.viewDetail %> &rarr;</a>
-        </div>
+    <div class="container why-intro">
+        <h2 class="section-title"><%= t.home.why.title %></h2>
+        <p class="why-body"><%= t.home.why.body %></p>
     </div>
 </section>
 
@@ -137,7 +120,13 @@
                                 <span class="cat-subs-head"><%= pick(c, 'name') %></span>
                                 <ul class="cat-subs-list">
                                     <% c.children.forEach(function (ch) { %>
-                                        <li><a href="/categories/<%= ch.id %>"><%= pick(ch, 'name') %></a></li>
+                                        <li>
+                                            <a href="/categories/<%= ch.id %>">
+                                                <span class="cat-sub-thumb"
+                                                      style="background-image:url('<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/300/300') %>')"></span>
+                                                <span class="cat-sub-name"><%= pick(ch, 'name') %></span>
+                                            </a>
+                                        </li>
                                     <% }) %>
                                 </ul>
                             </div>
@@ -152,45 +141,32 @@
 </section>
 
 <!-- ── Partners (spec 3.2 · Đối tác hợp tác) ───────────────────────────────── -->
-<%# ── Lưới ảnh "Style advice" — 3 ô lớn tự đổi ảnh mỗi 5s (fade), 5 ô nhỏ tĩnh.
-    Chữ tiêu đề ĐÓNG CỨNG (t.home.gallery), admin chỉ quản lý kho ảnh ở /admin/gallery. %>
-<% if (gallery.length) { %>
-    <section class="section gallery-grid-section" id="inspiration">
-        <div class="container">
-            <div class="gallery-head">
-                <h2 class="gallery-title"><%= t.home.gallery.title %></h2>
-                <p class="gallery-sub"><%= t.home.gallery.sub %></p>
-            </div>
-
-            <%
-            // 3 ô lớn lấy 3 ảnh đầu; ô nhỏ lấy phần còn lại, lặp lại kho nếu thiếu.
-            const pool = gallery;
-            const at = (i) => pool[i % pool.length];
-            const BIG = [0, 1, 2];
-            const SMALL = [3, 4, 5, 6, 7];
-            %>
-            <div class="collage" id="collage">
-                <% BIG.forEach(function (i, slot) { %>
-                    <figure class="collage-cell is-big big-<%= slot + 1 %>" data-slot="<%= slot %>">
-                        <%# Hai lớp ảnh chồng nhau để chuyển cảnh mờ dần, không nháy trắng %>
-                        <img class="collage-img is-active" src="<%= at(i).image %>" alt="<%= pick(at(i), 'alt') %>">
-                        <img class="collage-img" alt="" aria-hidden="true">
-                    </figure>
-                <% }) %>
-
-                <% SMALL.forEach(function (i, k) { %>
-                    <figure class="collage-cell small-<%= k + 1 %>">
-                        <img class="collage-img is-active" src="<%= at(i).image %>" alt="<%= pick(at(i), 'alt') %>" loading="lazy">
-                    </figure>
-                <% }) %>
-            </div>
-
-            <%# Kho ảnh cho JS xoay vòng. Dùng thẻ JSON + escape "<" để URL/data-URI
-                của admin không thể thoát ra ngoài thẻ script. %>
-            <script type="application/json" id="collagePool"><%- JSON.stringify(gallery.map(function (g) { return {src: g.image, alt: pick(g, 'alt')}; })).replace(/</g, '\\u003c') %></script>
+<%# ── Lưới ảnh "Style advice" — ảnh TĨNH, không còn xoay vòng.
+    · 3 ô lớn: từ DB theo khe cố định (sửa ở /admin/gallery).
+    · 5 ô nhỏ: đóng cứng trong home.controller.js (SMALL_TILES), admin KHÔNG sửa.
+    · Chữ tiêu đề cũng đóng cứng (t.home.gallery). %>
+<section class="section gallery-grid-section" id="inspiration">
+    <div class="container">
+        <div class="gallery-head">
+            <h2 class="gallery-title"><%= t.home.gallery.title %></h2>
+            <p class="gallery-sub"><%= t.home.gallery.sub %></p>
         </div>
-    </section>
-<% } %>
+
+        <div class="collage" id="collage">
+            <% galleryBig.forEach(function (g, k) { %>
+                <figure class="collage-cell is-big big-<%= k + 1 %>">
+                    <img class="collage-img" src="<%= g.image %>" alt="<%= pick(g, 'alt') %>">
+                </figure>
+            <% }) %>
+
+            <% gallerySmall.forEach(function (g, k) { %>
+                <figure class="collage-cell small-<%= k + 1 %>">
+                    <img class="collage-img" src="<%= g.image %>" alt="<%= pick(g, 'alt') %>" loading="lazy">
+                </figure>
+            <% }) %>
+        </div>
+    </div>
+</section>
 
 <%# ── Tin tức: header canh giữa + lưới bài viết 2 cột (ảnh → tiêu đề → mô tả → link) %>
 <% if (news.length) { %>
@@ -207,7 +183,10 @@
             <div class="news-grid">
                 <% news.forEach(function (n) { %>
                     <article class="news-card">
-                        <a class="news-card-media" href="<%= n.link || ('/news/' + n.id) %>">
+                        <%# Ảnh LUÔN mở bài viết, cố ý không dùng `n.link`: ảnh là
+                            thumbnail của bài nên bấm vào phải ra đúng bài đó. Ô
+                            "Link ngoài" trong admin chỉ chi phối nút CTA bên dưới. %>
+                        <a class="news-card-media" href="/news/<%= n.id %>">
                             <img src="<%= n.image %>" alt="<%= pick(n, 'title') %>" loading="lazy">
                         </a>
                         <h3 class="news-card-title"><%= pick(n, 'title') %></h3>
@@ -242,37 +221,16 @@
     </div>
 </section>
 
-<!-- ── Featured products (spec 3.2 · Sản phẩm nổi bật — TỪ DB) ──────────────── -->
-<section class="section featured" id="featured">
-    <div class="container">
-        <h2 class="section-title center"><%= t.home.featured.title %></h2>
-        <p class="featured-sub center"><%= t.home.featured.sub %></p>
-
-        <% if (featuredCategories.length) { %>
-            <div class="feat-cat-grid">
-                <% featuredCategories.forEach(function (c) { %>
-                    <a class="feat-cat" href="/categories/<%= c.id %>">
-                        <div class="feat-cat-thumb" style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/300/240') %>')"></div>
-                        <div class="feat-cat-name"><%= pick(c, 'name') %></div>
-                        <div class="feat-cat-count">(<%= c.product_count %> <%= t.home.featured.productsWord %>)</div>
-                    </a>
-                <% }) %>
-            </div>
-        <% } else { %>
-            <p class="empty"><%= t.common.empty %></p>
-        <% } %>
-    </div>
-</section>
-
 <!-- ── Certificates (spec 3.2 · Giấy chứng nhận công ty) ───────────────────── -->
 <section class="section certs">
     <div class="container">
         <h2 class="section-title center"><%= t.home.certs.title %></h2>
         <div class="cert-row">
             <% certificates.forEach(function (c) { %>
+                <%# Bỏ figcaption theo yêu cầu — chỉ còn ảnh. Tên chứng nhận vẫn
+                    giữ ở `alt` để trình đọc màn hình và SEO còn đọc được. %>
                 <figure class="cert-card">
                     <img src="<%= c.image %>" alt="<%= pick(c, 'title') %>" loading="lazy">
-                    <figcaption><%= pick(c, 'title') %></figcaption>
                 </figure>
             <% }) %>
         </div>
