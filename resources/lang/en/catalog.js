@@ -45,4 +45,9 @@ module.exports = {
     empty: 'No matching products found.',
     notFound: 'Category not found.',
     backHome: 'Back to home',
+    // "Design furniture" strip under the breadcrumb on the category listing page
+    design: {
+        title: 'Design furniture',
+        cta: 'Discover design collections',
+    },
 };

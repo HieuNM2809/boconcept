@@ -29,7 +29,7 @@
 
         <label>Ảnh đại diện</label>
         <div class="form-upload">
-            <input type="file" id="imageFile" accept="image/png,image/jpeg,image/webp" data-encode-to="image" data-max-kb="400">
+            <input type="file" id="imageFile" accept="image/*" data-encode-to="image">
             <span class="admin-hint">Chọn file (tối đa 400KB) hoặc dán đường dẫn vào ô dưới.</span>
         </div>
         <input name="image" id="image" value="<%= item ? (item.image || '') : '' %>" placeholder="https://...">

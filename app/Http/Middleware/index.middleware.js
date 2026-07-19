@@ -35,21 +35,31 @@ function applyApiMiddlewares(app) {
     app.use(traceIdMiddleware);
 
     // 1. Body parser
-    app.use(express.json({limit: process.env.BODY_LIMIT || '1mb'}));
+    app.use(express.json({limit: process.env.BODY_LIMIT || '16mb'}));
     // `limit` là BẮT BUỘC ở đây: body-parser mặc định chặn urlencoded ở 100KB
     // (KHÔNG kế thừa BODY_LIMIT như express.json ở trên), nên form admin có icon
     // base64 sẽ bị trả 413 dạng JSON thô thay vì báo lỗi trên form.
-    app.use(express.urlencoded({extended: true, limit: process.env.BODY_LIMIT || '1mb'}));
+    app.use(express.urlencoded({extended: true, limit: process.env.BODY_LIMIT || '16mb'}));
 
     // 2. Header bảo mật cơ bản (CSP nới cho trang render EJS: ảnh ngoài, google fonts, inline)
     app.use(helmet({
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                imgSrc: ["'self'", 'data:', 'https:'],
+                // `blob:` là BẮT BUỘC: form admin thu nhỏ ảnh bằng cách nạp file
+                // qua URL.createObjectURL(), tức là một URL blob:. Thiếu nó thì
+                // trình duyệt chặn, img.onerror chạy và MỌI lần chọn ảnh đều báo
+                // "File không phải ảnh hợp lệ" — kể cả ảnh JPEG bình thường.
+                imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
                 styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
                 fontSrc: ["'self'", 'https://fonts.gstatic.com'],
                 scriptSrc: ["'self'", "'unsafe-inline'"],
+                // BẮT BUỘC khai báo: không có `frame-src` thì nó rơi về
+                // `default-src 'self'` và trình duyệt CHẶN iframe Google Maps ở
+                // footer — bản đồ ra ô trắng kèm lỗi CSP trong console. Kiểm tra
+                // ở phía Google (200, không có X-Frame-Options) không phát hiện
+                // được, vì bên chặn là CSP của chính site này.
+                frameSrc: ["'self'", 'https://www.google.com'],
             },
         },
     }));

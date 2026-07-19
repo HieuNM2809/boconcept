@@ -9,7 +9,6 @@
  */
 module.exports = [
     {key: 'news', href: '/news'},
-    {key: 'featured', href: '/#featured'},
     {key: 'about', href: '/about'},
     {key: 'partners', href: '/#partners'},
     {key: 'support', href: '/#footer'},

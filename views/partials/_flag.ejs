@@ -1,0 +1,31 @@
+<%
+/* Cờ dạng SVG nội tuyến, nhận `code` = 'vi' | 'en'.
+
+   VÌ SAO KHÔNG DÙNG EMOJI 🇻🇳 🇬🇧: Windows KHÔNG vẽ emoji cờ (regional indicator).
+   Chrome/Edge/Firefox trên Windows đều hiện ra hai chữ cái trong khung ("VN", "GB")
+   thay vì lá cờ — mà phần lớn người dùng của site là Windows. SVG nội tuyến hiện
+   đúng ở mọi hệ điều hành, không tốn request, không đụng CSP.
+
+   Chuẩn hoá theo CHIỀU CAO (CSS .flag { height }), để bề ngang tự co theo tỷ lệ
+   thật của từng lá cờ (VN 3:2, UK 2:1). */
+const code = typeof flagCode !== 'undefined' ? flagCode : 'vi';
+%>
+<% if (code === 'en') { %>
+    <svg class="flag" viewBox="0 0 60 30" aria-hidden="true" focusable="false">
+        <clipPath id="fl-uk-a"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+        <clipPath id="fl-uk-b"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
+        <g clip-path="url(#fl-uk-a)">
+            <path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+            <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#fl-uk-b)" stroke="#c8102e" stroke-width="4"/>
+            <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+            <path d="M30,0 v30 M0,15 h60" stroke="#c8102e" stroke-width="6"/>
+        </g>
+    </svg>
+<% } else { %>
+    <svg class="flag" viewBox="0 0 30 20" aria-hidden="true" focusable="false">
+        <path d="M0,0 h30 v20 h-30 z" fill="#da251d"/>
+        <%# Sao 5 cánh: tâm (15,10), bán kính 5. Nối p0→p2→p4→p1→p3 (hình sao đều). %>
+        <path fill="#ff0" d="M15,5 L17.939,14.045 L10.245,8.455 L19.755,8.455 L12.061,14.045 z"/>
+    </svg>
+<% } %>

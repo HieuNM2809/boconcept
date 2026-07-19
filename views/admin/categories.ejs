@@ -9,10 +9,10 @@
     <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
     <table class="admin-table">
         <thead>
-        <tr><th>#</th><th>Ảnh</th><th>Tên (VI)</th><th>Tên (EN)</th><th>Danh mục cha</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        <tr><th>#</th><th>Ảnh</th><th>Tên (VI)</th><th>Tên (EN)</th><th>Danh mục cha</th><th>Thứ tự</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
         </thead>
         <tbody>
-        <% if (!items.length) { %><tr><td colspan="8" class="admin-empty">Chưa có loại sản phẩm.</td></tr><% } %>
+        <% if (!items.length) { %><tr><td colspan="9" class="admin-empty">Chưa có loại sản phẩm.</td></tr><% } %>
         <% items.forEach(function (c) { %>
             <tr>
                 <td><%= c.id %></td>
@@ -21,6 +21,7 @@
                 <td><%= c.name_en || '—' %></td>
                 <td><%= c.parent_name || '—' %></td>
                 <td><%= c.sort_order %></td>
+                <td><%= c.is_featured ? '★' : '' %></td>
                 <td><span class="badge-status <%= c.status ? 'on' : 'off' %>"><%= c.status ? 'Hiện' : 'Ẩn' %></span></td>
                 <td class="admin-row-actions">
                     <a class="btn-sm" href="/admin/categories/<%= c.id %>/edit">Sửa</a>

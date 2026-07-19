@@ -11,7 +11,7 @@
             <div><label>Tên (VI) *</label><input name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
             <div><label>Tên (EN)</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
         </div>
-        <%- include('_image-field', {name: 'thumbnail', label: 'Ảnh chính', value: item ? (item.thumbnail || '') : '', maxKb: 600}) %>
+        <%- include('_image-field', {name: 'thumbnail', label: 'Ảnh chính', value: item ? (item.thumbnail || '') : ''}) %>
         <div class="form-2col">
             <div>
                 <label>Danh mục</label>
@@ -67,7 +67,7 @@
             <% (item && item.images ? item.images : []).forEach(function (img, i) { %>
                 <div class="gallery-row">
                     <img class="gallery-row-thumb" src="<%= img.url %>" alt="" data-preview-for="gal<%= i %>">
-                    <input type="file" accept="image/png,image/jpeg,image/webp" data-encode-to="gal<%= i %>" data-max-kb="600">
+                    <input type="file" accept="image/*" data-encode-to="gal<%= i %>">
                     <input type="text" id="gal<%= i %>" name="gallery[]" value="<%= img.url %>" placeholder="https://...">
                     <button type="button" class="btn-sm danger" data-remove-row>Xóa</button>
                 </div>

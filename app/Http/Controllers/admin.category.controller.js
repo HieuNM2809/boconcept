@@ -17,6 +17,7 @@ function normalize(b = {}) {
         image: str(b.image),
         parent_id: b.parent_id ? parseInt(b.parent_id, 10) : null,
         sort_order: parseInt(b.sort_order, 10) || 0,
+        is_featured: String(b.is_featured) === '1' ? 1 : 0,
         status: String(b.status) === '0' ? 0 : 1,
     };
 }

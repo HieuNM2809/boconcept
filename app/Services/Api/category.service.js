@@ -49,7 +49,16 @@ class CategoryService {
             name_en: data.name_en ?? null,
             slug: data.slug ?? null,
             image: data.image ?? null,
+            // Bốn trường này TỪNG BỊ BỎ SÓT ở đây: form admin gửi lên đủ, `update`
+            // nhận đủ (nó truyền thẳng `data`), riêng `create` liệt kê cứng từng
+            // trường nên khi THÊM MỚI thì tiêu đề/mô tả bị vứt im lặng — người
+            // dùng nhập xong, lưu, quay lại sửa mới thấy trống.
+            title_vi: data.title_vi ?? null,
+            title_en: data.title_en ?? null,
+            description_vi: data.description_vi ?? null,
+            description_en: data.description_en ?? null,
             sort_order: data.sort_order ?? 0,
+            is_featured: data.is_featured ?? 0,
             status: data.status ?? 1,
         });
     }

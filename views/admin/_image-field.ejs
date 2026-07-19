@@ -1,6 +1,9 @@
 <%
 /* Ô chọn ảnh dùng chung cho MỌI form admin.
-   Tham số: name (bắt buộc), label, value, required, maxKb
+   Tham số: name (bắt buộc), label, value, required
+
+   Ảnh lớn được thu về tối đa 5 megapixel ngay tại trình duyệt (admin.js), nên
+   không còn trần dung lượng theo KB cho từng ô nữa.
 
    File được mã hoá base64 NGAY TẠI TRÌNH DUYỆT rồi đổ vào ô text bên dưới —
    không upload multipart lên server. Lý do: railway.json không khai báo volume
@@ -12,15 +15,15 @@ const f = {
     label: typeof label !== 'undefined' ? label : 'Ảnh',
     value: typeof value !== 'undefined' && value ? value : '',
     required: typeof required !== 'undefined' ? required : false,
-    maxKb: typeof maxKb !== 'undefined' ? maxKb : 400,
 };
 %>
+
 <label for="<%= f.name %>"><%= f.label %><%= f.required ? ' *' : '' %></label>
 <div class="form-upload">
     <input type="file" id="<%= f.name %>File"
-           accept="image/png,image/jpeg,image/webp,image/svg+xml"
-           data-encode-to="<%= f.name %>" data-max-kb="<%= f.maxKb %>">
-    <span class="admin-hint">Chọn ảnh từ máy (tối đa <%= f.maxKb %>KB) hoặc dán đường dẫn vào ô dưới.</span>
+           accept="image/*"
+           data-encode-to="<%= f.name %>">
+    <span class="admin-hint">Chọn ảnh từ máy hoặc dán đường dẫn vào ô dưới. Nhận mọi định dạng ảnh, không giới hạn dung lượng — ảnh lớn được tự thu về 5 megapixel.</span>
 </div>
 <input name="<%= f.name %>" id="<%= f.name %>" value="<%= f.value %>"
        placeholder="https://..." <%= f.required ? 'required' : '' %>>

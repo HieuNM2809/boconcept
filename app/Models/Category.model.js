@@ -27,14 +27,23 @@ const Category = sequelize.define('Category', {
     // Tiêu đề + mô tả riêng cho trang danh sách (để trống thì dùng `name`)
     title_vi: {type: DataTypes.STRING(255), allowNull: true},
     title_en: {type: DataTypes.STRING(255), allowNull: true},
-    description_vi: {type: DataTypes.STRING(1000), allowNull: true},
-    description_en: {type: DataTypes.STRING(1000), allowNull: true},
+    // TEXT chứ không VARCHAR(1000): mô tả giờ soạn bằng trình định dạng
+    // (**đậm**, - danh sách...), phần đánh dấu ăn thêm ký tự nên 1000 hết rất nhanh.
+    description_vi: {type: DataTypes.TEXT, allowNull: true},
+    description_en: {type: DataTypes.TEXT, allowNull: true},
     image: {
         type: DataTypes.TEXT('medium'),
         allowNull: true,
     },
     sort_order: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+    },
+    // Ghim ra ngoài giao diện: danh mục nổi bật được đẩy lên đầu khối
+    // "Loại sản phẩm" ở trang chủ (home.controller.js), không lọc bỏ các mục còn lại.
+    is_featured: {
+        type: DataTypes.TINYINT,
         allowNull: false,
         defaultValue: 0,
     },

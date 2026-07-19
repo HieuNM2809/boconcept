@@ -18,9 +18,26 @@
         <div class="form-2col">
             <div><label>Tiêu đề (VI)</label><input name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>"></div>
             <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
-            <div><label>Mô tả (VI)</label><textarea name="description_vi" rows="3" maxlength="1000"><%= item ? (item.description_vi || '') : '' %></textarea></div>
-            <div><label>Mô tả (EN)</label><textarea name="description_en" rows="3" maxlength="1000"><%= item ? (item.description_en || '') : '' %></textarea></div>
         </div>
+
+        <p class="admin-hint">
+            Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
+            <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
+        </p>
+        <label>Mô tả (VI)</label>
+        <div class="editor-toolbar" data-editor-for="description_vi">
+            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="## ">H2</button><button type="button" data-prefix="- ">• Danh sách</button>
+            <button type="button" data-link="1">🔗 Link</button>
+        </div>
+        <textarea id="description_vi" name="description_vi" rows="5" class="editor-area"><%= item ? (item.description_vi || '') : '' %></textarea>
+        <label>Mô tả (EN)</label>
+        <div class="editor-toolbar" data-editor-for="description_en">
+            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
+            <button type="button" data-prefix="## ">H2</button><button type="button" data-prefix="- ">• Danh sách</button>
+            <button type="button" data-link="1">🔗 Link</button>
+        </div>
+        <textarea id="description_en" name="description_en" rows="5" class="editor-area"><%= item ? (item.description_en || '') : '' %></textarea>
 
         <div class="form-2col">
             <div>
@@ -34,6 +51,12 @@
             </div>
             <div><label>Slug</label><input name="slug" value="<%= item ? (item.slug || '') : '' %>"></div>
             <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
+            <div><label>Nổi bật (ghim lên đầu trang chủ)</label>
+                <select name="is_featured">
+                    <option value="0" <%= (!item || !item.is_featured) ? 'selected' : '' %>>Không</option>
+                    <option value="1" <%= (item && item.is_featured) ? 'selected' : '' %>>Có</option>
+                </select>
+            </div>
             <div><label>Trạng thái</label>
                 <select name="status">
                     <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>

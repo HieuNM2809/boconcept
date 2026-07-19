@@ -11,7 +11,9 @@ module.exports = {
         shopNow: 'Shop now',
         viewDetail: 'View company details',
         search: 'Search',
-        searchPlaceholder: 'What can we help you find?',
+        // Giữ NGẮN: ô tìm kiếm co còn 200px ở màn hình ≤992px, chuỗi dài bị cắt
+        // ngang chữ. Vẫn ở dạng câu hỏi cho khớp giọng bản VI.
+        searchPlaceholder: 'Looking for something?',
         more: 'More',
         menu: 'Product categories',
         prev: 'Previous image',
@@ -36,6 +38,8 @@ module.exports = {
     // (Dropped the old `langLabel`: it only ever returned the ACTIVE locale, and
     //  the 🇻🇳/🇬🇧 flags do not render on Windows — Chrome/Edge show "VN"/"GB".)
     langNames: {vi: 'VI', en: 'EN'},
+    // Full names: used for the flag link's title/aria-label (icon-only link).
+    langFull: {vi: 'Tiếng Việt', en: 'English'},
     empty: 'No data yet.',
     footer: {
         contact: 'Contact information',

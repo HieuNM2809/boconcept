@@ -24,18 +24,59 @@
             <span class="sep">/</span><span class="crumb-current"><%= pick(product, 'name') %></span>
         </nav>
 
+
         <%
         /* Gallery: hiện tối đa 7 ảnh. Nếu còn ảnh nữa thì ảnh thứ 7 bị làm mờ và
            gắn nút "Xem thêm" ở giữa để xổ phần còn lại. */
         const VISIBLE = 7;
         const shown = gallery.slice(0, VISIBLE);
         const hidden = gallery.slice(VISIBLE);
+
+        /* Ảnh ĐẦU giữ nguyên như trước: to, tràn bề ngang.
+           Từ ảnh thứ hai trở đi mới xếp khảm, lặp theo chu kỳ 6 trên lưới 6 cột:
+             1-2: hai ô nửa bề ngang     4:   ô rộng 2/3
+             3:   ô hẹp 1/3              5-6: hai ô tràn bề ngang
+
+           Gán lớp theo CHỈ SỐ ẢNH, không dùng :nth-child — trong lưới còn có nút
+           "Xem thêm", nth-child sẽ đếm cả nó và làm lệch nhịp toàn bộ từ đó. */
+        const SPANS = ['s3', 's3', 's2', 's4', 's6', 's6'];
+        const W = {s2: 2, s3: 3, s4: 4, s6: 6};
+        const BY_W = {2: 's2', 3: 's3', 4: 's4', 5: 's6', 6: 's6'};
+
+        /* Trả về mảng lớp cho `n` ảnh khảm (KHÔNG tính ảnh đầu).
+           Ô CUỐI được nới cho kín hàng: chu kỳ bị cắt giữa chừng sẽ để lại ô lẻ
+           chiếm nửa hàng, bỏ trống phần còn lại — nhìn như vỡ layout. Xảy ra với
+           số ảnh chia 6 dư 1 (còn mỗi s3) hoặc dư 3 (còn mỗi s2). */
+        function mosaic(n) {
+            const out = [];
+            for (let i = 0; i < n; i++) out.push(SPANS[i % SPANS.length]);
+            let col = 0;
+            for (let i = 0; i < out.length; i++) {
+                if (col + W[out[i]] > 6) col = 0;   // tràn -> xuống hàng mới
+                col += W[out[i]];
+                if (i === out.length - 1 && col < 6) out[i] = BY_W[W[out[i]] + (6 - col)];
+            }
+            return out;
+        }
+
+        // Ảnh đầu luôn to tràn bề ngang; phần còn lại xếp khảm.
+        // Ô cuối của `shown` sẽ bị ép s6 làm teaser nếu còn ảnh ẩn -> tính khảm
+        // cho phần TRƯỚC nó thôi, khỏi nới thừa một ô rồi lại ghi đè.
+        const teaserAt = hidden.length ? shown.length - 1 : -1;
+        const shownSpans = mosaic(Math.max(0, (teaserAt < 0 ? shown.length : teaserAt) - 1));
+        const hiddenSpans = mosaic(hidden.length);
         %>
         <div class="pd-top">
             <div class="pd-gallery" id="pdGallery">
                 <% shown.forEach(function (src, i) { %>
-                    <%# Ảnh đầu chiếm trọn bề ngang, các ảnh sau xếp lưới 2 cột %>
-                    <figure class="pdg-cell <%= i === 0 ? 'is-wide' : '' %> <%= (hidden.length && i === shown.length - 1) ? 'is-teaser' : '' %>">
+                    <%
+                    // i === 0        -> ảnh to tràn bề ngang, giữ như bố cục cũ
+                    // i === teaserAt -> ảnh mờ mang nút "Xem thêm", ép tràn bề ngang
+                    //                   để nút không rơi vào ô hẹp 1/3
+                    const cls = i === 0 ? 'is-lead'
+                        : (i === teaserAt ? 's6 is-teaser' : shownSpans[i - 1]);
+                    %>
+                    <figure class="pdg-cell <%= cls %>">
                         <img src="<%= src %>" alt="<%= pick(product, 'name') %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>">
                     </figure>
                 <% }) %>
@@ -44,9 +85,11 @@
                     <button class="pdg-more" type="button" id="pdgMore" aria-controls="pdGallery" aria-expanded="false">
                         <span aria-hidden="true">⌄</span> <%= t.product.showMore %>
                     </button>
-                    <%# Ảnh còn lại render sẵn nhưng ẩn — bấm là hiện ngay, không phải tải thêm %>
-                    <% hidden.forEach(function (src) { %>
-                        <figure class="pdg-cell pdg-extra" hidden>
+                    <%# Ảnh còn lại render sẵn nhưng ẩn — bấm là hiện ngay, không phải tải thêm.
+                        Tính khảm riêng cho nhóm này, bắt đầu lại chu kỳ: ô teaser phía trên
+                        đã chiếm trọn một hàng nên nối tiếp nhịp cũ không còn ý nghĩa. %>
+                    <% hidden.forEach(function (src, k) { %>
+                        <figure class="pdg-cell pdg-extra <%= hiddenSpans[k] %>" hidden>
                             <img src="<%= src %>" alt="<%= pick(product, 'name') %>" loading="lazy">
                         </figure>
                     <% }) %>

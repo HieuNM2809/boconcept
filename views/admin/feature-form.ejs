@@ -13,7 +13,7 @@
              không cần thư viện upload, và ảnh nằm trong DB nên sống sót redeploy. -->
         <label>Icon *</label>
         <div class="form-upload">
-            <input type="file" id="iconFile" accept="image/svg+xml,image/png,image/jpeg,image/webp" data-encode-to="icon" data-max-kb="200">
+            <input type="file" id="iconFile" accept="image/*" data-encode-to="icon">
             <span class="admin-hint">Chọn file (SVG/PNG tối đa 200KB) hoặc dán đường dẫn vào ô dưới.</span>
         </div>
         <input name="icon" id="icon" required value="<%= item ? item.icon : '' %>" placeholder="/static/icons/leaf.svg">
