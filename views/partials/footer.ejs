@@ -18,6 +18,11 @@ const mapSrc = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.06128
             ĐÓNG CỨNG theo yêu cầu: không lấy từ resources/lang nữa, nên giống hệt
             nhau ở cả bản VI và EN. Muốn sửa thì sửa thẳng ở đây. %>
         <div class="footer-col footer-company">
+            <%# Logo là ảnh JPG nền trắng, mà footer nền be — nên bọc trong thẻ
+                trắng bo góc để mảng trắng trông có chủ đích. Alt đóng cứng theo
+                tên công ty bên dưới, không lấy từ resources/lang. %>
+            <img class="footer-logo" src="/static/images/hs-logo.jpg"
+                 alt="HUONG SON INTERNATIONAL COMPANY LTD" width="298" height="343">
             <p class="footer-company-name">HUONG SON INTERNATIONAL COMPANY LTD</p>
             <p>No. 100A/3 - Group 10 - Quarter 3 – Ho Nai Ward - Dong Nai City - Viet Nam</p>
             <p class="footer-label">Cellphone:</p>

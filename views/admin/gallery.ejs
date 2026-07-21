@@ -9,26 +9,40 @@
 
     <div class="admin-toggle-bar">
         <div>
-            <strong>3 ô lớn của lưới ảnh “Tư vấn phong cách”.</strong>
+            <strong>8 ô của lưới ảnh “Tư vấn phong cách”.</strong>
             <span class="admin-hint">
                 Mỗi khe gắn cố định với một vị trí trên trang chủ — sửa ảnh của khe nào
-                thì đúng ô đó đổi. Các ô nhỏ xung quanh được cài cứng trong mã nguồn,
-                không sửa ở đây.
+                thì đúng ô đó đổi. <strong>Khe 1, 2, 3</strong> là 3 ô lớn, chứa được
+                nhiều ảnh và tự chuyển 5 giây một lần. <strong>Khe 4–8</strong> là ô nhỏ,
+                mỗi khe một ảnh. Không thêm hay xoá khe được.
             </span>
         </div>
     </div>
 
     <table class="admin-table">
         <thead>
-        <tr><th>Vị trí</th><th>Ảnh</th><th>Mô tả (VI)</th><th>Mô tả (EN)</th><th></th></tr>
+        <tr><th>Vị trí</th><th>Ảnh</th><th>Số ảnh</th><th>Mô tả (VI)</th><th></th></tr>
         </thead>
         <tbody>
         <% items.forEach(function (g) { %>
             <tr>
                 <td><strong><%= g.label %></strong></td>
-                <td><img class="admin-thumb" src="<%= g.image %>" alt="" loading="lazy"></td>
-                <td><%= g.alt_vi || '—' %></td>
-                <td><%= g.alt_en || '—' %></td>
+                <td>
+                    <%# Khe slider hiện tối đa 4 thumbnail cho gọn hàng; số thật nằm ở cột kế bên. %>
+                    <div class="admin-thumb-row">
+                        <% g.images.slice(0, 4).forEach(function (im) { %>
+                            <img class="admin-thumb" src="<%= im.image %>" alt="" loading="lazy">
+                        <% }) %>
+                        <% if (g.images.length > 4) { %>
+                            <span class="admin-hint">+<%= g.images.length - 4 %></span>
+                        <% } %>
+                    </div>
+                </td>
+                <td>
+                    <%= g.images.length %>
+                    <% if (!g.isSlider) { %><span class="admin-hint"> (cố định)</span><% } %>
+                </td>
+                <td><%= g.images[0].alt_vi || '—' %></td>
                 <td class="admin-row-actions">
                     <a class="btn-sm" href="/admin/gallery/<%= g.slot %>/edit">Sửa</a>
                 </td>

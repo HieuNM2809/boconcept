@@ -7,6 +7,7 @@ const FeatureService = require('../../Services/Api/feature.service');
 const NewsService = require('../../Services/Api/news.service');
 const GalleryService = require('../../Services/Api/gallery.service');
 const SettingService = require('../../Services/Api/setting.service');
+const PageService = require('../../Services/Api/page.service');
 const {logger} = require('../../../config/log4js');
 
 // Dữ liệu KHÔNG dịch (ảnh/icon/tên thương hiệu) — phần chữ lấy từ resources/lang.
@@ -17,16 +18,9 @@ const FALLBACK_SLIDES = [
     {image: 'https://picsum.photos/seed/hero-living/1600/720', title_vi: 'Không gian sống hiện đại', title_en: 'Modern Living Spaces', badge_vi: 'Bộ sưu tập mới', badge_en: 'New collection'},
     {image: 'https://picsum.photos/seed/hero-bed/1600/720', title_vi: 'Giấc ngủ trọn vẹn mỗi ngày', title_en: 'Rest, Redefined', badge_vi: 'Phòng ngủ', badge_en: 'Bedroom'},
 ];
-// 5 ô NHỎ của lưới collage "Style advice" — ĐÓNG CỨNG theo yêu cầu, admin không
-// sửa được. Chỉ 3 ô lớn lấy từ DB (/admin/gallery). Thứ tự ở đây khớp .small-1
-// .. .small-5 trong style.css, đổi thứ tự là đổi vị trí ảnh trên lưới.
-const SMALL_TILES = [
-    {image: 'https://picsum.photos/seed/insp-bath/700/900', alt_vi: 'Góc phòng tắm', alt_en: 'Bathroom corner'},
-    {image: 'https://picsum.photos/seed/insp-chair/700/700', alt_vi: 'Ghế thư giãn cạnh cửa sổ', alt_en: 'Lounge chair by the window'},
-    {image: 'https://picsum.photos/seed/insp-patio/800/700', alt_vi: 'Bộ bàn ghế sân vườn', alt_en: 'Patio furniture set'},
-    {image: 'https://picsum.photos/seed/insp-chairs/700/900', alt_vi: 'Ghế ăn gỗ tự nhiên', alt_en: 'Natural wood dining chairs'},
-    {image: 'https://picsum.photos/seed/insp-lounger/800/700', alt_vi: 'Ghế nằm cạnh hồ bơi', alt_en: 'Sun loungers by the pool'},
-];
+// (Trước đây ở đây có hằng SMALL_TILES đóng cứng 5 ô nhỏ của lưới collage. Cả 8
+//  ô nay đều nằm trong bảng `gallery` và sửa được ở /admin/gallery — xem
+//  doc/migrations/2026-07-20-gallery-multi.sql.)
 // Fallback khi DB chưa có chứng nhận (quản lý ở /admin/certificates)
 const FALLBACK_CERTS = [
     {image: 'https://picsum.photos/seed/cert1/400/560', title_vi: 'Giấy phép kinh doanh', title_en: 'Business license'},
@@ -56,7 +50,7 @@ async function index(req, res) {
         };
 
         const [cats, slides, partnersRows, certRows, featureRows, featuresOn, showcaseRows,
-            catContent, newsRows, galleryRows] = await Promise.all([
+            newsRows, galleryRows, aboutPage] = await Promise.all([
             CategoryService.getAll({status: 1}),      // danh mục từ DB
             SlideService.getActiveOrdered(),          // slide hero từ DB (quản lý ở /admin/slides)
             PartnerService.getActiveOrdered(),        // đối tác từ DB (quản lý ở /admin/partners)
@@ -65,12 +59,14 @@ async function index(req, res) {
             SettingService.getBool(SettingService.KEYS.FEATURES_BLOCK).catch(softFail('settings', true)),
             // Lấy 8 để nút qua/lại có việc làm: showcase hiện 4 ảnh cùng lúc.
             ProductService.getFeatured({limit: 8}).catch(softFail('showcase', [])),
-            // Nội dung khối "Loại sản phẩm" + "Tin tức" (sửa ở /admin/content)
-            SettingService.getMany(Object.values(SettingService.KEYS)).catch(softFail('content', {})),
             NewsService.getActiveOrdered({limit: 4}).catch(softFail('news', [])),
-            // Luôn trả đúng 3 khe (tự lấp ảnh dự phòng), nên softFail cũng phải
-            // trả 3 phần tử — [] sẽ làm lưới collage mất hẳn 3 ô lớn.
+            // Luôn trả đúng 8 khe (tự lấp ảnh dự phòng), nên softFail cũng phải
+            // trả 8 phần tử — [] sẽ làm lưới collage mất trắng.
             GalleryService.getSlots().catch(softFail('gallery', GalleryService.fallbackSlots())),
+            // Khối giới thiệu doanh nghiệp: sửa ở /admin/pages (trang hệ thống `about`).
+            // softFail vì bảng `pages` cũng là bảng mới — thiếu bảng thì rơi về chữ
+            // trong resources/lang chứ không hạ nguyên trang chủ.
+            PageService.getBySlug('about').catch(softFail('about page', null)),
         ]);
 
         const heroSlides = slides.length ? toPlain(slides) : FALLBACK_SLIDES;
@@ -96,25 +92,31 @@ async function index(req, res) {
             .map((c) => ({...c, children: childrenOf.get(c.id) || []}))
             .sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
 
-        const lang = res.locals.lang;
-        const K = SettingService.KEYS;
-        // Admin bỏ trống -> quay về chữ mặc định trong resources/lang.
-        const pickContent = (viKey, enKey, fallback) =>
-            (catContent[lang === 'en' ? enKey : viKey] || catContent[viKey] || fallback);
+        // Chữ hai khối "Loại sản phẩm" và "Tin tức" trước đây sửa được ở
+        // /admin/content. Màn đó đã gỡ theo yêu cầu, chữ chuyển hẳn về
+        // resources/lang/{vi,en}/home.js — muốn đổi thì sửa thẳng ở đó.
+
+        // Khối giới thiệu doanh nghiệp thì NGƯỢC LẠI: lấy từ DB (trang `about`),
+        // chữ trong resources/lang chỉ còn là lưới an toàn cho lúc chưa có bản ghi,
+        // trang bị ẩn (status=0), hoặc cột để trống.
+        const about = aboutPage && aboutPage.get ? aboutPage.get({plain: true}) : aboutPage;
+        const pickAbout = (field, fallback) => (about && res.locals.pick(about, field)) || fallback;
 
         res.render('home', {
             pageTitle: home.meta.title,
+            whyTitle: pickAbout('title', home.why.title),
+            whyBody: pickAbout('excerpt', home.why.body),
             categories: rootCats,
-            categoriesTitle: pickContent(K.CAT_TITLE_VI, K.CAT_TITLE_EN, home.categories.title),
-            categoriesDesc: pickContent(K.CAT_DESC_VI, K.CAT_DESC_EN, home.categories.sub),
+            categoriesTitle: home.categories.title,
+            categoriesDesc: home.categories.sub,
             news: toPlain(newsRows),
-            newsTitle: pickContent(K.NEWS_TITLE_VI, K.NEWS_TITLE_EN, home.news.title),
-            newsDesc: pickContent(K.NEWS_DESC_VI, K.NEWS_DESC_EN, home.news.sub),
-            newsCta: pickContent(K.NEWS_CTA_VI, K.NEWS_CTA_EN, home.news.cta),
-            newsCtaLink: catContent[K.NEWS_CTA_LINK] || '#news',
-            // Lưới collage: 3 ô lớn từ DB (khe cố định), 5 ô nhỏ đóng cứng.
-            galleryBig: galleryRows,
-            gallerySmall: SMALL_TILES,
+            newsTitle: home.news.title,
+            newsDesc: home.news.sub,
+            newsCta: home.news.cta,
+            newsCtaLink: '#news',
+            // Lưới collage: cả 8 khe từ DB. Mỗi phần tử {slot, isSlider, images[]};
+            // khe 1-3 có thể nhiều ảnh (slider), khe 4-8 đúng một ảnh.
+            gallery: galleryRows,
             heroSlides,
             // Khối Công năng: rỗng khi công tắc tổng tắt HOẶC không có mục nào hiện.
             // View chỉ cần kiểm tra features.length, không phải hai điều kiện.

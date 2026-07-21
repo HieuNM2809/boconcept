@@ -283,13 +283,27 @@ body.drawer-open { overflow: hidden; }
 .hero-slide {
     min-width: 100%; height: 74vh; min-height: 460px;
     background-size: cover; background-position: center;
-    display: flex; align-items: center;
     position: relative;
 }
-.hero-slide::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.55), rgba(0,0,0,.1)); }
-.hero-content { position: relative; z-index: 2; color: #fff; max-width: 640px; }
-.hero-badge { display: inline-block; letter-spacing: 2px; text-transform: uppercase; font-size: 12px; opacity: .9; margin-bottom: 14px; }
-.hero-title { font-family: var(--serif); font-size: clamp(34px, 5vw, 60px); line-height: 1.12; margin: 0 0 26px; font-weight: 700; letter-spacing: -0.01em; }
+/* Vệt tối ĐỔ TỪ TRÊN XUỐNG chứ không từ trái sang: chữ đã dời lên đỉnh giữa,
+   vệt ngang cũ chỉ tối mép trái nên chữ nằm chỗ sáng nhất của ảnh.
+   Chỉ phủ 40% trên và nhạt dần -> ảnh gần như giữ nguyên độ sáng như ảnh mẫu. */
+.hero-slide::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.38), rgba(0,0,0,0) 40%);
+}
+/* Đứng yên đè lên track: `position:absolute` neo vào .hero (đã relative), nên
+   ảnh trượt bên dưới mà chữ không nhúc nhích.
+   z-index 3 = ngang mũi tên, để chữ không bị slide kế tiếp trùm lên khi đang trượt. */
+.hero-brand {
+    position: absolute; top: 46px; left: 0; right: 0; z-index: 3;
+    text-align: center; color: #fff;
+    font-size: clamp(20px, 2.6vw, 34px); font-weight: 700; letter-spacing: .02em;
+    /* Ảnh nền do admin tự upload, không đoán trước được sáng hay tối:
+       bóng đổ là lớp bảo hiểm để chữ trắng còn đọc được trên ảnh sáng. */
+    text-shadow: 0 2px 12px rgba(0, 0, 0, .45);
+    pointer-events: none;
+}
 .hero-arrow {
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
     width: 46px; height: 46px; border-radius: 50%; border: 0;
@@ -383,10 +397,10 @@ body.drawer-open { overflow: hidden; }
 }
 .showcase-track::-webkit-scrollbar { display: none; }
 .showcase-item {
-    /* 3 ảnh lấp vừa khung: trừ 2 khe rồi chia 3.
-       Dùng `1 0` chứ không `0 0` để khi có DƯỚI 3 ảnh chúng giãn ra lấp kín
+    /* 4 ảnh lấp vừa khung: 4 ảnh có 3 khe ở giữa nên trừ 3 khe rồi chia 4.
+       Dùng `1 0` chứ không `0 0` để khi có DƯỚI 4 ảnh chúng giãn ra lấp kín
        thay vì bỏ hở một mảng trắng bên phải. */
-    flex: 1 0 calc((100% - 2 * var(--showcase-gap)) / 3);
+    flex: 1 0 calc((100% - 3 * var(--showcase-gap)) / 4);
     scroll-snap-align: start; position: relative; min-width: 0;
 }
 .showcase-media { position: relative; overflow: hidden; aspect-ratio: 3 / 4; background: var(--soft); }
@@ -439,63 +453,39 @@ body.drawer-open { overflow: hidden; }
 /* Lưới 12 cột, hàng cao theo vw để cả cụm giữ đúng tỉ lệ khi co giãn màn hình */
 .collage { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 1.9vw; gap: 8px; }
 .collage-cell { position: relative; margin: 0; overflow: hidden; background: var(--soft); }
+
+/* Mọi ảnh trong một ô đều absolute và chồng khít lên nhau. Đây là lý do slider
+   KHÔNG THỂ xô lệch lưới: kích thước ô do grid quyết định, ảnh bên trong không
+   đóng góp gì vào phép tính đó — kể cả ảnh tải chậm hay có tỉ lệ khác hẳn.
+   transform 5s = đúng chu kỳ đổi ảnh, để cú zoom chạy trọn quãng ảnh hiện diện
+   rồi mới nhường chỗ; để dài hơn thì zoom bị cắt giữa chừng mỗi vòng. */
 .collage-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; display: block;
+    opacity: 0; transform: scale(1.06);
+    transition: opacity .9s ease, transform 5s ease-out;
 }
+.collage-img.is-active { opacity: 1; transform: scale(1); }
 
-/* Vị trí từng ô. Ô LỚN đánh số theo hướng nhìn TRÁI → PHẢI, khớp với nhãn
-   "Ô lớn 1/2/3" ở /admin/gallery và với cột `slot` trong DB — admin sửa khe 2
-   thì đúng ô giữa đổi ảnh. Đừng đổi số ở đây mà không sửa SLOT_LABELS. */
-.big-1   { grid-column: 1 / 5;  grid-row: 11 / 17; }  /* 1 — trái  */
-.big-2   { grid-column: 5 / 9;  grid-row: 6 / 15; }   /* 2 — giữa  */
-.big-3   { grid-column: 9 / 13; grid-row: 7 / 13; }   /* 3 — phải  */
-/* Ô NHỎ — thứ tự khớp mảng SMALL_TILES trong home.controller.js */
-.small-1 { grid-column: 6 / 9;  grid-row: 1 / 6; }    /* phòng tắm, dọc */
-.small-2 { grid-column: 9 / 11; grid-row: 3 / 7; }    /* ghế + cây */
-.small-3 { grid-column: 3 / 5;  grid-row: 6 / 11; }   /* bộ ghế sân vườn */
-.small-4 { grid-column: 5 / 7;  grid-row: 15 / 21; }  /* ghế ăn, dọc */
-.small-5 { grid-column: 7 / 9;  grid-row: 15 / 19; }  /* ghế nằm hồ bơi */
+/* Vị trí từng ô — MỘT dãy số duy nhất 1..8, khớp với cột `slot` trong DB, mảng
+   SLOTS ở gallery.service.js và nhãn SLOT_LABELS ở admin.gallery.controller.js.
+   Admin sửa "Khe 6" thì đúng ô này đổi ảnh. Đổi số ở đây mà quên ba chỗ kia là
+   admin sửa một khe nhưng ô khác đổi.
+   Khe 1-3 là 3 ô LỚN (có slider), khe 4-8 là 5 ô nhỏ (một ảnh). */
+.collage-slot-1 { grid-column: 1 / 5;  grid-row: 11 / 17; }  /* lớn — dưới-trái */
+.collage-slot-2 { grid-column: 5 / 9;  grid-row: 6 / 15; }   /* lớn — giữa      */
+.collage-slot-3 { grid-column: 9 / 13; grid-row: 7 / 13; }   /* lớn — phải      */
+.collage-slot-4 { grid-column: 6 / 9;  grid-row: 1 / 6; }    /* nhỏ — trên giữa */
+.collage-slot-5 { grid-column: 9 / 11; grid-row: 3 / 7; }    /* nhỏ — trên phải */
+.collage-slot-6 { grid-column: 3 / 5;  grid-row: 6 / 11; }   /* nhỏ — trái      */
+.collage-slot-7 { grid-column: 5 / 7;  grid-row: 15 / 21; }  /* nhỏ — dưới trái */
+.collage-slot-8 { grid-column: 7 / 9;  grid-row: 15 / 19; }  /* nhỏ — dưới phải */
 
-/* ── 3 ô lớn: cứ 5 giây lại phủ trắng rồi hiện ảnh ra, lặp vô hạn ─────────────
-   CSS thuần, không cần JS. Nhịp một chu kỳ 5s:
-     0%  → 25%   lớp trắng tan dần, ảnh zoom 1.08 → 1   (1.25s "hiện ra")
-     25% → 78%   đứng yên, xem ảnh rõ                    (2.65s nghỉ)
-     78% → 100%  trắng phủ lại, ảnh zoom về 1.08         (1.1s "đóng lại")
-   Phải có đoạn phủ lại ở cuối: nhảy thẳng từ 0% (trắng) sang chu kỳ sau sẽ
-   giật một cái chớp trắng rất chói. */
-.collage-cell.is-big::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: #fff;
-    pointer-events: none;   /* không chặn click/hover xuống ảnh bên dưới */
-    animation: collage-veil 5s ease-in-out infinite;
-}
-.collage-cell.is-big .collage-img {
-    animation: collage-zoom 5s ease-in-out infinite;
-}
-
-/* Lệch pha để 3 ô nháy nối tiếp nhau chứ không bật cùng lúc */
-.big-2::after, .big-2 .collage-img { animation-delay: .18s; }
-.big-3::after, .big-3 .collage-img { animation-delay: .36s; }
-
-@keyframes collage-veil {
-    0%          { opacity: 1; }
-    25%, 78%    { opacity: 0; }
-    100%        { opacity: 1; }
-}
-@keyframes collage-zoom {
-    0%          { transform: scale(1.08); }
-    25%, 78%    { transform: scale(1); }
-    100%        { transform: scale(1.08); }
-}
-
-/* Hiệu ứng trang trí thuần tuý -> bỏ hẳn khi người dùng yêu cầu giảm chuyển động.
-   display:none chứ không chỉ animation:none — tắt animation thôi thì ::after
-   đứng lại ở opacity mặc định (1) và phủ trắng ô vĩnh viễn. */
+/* Giảm chuyển động: bỏ cú zoom, giữ nguyên fade nhẹ. JS cũng tự ngừng đổi ảnh
+   (xem main.js) nên ô sẽ đứng luôn ở ảnh đầu. */
 @media (prefers-reduced-motion: reduce) {
-    .collage-cell.is-big::after { display: none; }
-    .collage-cell.is-big .collage-img { animation: none; transform: none; }
+    .collage-img { transform: none; transition: opacity .2s ease; }
+    .collage-img.is-active { transform: none; }
 }
 
 /* ===== Tin tức ===== */
@@ -540,12 +530,10 @@ body.drawer-open { overflow: hidden; }
 }
 .cat-chip:hover { border-color: var(--ink); }
 .cat-chip-count { color: var(--muted); font-size: 12px; }
+/* .cat-heading đã bỏ (tên loại chuyển lên <h1> trong .design-strip). Chỉ còn
+   phần mô tả, nên bỏ luôn `margin-top` vốn dùng để tách nó khỏi tiêu đề. */
 .cat-heading-wrap { text-align: right; min-width: 0; max-width: 520px; }
-.cat-heading {
-    margin: 0; font-family: var(--serif); font-size: clamp(26px, 3vw, 40px);
-    font-weight: 700; letter-spacing: -.01em;
-}
-.cat-heading-desc { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.cat-heading-desc { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
 
 /* Bộ lọc: tên · kích thước · chất liệu · khối lượng */
 /* Phẳng hoàn toàn: không viền, không nền. Bỏ luôn padding ngang để 4 ô lọc
@@ -599,79 +587,89 @@ body.drawer-open { overflow: hidden; }
     margin: 0 0 18px; font-weight: 700; letter-spacing: -.01em;
 }
 .cat-intro-desc { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.75; max-width: 46ch; }
-.cat-nav { display: flex; gap: 10px; margin-top: 28px; }
 .round-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 22px; cursor: pointer; transition: .2s; }
 .round-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-.cat-track { display: flex; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none; }
-.cat-track::-webkit-scrollbar { display: none; }
-.cat-card {
-    position: relative; flex: 1 0 100%; min-width: 0; align-self: stretch; min-height: 420px;
-    background-size: cover; background-position: center; overflow: hidden; color: #fff;
+/* Bộ chọn loại cấp 1 — danh sách dọc dưới đoạn giới thiệu (thay 2 nút mũi tên cũ) */
+.cat-picker { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.cat-picker-item {
+    font-family: inherit; font-size: 16px; line-height: 1.5; color: var(--muted);
+    background: none; border: 0; width: 100%; padding: 7px 0 7px 20px;
+    text-align: left; cursor: pointer; position: relative; transition: color .2s;
+}
+/* Dấu › báo mục đang xem. Đặt bằng ::before nên khi tắt không làm chữ nhảy chỗ. */
+.cat-picker-item::before { content: "\203A"; position: absolute; left: 0; top: 7px; opacity: 0; transition: opacity .2s; }
+.cat-picker-item:hover { color: var(--ink); }
+.cat-picker-item.is-active { color: var(--ink); font-weight: 600; }
+.cat-picker-item.is-active::before { opacity: 1; }
+.cat-picker-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Sân khấu ảnh cấp 1 — các panel chồng khít lên nhau (position:absolute), chỉ
+   .is-active hiện. Xếp chồng thay vì ẩn/hiện trong luồng để đổi loại không làm
+   khối co giãn chiều cao. */
+.cat-stage { position: relative; min-height: 420px; overflow: hidden; }
+.cat-panel {
+    position: absolute; inset: 0; padding: 18px; color: #fff; text-align: center;
     display: flex; align-items: center; justify-content: center; /* tên nằm GIỮA ảnh */
-}
-/* Phủ mờ nhẹ để chữ trắng đọc được trên mọi ảnh */
-.cat-card::after {
-    content: ""; position: absolute; inset: 0; z-index: 1;
-    background: rgba(0, 0, 0, .18); transition: background .3s;
-}
-.cat-card-link { position: relative; z-index: 2; display: block; padding: 18px; text-align: center; }
-.cat-label { font-size: clamp(24px, 2.4vw, 36px); font-weight: 500; letter-spacing: .5px; text-shadow: 0 2px 14px rgba(0, 0, 0, .35); }
-
-/* Lớp danh mục con cấp 2 — hiện khi di chuột vào ảnh */
-.cat-subs {
-    position: absolute; inset: 0; z-index: 3;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-    padding: 24px; text-align: center;
-    background: rgba(27, 25, 23, .62);
-    opacity: 0; visibility: hidden; transition: opacity .28s ease, visibility .28s;
-}
-.cat-subs-head { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
-/* Xếp NGANG, mỗi mục là một thẻ ảnh + tên. `flex-wrap` để danh mục có nhiều con
-   xuống hàng thay vì bóp nhỏ lại; `overflow-y: auto` phòng trường hợp tràn cao. */
-.cat-subs-list {
-    list-style: none; margin: 0; padding: 0;
-    display: flex; flex-direction: row; flex-wrap: wrap;
-    justify-content: center; align-items: flex-start; gap: 14px;
-    max-width: 100%; max-height: 100%; overflow-y: auto;
-    scrollbar-width: none;
-}
-.cat-subs-list::-webkit-scrollbar { display: none; }
-.cat-subs-list a {
-    display: block; width: 104px; color: #fff; text-align: center;
-    transition: transform .2s;
-}
-.cat-subs-list a:hover { transform: translateY(-3px); }
-.cat-sub-thumb {
-    display: block; width: 100%; aspect-ratio: 1 / 1;
     background-size: cover; background-position: center;
-    background-color: rgba(255, 255, 255, .12);
-    border-radius: 4px;
+    opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s;
 }
-.cat-sub-name {
-    display: block; margin-top: 8px; font-size: 13px; line-height: 1.35;
-    text-shadow: 0 1px 6px rgba(0, 0, 0, .45);
+.cat-panel.is-active { opacity: 1; visibility: visible; }
+/* Phủ mờ nhẹ để chữ trắng đọc được trên mọi ảnh */
+.cat-panel::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .18); }
+.cat-label {
+    position: relative; z-index: 1;
+    font-size: clamp(24px, 2.4vw, 36px); font-weight: 500; letter-spacing: .5px;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, .35);
 }
 
-/* Chỉ giấu trên thiết bị có chuột thật. Màn cảm ứng không hover được nên
-   lớp con phải hiện sẵn, nếu không người dùng mobile mất hẳn lối vào cấp 2. */
-@media (hover: hover) and (pointer: fine) {
-    .cat-card:hover::after { background: rgba(0, 0, 0, .05); }
-    .cat-card:hover .cat-subs,
-    .cat-card:focus-within .cat-subs { opacity: 1; visibility: visible; }
-    /* Tên ở giữa nhường chỗ cho lớp con khi hover */
-    .cat-card:hover .cat-card-link { opacity: 0; transition: opacity .2s; }
+/* Hàng danh mục con cấp 2 — trải hết bề ngang container, ngay dưới khối 2 cột.
+   Track không active để display:none, nên hàng luôn cao đúng một ô ảnh và không
+   nhảy layout khi đổi loại cấp 1. */
+.cat-subs-row {
+    --cat-sub-gap: 12px; margin-top: var(--cat-sub-gap);
+    /* grid 1 hàng chỉ để có thứ animate được về 0: dùng 0fr thì hàng TỰ đo chiều
+       cao ảnh, khỏi đoán max-height (ảnh 3/4 nên cao bao nhiêu tuỳ bề ngang màn). */
+    display: grid; grid-template-rows: 1fr;
+    transition: grid-template-rows .4s ease, margin-top .4s ease,
+                opacity .3s ease, visibility .4s;
 }
-@media not all and (hover: hover) {
-    /* .cat-subs quay lại trong luồng -> nó thành flex item THỨ HAI của .cat-card.
-       Thiếu flex-direction: column thì tên danh mục và danh sách con nằm CẠNH
-       nhau, mỗi bên co lại còn nửa bề ngang trên điện thoại. */
-    .cat-card { flex-direction: column; align-items: stretch; justify-content: flex-end; }
-    .cat-card-link { text-align: center; }
-    .cat-subs { position: static; opacity: 1; visibility: visible; background: rgba(27, 25, 23, .55); }
+/* .is-idle: rê chuột ra ngoài khối rồi đứng yên 5s (main.js hẹn giờ).
+   visibility chứ không chỉ opacity — mờ 0 mà vẫn tab được vào ô vô hình. */
+.cat-subs-row.is-idle {
+    grid-template-rows: 0fr; margin-top: 0; opacity: 0; visibility: hidden;
 }
+.cat-subs-track {
+    list-style: none; margin: 0; padding: 0;
+    display: none; gap: var(--cat-sub-gap);
+    /* min-height: 0 — mặc định ô lưới không co xuống dưới chiều cao nội dung,
+       thiếu dòng này thì 0fr chống lên và hàng không bao giờ đóng hết. */
+    min-height: 0;
+    overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none;
+}
+.cat-subs-track::-webkit-scrollbar { display: none; }
+.cat-subs-track.is-active { display: flex; }
+/* 5 ô vừa khít bề ngang. min-width chặn ô bị bóp khi có nhiều hơn 5 con — lúc đó
+   track tự tràn và cuộn ngang (cố ý không có mũi tên). */
+.cat-subs-track > li { flex: 0 0 calc((100% - 4 * var(--cat-sub-gap)) / 5); min-width: 150px; }
+.cat-subs-track a {
+    position: relative; display: flex; align-items: flex-end;
+    aspect-ratio: 3 / 4; padding: 18px; overflow: hidden; color: #fff;
+    background-size: cover; background-position: center; background-color: var(--soft);
+}
+.cat-subs-track a::after {
+    content: ""; position: absolute; inset: 0; transition: background .25s;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, .45) 100%);
+}
+.cat-subs-track a:hover::after { background: rgba(0, 0, 0, .3); }
+.cat-sub-name {
+    position: relative; z-index: 1;
+    font-size: clamp(15px, 1.35vw, 19px); line-height: 1.3; font-weight: 500;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .5);
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .cat-subs { transition-duration: .01ms; }
+    .cat-panel, .cat-subs-row { transition-duration: .01ms; }
 }
 
 /* ===== Partners ===== */
@@ -713,10 +711,20 @@ body.drawer-open { overflow: hidden; }
 .product-info { padding: 16px 18px 20px; }
 .product-cat { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .product-name { font-size: 16px; margin: 6px 0 10px; font-weight: 600; }
-.product-price { color: var(--accent-dark); font-weight: 700; font-size: 16px; }
+/* .product-price / .pd-price đã bỏ khỏi mọi view — giá không còn hiển thị. */
 
 /* ===== Certificates ===== */
 .certs { background: var(--soft); }
+/* Khe TRẮNG tách hai dải cùng màu --soft. Không có nó thì Đối tác và Giấy chứng
+   nhận dính liền thành MỘT mảng be duy nhất — chỉ nhìn thấy hai cái tiêu đề trôi
+   trong cùng một khối, không biết đâu là ranh giới. Đúng lỗi mà khối .features
+   đã vấp với .why bên trên.
+   Dùng `+` chứ không đặt margin cứng lên .certs: khe này sinh ra CHỈ VÌ hai khối
+   này kề nhau. Mai mốt chèn section khác vào giữa thì luật tự hết tác dụng,
+   không để lại khoảng thừa lơ lửng.
+   clamp thay cho media query: màn hẹp thì padding của .section cũng co lại,
+   khe 44px cố định sẽ thành khoảng trắng hoác giữa hai khối. */
+.partners + .certs { margin-top: clamp(28px, 4vw, 44px); }
 .cert-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
 .cert-card { margin: 0; width: 300px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 /* `contain` chứ KHÔNG `cover`: cover CẮT mất mép ảnh — đúng lỗi làm chữ
@@ -730,6 +738,13 @@ body.drawer-open { overflow: hidden; }
 
 /* Khối thông tin công ty đóng cứng ở footer */
 .footer-company p { margin: 0 0 8px; }
+/* Ảnh logo là JPG nền trắng đặt trên nền be của footer. Cho hẳn nền trắng +
+   bo góc + padding để viền trắng đọc thành "thẻ logo" thay vì lỗi cắt ảnh.
+   height cố định, width:auto để giữ đúng tỉ lệ 298x343. */
+.footer-logo {
+    height: 72px; width: auto; display: block; margin: 0 0 14px;
+    background: #fff; border-radius: 6px; padding: 8px;
+}
 .footer-company-name { font-weight: 700; font-size: 15px; color: var(--ink); letter-spacing: .2px; }
 .footer-label { font-weight: 600; color: var(--ink); }
 
@@ -784,6 +799,9 @@ body.drawer-open { overflow: hidden; }
     gap: 30px; align-items: center;
     margin: 0 0 34px; padding-bottom: 30px; border-bottom: 1px solid var(--line);
 }
+/* Loại sản phẩm duy nhất -> không có dải ảnh, cột 2fr bên phải sẽ rỗng và đẩy
+   tiêu đề nép sang trái một phần ba màn hình. Một cột thì tiêu đề trải hết. */
+.design-strip.is-solo { grid-template-columns: 1fr; }
 .design-title {
     font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em;
     font-size: clamp(28px, 3.4vw, 46px); line-height: 1.05; margin: 0 0 18px;
@@ -919,7 +937,6 @@ body.drawer-open { overflow: hidden; }
    mép; header là `position: relative` (không sticky) nên không cần trừ chiều cao header. */
 .pd-info.is-sticky { position: sticky; top: 24px; align-self: start; }
 .pd-name { font-family: var(--serif); font-size: clamp(28px, 4vw, 44px); font-weight: 600; margin: 0 0 12px; }
-.pd-price { font-size: 28px; font-weight: 700; color: var(--accent-dark); margin-bottom: 18px; }
 .pd-desc { color: var(--muted); line-height: 1.8; margin-bottom: 24px; }
 .pd-variants { margin-bottom: 22px; }
 .pd-variant-label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
@@ -992,10 +1009,32 @@ body.drawer-open { overflow: hidden; }
 .gallery-row-thumb[hidden] { display: none; }
 .gallery-row input[type="text"] { width: 100%; }
 .admin-form .gallery-row input { margin: 0; }
+/* Dòng ảnh của khe slider (/admin/gallery). Ba cột: ảnh · cụm ô nhập · nút xoá.
+   Cụm ô nhập XẾP DỌC chứ không dàn ngang: dòng này có 5 ô (file, đường dẫn, alt
+   VI, alt EN) mà form nằm trong .admin-narrow, dàn ngang thì ô đường dẫn bị bóp
+   còn vài pixel. */
+.gallery-row.slot-row { grid-template-columns: 72px 1fr auto; align-items: start; }
+.slot-row .gallery-row-thumb { width: 72px; height: 72px; }
+/* min-width:0 là bắt buộc: mặc định min-width của grid item là auto, ô input dài
+   sẽ đẩy cột 1fr phình ra ngoài khung thay vì co lại. */
+.slot-row-fields { display: grid; gap: 8px; min-width: 0; }
+.slot-row-alts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; }
+.admin-form .slot-row input { margin: 0; }
+.slot-row input[type="file"] { max-width: 100%; }
+
 @media (max-width: 700px) {
     .gallery-row { grid-template-columns: 1fr; }
     .gallery-row-thumb { width: 100%; height: 120px; }
+    /* slot-row GIỮ 3 cột trên mobile: cụm ô đã xếp dọc nên vẫn vừa, và ảnh nhỏ
+       bên trái giúp phân biệt các dòng khi cuộn. */
+    .gallery-row.slot-row { grid-template-columns: 56px 1fr auto; }
+    .slot-row .gallery-row-thumb { width: 56px; height: 56px; }
+    .slot-row-alts { grid-template-columns: 1fr; }
 }
+
+/* Dải thumbnail ở bảng /admin/gallery — khe slider có nhiều ảnh trên một hàng */
+.admin-thumb-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.admin-thumb-row .admin-thumb { width: 56px; height: 40px; }
 
 /* Sản phẩm liên quan ở cuối trang chi tiết */
 .pd-related { margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--line); }
@@ -1035,6 +1074,9 @@ body.drawer-open { overflow: hidden; }
     .feature-item { padding: 8px 14px; }
     /* Giữ 3 cột, chỉ thu lề và khe lại */
     .showcase { --showcase-gap: 14px; --showcase-pad: 16px; padding-top: 18px; padding-bottom: 18px; }
+    /* Nấc trung gian 3 ảnh: ảnh tỉ lệ 3/4 (cao hơn rộng), nhảy thẳng 4 → 2 ở mốc
+       768 sẽ làm ảnh trên tablet phình quá cao. */
+    .showcase-item { flex-basis: calc((100% - 2 * var(--showcase-gap)) / 3); }
 }
 
 /* Tablet dọc / điện thoại lớn (≤768) — bật menu hamburger */
@@ -1043,7 +1085,22 @@ body.drawer-open { overflow: hidden; }
     /* 2 cột -> xếp dọc: chữ trên, ảnh dưới */
     .cat-layout { grid-template-columns: 1fr; }
     .cat-intro { padding: 34px 26px; }
-    .cat-card { min-height: 340px; }
+    .cat-stage { min-height: 340px; }
+    /* Không có hover trên mobile -> danh sách dọc thành dải chip cuộn ngang,
+       chạm để chọn. Dấu › thừa ở dạng chip nên tắt đi. */
+    .cat-picker {
+        flex-direction: row; gap: 8px; overflow-x: auto;
+        scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .cat-picker::-webkit-scrollbar { display: none; }
+    .cat-picker-item {
+        width: auto; white-space: nowrap; padding: 8px 16px;
+        border: 1px solid var(--line); border-radius: 999px; background: #fff;
+    }
+    .cat-picker-item::before { display: none; }
+    .cat-picker-item.is-active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    /* 5 ô/hàng quá hẹp khi màn dưới 768 -> hạ còn ~2.5 ô, phần dư gợi ý còn cuộn được */
+    .cat-subs-track > li { flex-basis: 40%; }
     .news-grid, .news-grid-3 { grid-template-columns: 1fr; gap: 34px; }
     /* Bỏ bố cục so le: 12 cột co lại thì ô 2-3 cột hẹp tới mức không nhìn được ảnh.
        Chuyển sang lưới 2 cột đều, ô lớn chiếm trọn hàng. */
@@ -1063,7 +1120,6 @@ body.drawer-open { overflow: hidden; }
     .hero-slide { height: 60vh; min-height: 400px; }
     .product-grid { grid-template-columns: repeat(2, 1fr); }
     .cat-grid { grid-template-columns: repeat(2, 1fr); }
-    .cat-heading { white-space: normal; }
     .cat-header { flex-direction: column-reverse; align-items: flex-start; }
     .product-thumb { height: 200px; }
     /* 4 -> 2 cột: phải KHAI LẠI vạch ngăn. `:first-child` chỉ đúng khi 1 hàng;
@@ -1104,13 +1160,13 @@ body.drawer-open { overflow: hidden; }
     .hero-arrow { width: 38px; height: 38px; font-size: 22px; }
     .hero-arrow.prev { left: 10px; }
     .hero-arrow.next { right: 10px; }
-    .cat-card { min-width: 190px; height: 260px; }
+    .cat-stage { min-height: 260px; }
+    .cat-subs-track > li { flex-basis: 62%; }
     .partner-row { gap: 24px 30px; }
     .cert-card { width: 100%; max-width: 300px; }
     .footer-grid { grid-template-columns: 1fr; gap: 26px; }
     .subcat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .listing-title { font-size: 24px; }
-    .pd-price { font-size: 24px; }
     .tab-nav { gap: 2px; }
     .tab-btn { padding: 11px 13px; font-size: 14px; }
     .pd-gallery { gap: 8px; }
@@ -1134,7 +1190,8 @@ body.drawer-open { overflow: hidden; }
     /* Chỉ còn icon 📍 — link vẫn có tên nhờ aria-label ở markup */
     .find-store-text { display: none; }
     .brand-logo { height: 38px; }
-    .hero-title { font-size: 30px; }
+    /* Header trên di động thấp hơn -> kéo chữ lên gần đỉnh cho cân */
+    .hero-brand { top: 28px; }
     .partner-logo { min-height: 130px; padding: 16px; }
     .partner-logo img { height: 84px; }
     .variant span { font-size: 13px; }

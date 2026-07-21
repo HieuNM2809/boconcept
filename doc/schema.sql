@@ -240,10 +240,15 @@ CREATE TABLE IF NOT EXISTS `pages` (
     UNIQUE KEY `uq_pages_slug` (`slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ── 3 ô LỚN của lưới collage "Style advice" (quản lý ở /admin/gallery) ───────
--- Bảng này chỉ chứa ĐÚNG 3 hàng, mỗi hàng khoá vào một khe: slot = 1|2|3 tương
--- ứng ô lớn trái / giữa / phải. Admin chỉ SỬA được ảnh của từng khe, không thêm
--- không xoá. 5 ô nhỏ đóng cứng trong code (home.controller.js · SMALL_TILES).
+-- ── 8 ô của lưới collage "Style advice" (quản lý ở /admin/gallery) ───────────
+-- `slot` = 1..8, khớp .collage-slot-N trong style.css. Khe 1-3 là 3 ô LỚN và
+-- chứa được NHIỀU hàng (slider tự chuyển ở trang chủ); khe 4-8 là 5 ô nhỏ, mỗi
+-- khe đúng một hàng. Admin chỉ sửa nội dung khe, không thêm/xoá khe.
+--
+-- CỐ Ý KHÔNG có UNIQUE trên `slot`: đó chính là thứ chặn một khe chứa nhiều ảnh.
+-- Ràng buộc "khe 4-8 chỉ một ảnh" nằm ở gallery.service.js chứ không ở đây.
+-- `sort_order` là thứ tự ảnh TRONG một khe, không phải số khe.
+--
 -- `image` là MEDIUMTEXT vì file upload lưu dạng data URI base64 (Railway xoá
 -- filesystem mỗi lần redeploy).
 CREATE TABLE IF NOT EXISTS `gallery` (
@@ -257,9 +262,7 @@ CREATE TABLE IF NOT EXISTS `gallery` (
     `created_at` DATETIME         NULL,
     `updated_at` DATETIME         NULL,
     PRIMARY KEY (`id`),
-    -- NULL-able + UNIQUE: khoá quan hệ 1 khe ↔ 1 hàng, đồng thời cho phép nhiều
-    -- hàng cũ (từ thời bảng này còn là "kho ảnh") cùng nằm ngoài khe với slot NULL.
-    UNIQUE KEY `uk_gallery_slot` (`slot`),
+    KEY `idx_gallery_slot_order` (`slot`, `sort_order`),
     KEY `idx_gallery_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

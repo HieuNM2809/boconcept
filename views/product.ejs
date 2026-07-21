@@ -11,7 +11,6 @@
     </section>
 <% } else { %>
     <% const dv = (product.variants && product.variants.length) ? product.variants[0] : null; %>
-    <% const initPrice = (dv && dv.price != null) ? dv.price : product.price; %>
     <% const initSku = (dv && dv.sku) ? dv.sku : ('SP' + product.id); %>
 
     <div class="container pd">
@@ -99,7 +98,7 @@
             <%# Cột phải GHIM CỐ ĐỊNH khi cuộn gallery bên trái %>
             <div class="pd-info is-sticky">
                 <h1 class="pd-name"><%= pick(product, 'name') %></h1>
-                <div class="pd-price" id="pdPrice"><%= money(initPrice) %></div>
+                <%# Dòng giá đã bỏ theo yêu cầu (bỏ giá trên toàn bộ trang khách xem). %>
                 <p class="pd-desc"><%= pick(product, 'description') || t.product.noDescription %></p>
 
                 <% if (product.variants && product.variants.length) { %>
@@ -107,9 +106,11 @@
                         <span class="pd-variant-label"><%= t.product.variantLabel %>:</span>
                         <div class="variant-list">
                             <% product.variants.forEach(function (v, i) { %>
+                                <%# `data-price` đã bỏ: để lại thì giá vẫn nằm nguyên trong
+                                    mã nguồn trang, xem "View source" là đọc được — bỏ giá
+                                    kiểu đó coi như không bỏ. %>
                                 <button class="variant <%= i === 0 ? 'active' : '' %>"
                                         data-image="<%= v.image || '' %>"
-                                        data-price="<%= money(v.price != null ? v.price : product.price) %>"
                                         data-sku="<%= v.sku || ('SP' + product.id) %>">
                                     <% if (v.image) { %><img src="<%= v.image %>" alt="<%= v.name %>"><% } %>
                                     <span><%= v.name %></span>
@@ -202,7 +203,7 @@
                             <div class="product-info">
                                 <h3 class="product-name"><%= pick(p, 'name') %></h3>
                                 <% if (pick(p, 'material')) { %><p class="product-attr"><%= pick(p, 'material') %></p><% } %>
-                                <span class="product-price"><%= money(p.price) %></span>
+                                <%# Giá đã bỏ khỏi TOÀN BỘ trang khách xem theo yêu cầu. %>
                             </div>
                         </a>
                     <% }) %>
