@@ -1,4 +1,5 @@
 const GalleryService = require('../../Services/Api/gallery.service');
+const {logger} = require('../../../config/log4js');
 
 const flashText = (k) => ({updated: 'Đã cập nhật.', notfound: 'Khe ảnh không tồn tại.'}[k] || '');
 
@@ -62,6 +63,34 @@ async function update(req, res) {
         await GalleryService.saveSlot(req.params.slot, collectImages(req.body));
         res.redirect('/admin/gallery?msg=updated');
     } catch (e) {
+        // PHẢI log trước khi trả lời. Trước đây catch này nuốt sạch chi tiết:
+        // admin chỉ thấy "Lỗi: Validation error" — đó là message MẶC ĐỊNH mà
+        // Sequelize gán cho MySQL 1062 (duplicate key), không nói được cột nào
+        // hay khoá nào — còn log server thì trống trơn, nên không thể chẩn đoán
+        // từ xa. `e.parent` mới là chỗ chứa code/sqlMessage thật của MySQL.
+        const rows = collectImages(req.body);
+        logger.error('Lưu khe ảnh thất bại', {
+            error: {
+                name: e.name,
+                message: e.message,
+                code: e.parent && e.parent.code,
+                errno: e.parent && e.parent.errno,
+                sqlMessage: e.parent && e.parent.sqlMessage,
+                stack: e.stack,
+            },
+            meta: {
+                slot: req.params.slot,
+                rowCount: rows.length,
+                // Chỉ độ dài + phần đầu: data URI base64 dài hàng triệu ký tự,
+                // đổ nguyên vào log là ngập cả trang log Railway.
+                images: rows.map((r) => ({
+                    len: (r.image || '').length,
+                    head: (r.image || '').slice(0, 40),
+                    altViLen: (r.alt_vi || '').length,
+                    altEnLen: (r.alt_en || '').length,
+                })),
+            },
+        });
         res.status(e.status || 400).send('Lỗi: ' + e.message);
     }
 }
