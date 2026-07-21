@@ -1,47 +1,35 @@
 const PageService = require('../../Services/Api/page.service');
 
-const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
-const flashText = (k) => ({created: 'Đã thêm trang.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
+// Màn này chỉ quản đúng MỘT bản ghi: trang giới thiệu công ty. Slug đóng cứng ở
+// đây chứ không lấy từ URL — không có đường nào sửa sang bản ghi khác, và cũng
+// không còn thêm/xoá trang (xem routes/web.route.js).
+const SLUG = 'about';
 
-async function index(req, res) {
-    const items = toPlain(await PageService.getAll());
-    res.render('admin/pages', {
-        pageTitle: 'Trang nội dung',
-        section: 'pages',
-        items,
-        protectedSlugs: PageService.PROTECTED_SLUGS,
-        flash: flashText(req.query.msg),
-    });
-}
+const flashText = (k) => ({updated: 'Đã cập nhật.', missing: 'Chưa có dữ liệu trang giới thiệu trong database.'}[k] || '');
 
 async function form(req, res) {
-    let item = null;
-    if (req.params.id) {
-        const p = await PageService.getById(parseInt(req.params.id, 10));
-        if (!p) return res.redirect('/admin/pages?msg=notfound');
-        item = p.get({plain: true});
-    }
+    // Cố ý KHÔNG lọc status: trang đang ẩn vẫn phải mở ra sửa được, không thì
+    // bấm "Ẩn" một lần là mất luôn lối vào màn này.
+    const found = await PageService.getBySlugAny(SLUG);
+    const item = found ? found.get({plain: true}) : null;
     res.render('admin/page-form', {
-        pageTitle: item ? 'Sửa trang' : 'Thêm trang',
-        section: 'pages', item,
-        protectedSlugs: PageService.PROTECTED_SLUGS,
-        action: item ? `/admin/pages/${item.id}` : '/admin/pages',
+        pageTitle: 'Giới thiệu công ty',
+        section: 'pages',
+        item,
+        action: '/admin/pages',
+        flash: flashText(req.query.msg) || (item ? '' : flashText('missing')),
     });
-}
-
-async function create(req, res) {
-    try { await PageService.create(req.body); res.redirect('/admin/pages?msg=created'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
 }
 
 async function update(req, res) {
-    try { await PageService.update(parseInt(req.params.id, 10), req.body); res.redirect('/admin/pages?msg=updated'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    try {
+        const found = await PageService.getBySlugAny(SLUG);
+        if (!found) throw Object.assign(new Error(`Không tìm thấy trang "${SLUG}"`), {status: 404});
+        await PageService.update(found.id, req.body);
+        res.redirect('/admin/pages?msg=updated');
+    } catch (e) {
+        res.status(e.status || 400).send('Lỗi: ' + e.message);
+    }
 }
 
-async function destroy(req, res) {
-    try { await PageService.delete(parseInt(req.params.id, 10)); res.redirect('/admin/pages?msg=deleted'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
-}
-
-module.exports = {index, form, create, update, destroy};
+module.exports = {form, update};

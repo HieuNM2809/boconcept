@@ -68,7 +68,12 @@ function applyApiMiddlewares(app) {
     // `whitelist` là BẮT BUỘC cho các field vốn dĩ là mảng: hpp mặc định gộp
     // mọi tham số trùng tên về GIÁ TRỊ CUỐI, nên form gửi gallery[]=a&gallery[]=b
     // sẽ chỉ còn "b" và admin lưu 5 ảnh xong chỉ thấy 1 ảnh, không báo lỗi gì.
-    app.use(hpp({whitelist: ['gallery']}));
+    //
+    // Các trường của khe lưới ảnh mang tiền tố `slot_` chứ không dùng thẳng
+    // `image`/`alt_vi`/`alt_en`: whitelist tên chung sẽ gỡ mất lớp bảo vệ này ở
+    // MỌI form admin khác đang dùng `image` đơn (slides, news, pages, ...), và ở
+    // đó một mảng lọt vào sẽ làm `.trim()` ném lỗi 500.
+    app.use(hpp({whitelist: ['gallery', 'slot_image', 'slot_alt_vi', 'slot_alt_en']}));
 
     // 4. CORS
     app.use(cors({

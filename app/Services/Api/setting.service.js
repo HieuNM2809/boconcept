@@ -3,19 +3,6 @@ const {Setting} = require('../../Models/index.model');
 // Khoá cấu hình đang dùng. Khai báo tập trung để không rải chuỗi ma thuật khắp code.
 const KEYS = {
     FEATURES_BLOCK: 'features_block_enabled',
-    // Khối "Loại sản phẩm" — tiêu đề + mô tả, sửa trong /admin/content
-    CAT_TITLE_VI: 'categories_title_vi',
-    CAT_TITLE_EN: 'categories_title_en',
-    CAT_DESC_VI: 'categories_desc_vi',
-    CAT_DESC_EN: 'categories_desc_en',
-    // Khối "Tin tức" — tiêu đề + mô tả + nhãn/link nút, sửa trong /admin/content
-    NEWS_TITLE_VI: 'news_title_vi',
-    NEWS_TITLE_EN: 'news_title_en',
-    NEWS_DESC_VI: 'news_desc_vi',
-    NEWS_DESC_EN: 'news_desc_en',
-    NEWS_CTA_VI: 'news_cta_vi',
-    NEWS_CTA_EN: 'news_cta_en',
-    NEWS_CTA_LINK: 'news_cta_link',
 };
 
 class SettingService {

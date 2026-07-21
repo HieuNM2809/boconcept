@@ -10,7 +10,6 @@ const adminPartnerController = require('../app/Http/Controllers/admin.partner.co
 const adminProductController = require('../app/Http/Controllers/admin.product.controller');
 const adminCertificateController = require('../app/Http/Controllers/admin.certificate.controller');
 const adminFeatureController = require('../app/Http/Controllers/admin.feature.controller');
-const adminContentController = require('../app/Http/Controllers/admin.content.controller');
 const adminNewsController = require('../app/Http/Controllers/admin.news.controller');
 const adminGalleryController = require('../app/Http/Controllers/admin.gallery.controller');
 const adminPageController = require('../app/Http/Controllers/admin.page.controller');
@@ -86,7 +85,11 @@ crudRoutes('certificates', adminCertificateController);
 adminRouter.post('/features/toggle', (req, res) => adminFeatureController.toggleBlock(req, res));
 crudRoutes('features', adminFeatureController);
 crudRoutes('news', adminNewsController);
-crudRoutes('pages', adminPageController);
+// Trang giới thiệu KHÔNG theo contract crudRoutes: chỉ có đúng một bản ghi hệ
+// thống (slug `about`), admin sửa chứ không thêm/xoá được — giống gallery ở dưới.
+// Không nhận :id từ URL nên không thể sửa nhầm bản ghi khác.
+adminRouter.get('/pages', (req, res) => adminPageController.form(req, res));
+adminRouter.post('/pages', (req, res) => adminPageController.update(req, res));
 
 // Lưới ảnh trang chủ KHÔNG theo contract crudRoutes: chỉ có 3 khe cố định
 // (slot 1|2|3), admin sửa chứ không thêm/xoá được.
@@ -95,8 +98,6 @@ adminRouter.get('/gallery/:slot/edit', (req, res) => adminGalleryController.form
 adminRouter.post('/gallery/:slot', (req, res) => adminGalleryController.update(req, res));
 
 // Nội dung trang chủ (settings key/value) — không theo contract crudRoutes.
-adminRouter.get('/content', (req, res) => adminContentController.index(req, res));
-adminRouter.post('/content', (req, res) => adminContentController.save(req, res));
 
 router.use('/admin', adminRouter);
 

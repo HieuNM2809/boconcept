@@ -148,6 +148,109 @@
         start();
     }
 
+    // ── Lưới ảnh trang chủ: các ô nhiều ảnh tự chuyển ─────────────────────────
+    // Ảnh trong ô đã chồng khít lên nhau bằng CSS (position:absolute), việc ở đây
+    // chỉ là gạt .is-active sang ảnh kế. Không đụng gì tới kích thước ô nên lưới
+    // không thể xô lệch khi ảnh đổi.
+    //
+    // Ô nào chỉ có 1 ảnh thì bỏ qua hẳn — khe tĩnh và khe slider mới thêm 1 ảnh
+    // đều rơi vào nhánh này, không tốn timer nào.
+    const collageCells = document.querySelectorAll('.collage-cell');
+    if (collageCells.length && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const timers = [];
+        let phase = 0; // thứ tự ô CÓ slider, để các ô lệch pha chứ không đổi cùng lúc
+
+        collageCells.forEach((cell) => {
+            const imgs = cell.querySelectorAll('.collage-img');
+            if (imgs.length < 2) return;
+
+            let cur = 0;
+            const delay = phase++ * 600;
+
+            const advance = () => {
+                const next = (cur + 1) % imgs.length;
+                imgs[cur].classList.remove('is-active');
+                imgs[cur].setAttribute('aria-hidden', 'true');
+                imgs[next].classList.add('is-active');
+                imgs[next].removeAttribute('aria-hidden');
+                cur = next;
+            };
+
+            // Giữ handle của cả setTimeout lẫn setInterval: dừng giữa lúc còn đang
+            // chờ lệch pha mà chỉ clearInterval thì timeout vẫn nổ và đẻ interval mới.
+            timers.push({
+                start() {
+                    this.stop();
+                    this.t = setTimeout(() => { this.i = setInterval(advance, 5000); }, delay);
+                },
+                stop() {
+                    clearTimeout(this.t);
+                    clearInterval(this.i);
+                    this.t = this.i = null;
+                },
+            });
+        });
+
+        timers.forEach((t) => t.start());
+
+        // Tab bị ẩn thì ngừng hẳn: chạy nền chỉ tốn pin, và khi quay lại người ta
+        // gặp một ô đã nhảy vài chục ảnh chứ không phải ảnh kế tiếp.
+        document.addEventListener('visibilitychange', () => {
+            timers.forEach((t) => (document.hidden ? t.stop() : t.start()));
+        });
+    }
+
+    // ── Categories: chọn loại cấp 1 -> đổi ảnh lớn + hàng danh mục con ─────────
+    // Bộ chọn, ảnh lớn và track cấp 2 đều mang data-cat trùng nhau nên chỉ cần
+    // gạt .is-active theo id là ba chỗ khớp nhau, không phải giữ state riêng.
+    document.querySelectorAll('.categories').forEach((sec) => {
+        const items = sec.querySelectorAll('.cat-picker-item');
+        if (!items.length) return;
+
+        const setActive = (id) => {
+            sec.querySelectorAll('[data-cat]').forEach((el) => {
+                const on = el.dataset.cat === id;
+                el.classList.toggle('is-active', on);
+                if (el.matches('.cat-picker-item')) el.setAttribute('aria-selected', String(on));
+            });
+        };
+
+        // Rê chuột ra ngoài khối rồi đứng yên 5s -> hàng ảnh cấp 2 tự thu lại
+        // (CSS .cat-subs-row.is-idle). Quay vào là bung ra ngay, loại đang chọn
+        // giữ nguyên nên không phải dò lại từ đầu.
+        const subsRow = sec.querySelector('.cat-subs-row');
+        const IDLE_MS = 5000;
+        let idleTimer;
+        const wake = () => {
+            clearTimeout(idleTimer);
+            if (subsRow) subsRow.classList.remove('is-idle');
+        };
+        const sleepLater = () => {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => subsRow.classList.add('is-idle'), IDLE_MS);
+        };
+
+        // Chuột thật: rê tới đâu đổi tới đó. Màn cảm ứng không hover được nên
+        // click mới là lối vào duy nhất — gắn cả hai, chúng không loại trừ nhau.
+        const hoverable = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        items.forEach((btn) => {
+            if (hoverable) btn.addEventListener('mouseenter', () => setActive(btn.dataset.cat));
+            // wake() ở đây là cho BÀN PHÍM: tab tới nút mà hàng cấp 2 đang ẩn
+            // thì bấm xong chẳng thấy gì đổi.
+            btn.addEventListener('focus', () => { wake(); setActive(btn.dataset.cat); });
+            btn.addEventListener('click', () => { wake(); setActive(btn.dataset.cat); });
+        });
+
+        // Chỉ hẹn giờ khi có chuột thật. Màn cảm ứng KHÔNG sinh mouseleave đáng
+        // tin: chạm xong hàng sẽ ẩn và không còn cách nào gọi lại ngoài chạm
+        // trúng nút cấp 1 — nên ở đó cứ để hiện thường trực.
+        if (hoverable && subsRow) {
+            sec.addEventListener('mouseenter', wake);
+            sec.addEventListener('mouseleave', sleepLater);
+        }
+        // Loại cấp 1 đang chọn KHÔNG reset khi rời chuột — chỉ hàng cấp 2 ẩn đi.
+    });
+
     // ── Horizontal scroll (categories) ─────────────────────────────────────────
     document.querySelectorAll('[data-scroll]').forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -188,31 +291,6 @@
         sync();
     });
 
-    // ── Tìm loại sản phẩm: lọc chip ngay tại chỗ, không tải lại trang ──────────
-    const catFinder = document.getElementById('catFinder');
-    if (catFinder) {
-        const chips = Array.from(document.querySelectorAll('.cat-subnav .cat-chip'));
-        const emptyMsg = document.querySelector('.cat-finder-empty');
-        // Chuẩn hoá bỏ dấu: gõ "ghe" phải khớp "Ghế", "ban tra" khớp "Bàn Trà".
-        const norm = (s) => s
-            .normalize('NFD')
-            .replace(/[̀-ͯ]/g, '') // escape tường minh: dấu tổ hợp viết trần rất dễ hỏng khi copy/lưu
-            .replace(/đ/g, 'd').replace(/Đ/g, 'D') // đ/Đ không phải dấu tổ hợp, NFD không tách được
-            .toLowerCase().trim();
-        const keys = chips.map((c) => norm(c.textContent));
-
-        catFinder.addEventListener('input', () => {
-            const term = norm(catFinder.value);
-            let shown = 0;
-            chips.forEach((c, i) => {
-                const hit = !term || keys[i].indexOf(term) !== -1;
-                c.hidden = !hit;
-                if (hit) shown++;
-            });
-            if (emptyMsg) emptyMsg.hidden = shown !== 0;
-        });
-    }
-
     // ── Auto-navigate selects (sort giá / mỗi trang ở trang danh sách) ──────────
     document.querySelectorAll('select[data-nav]').forEach((s) => {
         s.addEventListener('change', () => { if (s.value) window.location.href = s.value; });
@@ -233,17 +311,18 @@
 
     // ── Chi tiết sản phẩm: biến thể + tabs ────────────────────────────────────
     {
-        const priceEl = document.getElementById('pdPrice');
+        // Không còn tra #pdPrice: giá đã bỏ khỏi trang, biến thể chỉ đổi ảnh + mã SKU.
         const skuEl = document.getElementById('pdSku');
         // Gallery mới là lưới tĩnh, không còn "ảnh chính" để hoán đổi như bản cũ.
         // Đổi ảnh ĐẦU TIÊN của lưới để vẫn phản hồi khi chọn biến thể.
-        const firstImg = document.querySelector('.pdg-cell.is-wide img');
+        // `.is-lead` chứ không `.is-wide`: product.ejs gán lớp `is-lead` cho ảnh đầu.
+        // Selector cũ không khớp phần tử nào nên chọn biến thể KHÔNG hề đổi ảnh.
+        const firstImg = document.querySelector('.pdg-cell.is-lead img');
 
         document.querySelectorAll('.variant').forEach((v) => v.addEventListener('click', () => {
             document.querySelectorAll('.variant').forEach((x) => x.classList.remove('active'));
             v.classList.add('active');
             if (firstImg && v.dataset.image) firstImg.src = v.dataset.image;
-            if (priceEl && v.dataset.price) priceEl.textContent = v.dataset.price;
             if (skuEl && v.dataset.sku) skuEl.textContent = v.dataset.sku;
         }));
     }

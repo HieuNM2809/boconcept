@@ -2,30 +2,35 @@
 <body class="admin">
 <%- include('_nav', {section: 'pages'}) %>
 <main class="admin-wrap admin-narrow">
-    <% const isSys = item && protectedSlugs.indexOf(item.slug) !== -1; %>
     <div class="admin-head">
-        <h1><%= item ? ('Sửa trang: ' + item.title_vi) : 'Thêm trang' %></h1>
-        <a class="btn-sm" href="/admin/pages">← Quay lại</a>
+        <h1>Giới thiệu công ty</h1>
+        <a class="btn-sm" href="/" target="_blank" rel="noopener">Xem trang chủ ↗</a>
     </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+
+    <p class="admin-hint">
+        Đây là trang hệ thống ở địa chỉ <code>/about</code> — không thêm hay xóa được,
+        chỉ sửa nội dung.
+    </p>
 
     <form class="admin-form" method="post" action="<%= action %>">
-        <label>Slug (địa chỉ) *</label>
-        <input name="slug" required value="<%= item ? item.slug : '' %>" placeholder="gioi-thieu"
-               <%= isSys ? 'readonly' : '' %>>
-        <p class="admin-hint">
-            <% if (isSys) { %>
-                Trang hệ thống — slug khóa cố định vì địa chỉ <code>/<%= item.slug %></code> phụ thuộc vào nó.
-            <% } else { %>
-                Chỉ chữ thường, số và gạch ngang. Trang sẽ nằm ở <code>/pages/&lt;slug&gt;</code>.
-            <% } %>
-        </p>
-
         <div class="form-2col">
             <div><label>Tiêu đề (VI) *</label><input name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
             <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
-            <div><label>Mô tả nhỏ (VI)</label><textarea name="excerpt_vi" rows="3" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
-            <div><label>Mô tả nhỏ (EN)</label><textarea name="excerpt_en" rows="3" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
         </div>
+        <p class="admin-hint">
+            Hiện ở <strong>khối giới thiệu ngoài trang chủ</strong> và làm tiêu đề trang <code>/about</code> —
+            sửa ở đây là đổi cả hai chỗ.
+        </p>
+
+        <div class="form-2col">
+            <div><label>Đoạn giới thiệu (VI)</label><textarea name="excerpt_vi" rows="6" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
+            <div><label>Đoạn giới thiệu (EN)</label><textarea name="excerpt_en" rows="6" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
+        </div>
+        <p class="admin-hint">
+            Đoạn văn nằm dưới tiêu đề ở trang chủ (tối đa 800 ký tự). Để trống thì
+            trang chủ dùng lại đoạn mặc định trong mã nguồn.
+        </p>
 
         <label>Ảnh đại diện</label>
         <div class="form-upload">
@@ -38,6 +43,7 @@
              alt="" <%= (item && item.image) ? '' : 'hidden' %>>
 
         <h2 class="admin-subhead">Nội dung (VI)</h2>
+        <p class="admin-hint">Phần dài này CHỈ hiện ở trang <code>/about</code>, không ra trang chủ.</p>
         <p class="admin-hint">
             Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
             <code>- gạch đầu dòng</code> · <code>[chữ](https://...)</code>. Dòng trống để ngăn đoạn.
@@ -69,10 +75,13 @@
             <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
             <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
         </select>
+        <p class="admin-hint">
+            Ẩn thì <code>/about</code> trả 404 và khối giới thiệu ngoài trang chủ quay về
+            đoạn mặc định trong mã nguồn. Màn này vẫn vào sửa được bình thường.
+        </p>
 
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
-            <a class="btn btn-outline" href="/admin/pages">Hủy</a>
+            <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
         </div>
     </form>
 </main>

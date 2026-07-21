@@ -33,6 +33,59 @@
         });
     }
 
+    // ── Khe slider của lưới ảnh trang chủ: thêm/xóa dòng động ─────────────────
+    // Giống galleryRows ở trên nhưng mỗi dòng mang THÊM alt_vi[]/alt_en[]. Ba mảng
+    // đi song song theo thứ tự DOM, controller ghép theo chỉ số — nên mỗi dòng
+    // phải luôn đóng góp đủ cả ba ô, kể cả khi admin để trống.
+    var slotRows = document.getElementById('slotRows');
+    var addSlotBtn = document.getElementById('addSlotRow');
+    if (slotRows && addSlotBtn) {
+        var slotWarn = document.getElementById('slotRowsWarn');
+        var slotSeq = slotRows.querySelectorAll('.slot-row').length;
+
+        function syncSlotWarn() {
+            if (slotWarn) slotWarn.hidden = slotRows.querySelectorAll('.slot-row').length <= 8;
+        }
+
+        addSlotBtn.addEventListener('click', function () {
+            var id = 'slotimg_new' + (slotSeq++);
+            var row = document.createElement('div');
+            row.className = 'gallery-row slot-row';
+            // Cấu trúc phải khớp Y HỆT dòng render sẵn trong gallery-form.ejs —
+            // lệch một thẻ bọc là dòng mới thêm hiển thị khác hẳn dòng đã có.
+            row.innerHTML =
+                '<img class="gallery-row-thumb" alt="" hidden data-preview-for="' + id + '">' +
+                '<div class="slot-row-fields">' +
+                    '<input type="file" accept="image/*" data-encode-to="' + id + '">' +
+                    // Tên phải khớp whitelist hpp — xem admin.gallery.controller.js
+                    '<input type="text" id="' + id + '" name="slot_image[]" placeholder="https://...">' +
+                    '<div class="slot-row-alts">' +
+                        '<input type="text" name="slot_alt_vi[]" placeholder="Mô tả VI">' +
+                        '<input type="text" name="slot_alt_en[]" placeholder="Mô tả EN">' +
+                    '</div>' +
+                '</div>' +
+                '<button type="button" class="btn-sm danger" data-remove-row>Xóa</button>';
+            slotRows.appendChild(row);
+            bindEncoders(row); // dòng mới cũng phải nhận được nút chọn file
+            syncSlotWarn();
+        });
+
+        slotRows.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-remove-row]');
+            if (!btn) return;
+            // Chặn xoá dòng cuối: khe rỗng bị service từ chối, admin sẽ nhận
+            // trang lỗi thay vì hiểu ra là phải còn ít nhất một ảnh.
+            if (slotRows.querySelectorAll('.slot-row').length <= 1) {
+                window.alert('Khe phải còn ít nhất một ảnh. Hãy thay ảnh thay vì xoá dòng cuối.');
+                return;
+            }
+            btn.closest('.slot-row').remove();
+            syncSlotWarn();
+        });
+
+        syncSlotWarn();
+    }
+
     // ── Thanh công cụ soạn nội dung (Markdown rút gọn) ────────────────────────
     // Chèn cú pháp vào textarea thay vì dùng contenteditable: nội dung lưu xuống
     // luôn là chữ thuần, không bao giờ là HTML — khớp với cách server dựng lại

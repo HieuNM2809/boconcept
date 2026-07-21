@@ -118,22 +118,42 @@ VALUES
      'Khám phá Hiện đại ấm áp', 'Explore Warm Modernism', NULL, 2, 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE `title_vi` = VALUES(`title_vi`), `image` = VALUES(`image`), `updated_at` = NOW();
 
--- 3 ô LỚN của lưới collage "Style advice" — đúng 3 hàng, khoá theo `slot`.
--- 5 ô nhỏ KHÔNG nằm ở đây: chúng đóng cứng trong home.controller.js (SMALL_TILES).
+-- Cả 8 ô của lưới collage "Style advice", khoá theo `slot` (sửa ở /admin/gallery).
+--   khe 1-3 = 3 ô LỚN, chứa được nhiều ảnh và tự chuyển ở trang chủ
+--   khe 4-8 = 5 ô nhỏ, mỗi khe đúng một ảnh
+-- `sort_order` là thứ tự ảnh TRONG một khe (không phải số khe) nên bắt đầu từ 0.
+-- Seed để mỗi khe một ảnh; muốn thấy slider chạy thì thêm ảnh cho khe 1-3 ở admin.
 INSERT INTO `gallery` (`id`, `slot`, `image`, `alt_vi`, `alt_en`, `sort_order`, `status`, `created_at`, `updated_at`)
 VALUES
-    (1, 1, 'https://picsum.photos/seed/insp-sofa/900/700',   'Sofa ngoài trời bên hồ bơi', 'Outdoor sofa by the pool',    1, 1, NOW(), NOW()),
-    (2, 2, 'https://picsum.photos/seed/insp-dining/900/700', 'Bàn ăn ngoài trời view biển','Outdoor dining with sea view', 2, 1, NOW(), NOW()),
-    (3, 3, 'https://picsum.photos/seed/insp-garden/900/700', 'Góc vườn với chậu hoa',      'Garden corner with planters',  3, 1, NOW(), NOW())
+    (1, 1, 'https://picsum.photos/seed/insp-sofa/900/700',    'Sofa ngoài trời bên hồ bơi',  'Outdoor sofa by the pool',        0, 1, NOW(), NOW()),
+    (2, 2, 'https://picsum.photos/seed/insp-dining/900/700',  'Bàn ăn ngoài trời view biển', 'Outdoor dining with sea view',    0, 1, NOW(), NOW()),
+    (3, 3, 'https://picsum.photos/seed/insp-garden/900/700',  'Góc vườn với chậu hoa',       'Garden corner with planters',     0, 1, NOW(), NOW()),
+    (4, 4, 'https://picsum.photos/seed/insp-bath/700/900',    'Góc phòng tắm',               'Bathroom corner',                 0, 1, NOW(), NOW()),
+    (5, 5, 'https://picsum.photos/seed/insp-chair/700/700',   'Ghế thư giãn cạnh cửa sổ',    'Lounge chair by the window',      0, 1, NOW(), NOW()),
+    (6, 6, 'https://picsum.photos/seed/insp-patio/800/700',   'Bộ bàn ghế sân vườn',         'Patio furniture set',             0, 1, NOW(), NOW()),
+    (7, 7, 'https://picsum.photos/seed/insp-chairs/700/900',  'Ghế ăn gỗ tự nhiên',          'Natural wood dining chairs',      0, 1, NOW(), NOW()),
+    (8, 8, 'https://picsum.photos/seed/insp-lounger/800/700', 'Ghế nằm cạnh hồ bơi',         'Sun loungers by the pool',        0, 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE `image` = VALUES(`image`), `alt_vi` = VALUES(`alt_vi`), `updated_at` = NOW();
 
--- Cấu hình site: công tắc khối Công năng + nội dung khối "Loại sản phẩm".
--- Bốn khoá nội dung để trống thì trang chủ tự quay về chữ trong resources/lang.
+-- Trang giới thiệu công ty — trang HỆ THỐNG (slug 'about'), admin chỉ sửa được
+-- chứ không thêm/xoá (/admin/pages). `title_*` và `excerpt_*` vừa dựng trang
+-- /about vừa là tiêu đề + đoạn văn của khối giới thiệu ngoài TRANG CHỦ.
+-- ON DUPLICATE cố ý chỉ đụng `updated_at`: cài lại seed không được ghi đè nội
+-- dung admin đã soạn.
+INSERT INTO `pages` (`slug`, `title_vi`, `title_en`, `excerpt_vi`, `excerpt_en`, `status`, `created_at`, `updated_at`)
+VALUES
+    ('about',
+     'Chúng tôi chuyên về Nội thất và Chậu gốm',
+     'We Specialize in Furniture and Pottery Planter',
+     'Công ty TNHH Quốc tế Hương Sơn là nhà sản xuất và xuất khẩu tại Việt Nam, chuyên về nội thất và gốm sứ. Chúng tôi cam kết mang đến những sản phẩm chất lượng cao, kết hợp tay nghề thủ công tinh xảo, thiết kế hiện đại và độ bền lâu dài. Phục vụ khách hàng trên toàn thế giới, chúng tôi cung cấp dịch vụ sản xuất tin cậy, kiểm soát chất lượng nghiêm ngặt và dịch vụ xuất khẩu chuyên nghiệp, đáp ứng nhu cầu đa dạng của thị trường quốc tế. Sứ mệnh của chúng tôi là tạo ra sản phẩm giàu giá trị, đồng thời xây dựng quan hệ hợp tác lâu dài dựa trên sự tin cậy, chất lượng và tính bền vững.',
+     'Huong Son International Co., Ltd. is a Vietnam-based manufacturer and exporter specializing in furniture and ceramic pottery. We are committed to delivering high-quality products that combine excellent craftsmanship, modern design, and lasting durability. Serving customers worldwide, we offer reliable manufacturing, strict quality control, and professional export services to meet the diverse needs of global markets. Our mission is to provide value-driven products while building long-term partnerships based on trust, quality, and sustainability.',
+     1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE `updated_at` = NOW();
+
+-- Cấu hình site: chỉ còn công tắc khối Công năng.
+-- Các khoá nội dung khối "Loại sản phẩm"/"Tin tức" đã bỏ cùng màn /admin/content;
+-- chữ hai khối đó nay nằm cố định trong resources/lang/{vi,en}/home.js.
 INSERT INTO `settings` (`key`, `value`, `created_at`, `updated_at`)
 VALUES
-    ('features_block_enabled', '1', NOW(), NOW()),
-    ('categories_title_vi', 'Chất lượng thấy được, sự thoải mái cảm nhận được.', NOW(), NOW()),
-    ('categories_title_en', 'Quality You Can See, Comfort You Can Feel.', NOW(), NOW()),
-    ('categories_desc_vi', 'Chúng tôi kết hợp vật liệu tự nhiên, tay nghề thủ công và thiết kế chỉn chu để tạo nên những món nội thất nâng tầm không gian sống của bạn.', NOW(), NOW()),
-    ('categories_desc_en', 'We blend natural materials, expert craftsmanship, and thoughtful design to create furniture that enhances the way you live.', NOW(), NOW())
+    ('features_block_enabled', '1', NOW(), NOW())
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), `updated_at` = NOW();

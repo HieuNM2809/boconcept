@@ -33,15 +33,22 @@
         const designCats = ((typeof navCategories !== 'undefined' && navCategories) || [])
             .filter(function (c) { return c.id !== category.id; });
         %>
-        <% if (designCats.length) { %>
-            <section class="design-strip">
-                <div class="design-intro">
-                    <h2 class="design-title"><%= t.catalog.design.title %></h2>
-                    <a class="design-cta" href="/#categories">
-                        <span class="design-cta-icon" aria-hidden="true">→</span><%= t.catalog.design.cta %>
-                    </a>
-                </div>
+        <%# Section KHÔNG còn bọc trong `if (designCats.length)`: nó giờ mang <h1> tên
+            loại sản phẩm, mà loại nào cũng phải có tên. Loại duy nhất (không còn
+            loại nào khác để xếp vào dải ảnh) mà ẩn cả section thì trang mất trắng
+            tiêu đề. Chỉ DẢI ẢNH mới nằm trong if. %>
+        <section class="design-strip<%= designCats.length ? '' : ' is-solo' %>">
+            <div class="design-intro">
+                <%# <h1> chứ không <h2>: tiêu đề lớn ở .cat-header đã bỏ theo yêu cầu,
+                    đây là tiêu đề chính duy nhất của trang. Ưu tiên tiêu đề riêng
+                    admin nhập, không có thì lấy tên loại — y như .cat-heading cũ. %>
+                <h1 class="design-title"><%= pick(category, 'title') || pick(category, 'name') %></h1>
+                <a class="design-cta" href="/#categories">
+                    <span class="design-cta-icon" aria-hidden="true">→</span><%= t.catalog.design.cta %>
+                </a>
+            </div>
 
+            <% if (designCats.length) { %>
                 <div class="design-rail">
                     <div class="design-track" id="designTrack">
                         <% designCats.forEach(function (c) { %>
@@ -61,28 +68,23 @@
                                 aria-label="<%= t.common.actions.next %>">&rsaquo;</button>
                     <% } %>
                 </div>
-            </section>
-        <% } %>
+            <% } %>
+        </section>
 
-        <!-- Đầu trang: danh mục con BÊN TRÁI, tên loại sản phẩm BÊN PHẢI -->
-        <div class="cat-header">
-            <nav class="cat-subnav" aria-label="<%= t.catalog.subCategoriesTitle %>">
-                <% children.forEach(function (c) { %>
-                    <a class="cat-chip" href="/categories/<%= c.id %>">
-                        <%= pick(c, 'name') %><span class="cat-chip-count"><%= c.product_count %></span>
-                    </a>
-                <% }) %>
-            </nav>
-            <%# Tiêu đề riêng nếu admin có nhập, không thì dùng tên loại %>
-            <div class="cat-heading-wrap">
-                <h1 class="cat-heading"><%= pick(category, 'title') || pick(category, 'name') %></h1>
+        <%# Đầu trang giờ CHỈ còn phần mô tả. Dải chip danh mục con (.cat-subnav) đã bỏ
+            theo yêu cầu — đường vào danh mục con vẫn còn ở băng ảnh .design-strip phía
+            trên và ở menu header, nên bỏ chip không mất lối điều hướng nào.
+            Tiêu đề lớn bên phải cũng đã bỏ trước đó: tên loại nằm ở <h1> trong
+            .design-strip, để cả hai là lặp một cái tên hai lần trên cùng màn hình. %>
+        <% if (descriptionHtml) { %>
+            <div class="cat-header">
                 <%# <div> chứ không <p>: richtext.render sinh ra <p>/<ul>/<h2>,
                     lồng <ul> trong <p> là HTML sai, trình duyệt sẽ tự tách thẻ và vỡ layout. %>
-                <% if (descriptionHtml) { %>
+                <div class="cat-heading-wrap">
                     <div class="cat-heading-desc"><%- descriptionHtml %></div>
-                <% } %>
+                </div>
             </div>
-        </div>
+        <% } %>
 
         <!-- Bộ lọc: tên · kích thước · chất liệu · khối lượng -->
         <form class="filter-bar" action="/categories/<%= category.id %>" method="get">
@@ -113,12 +115,8 @@
             </div>
         </form>
 
-        <!-- Tìm loại sản phẩm (lọc ngay trên trang, không cần tải lại) -->
-        <div class="cat-finder">
-            <label for="catFinder"><%= t.catalog.catSearch.label %></label>
-            <input id="catFinder" type="search" placeholder="<%= t.catalog.catSearch.placeholder %>" autocomplete="off">
-            <p class="cat-finder-empty" hidden><%= t.catalog.catSearch.empty %></p>
-        </div>
+        <%# Ô "Tìm loại sản phẩm" đã bỏ cùng với dải chip: nó chỉ lọc đúng các chip đó,
+            giữ lại thì gõ gì cũng ra "không tìm thấy". %>
 
         <!-- Thanh sắp xếp + số kết quả -->
         <div class="toolbar">
@@ -164,7 +162,7 @@
                                 <p class="product-dims"><span class="product-dims-label"><%= t.catalog.attrs.weight %>:</span> <%= Number(p.weight) %> kg</p>
                             <% } %>
 
-                            <span class="product-price"><%= money(p.price) %></span>
+<%# Giá đã bỏ khỏi TOÀN BỘ trang khách xem theo yêu cầu — khách hỏi giá qua form liên hệ. %>
                         </div>
                     </a>
                 <% }) %>

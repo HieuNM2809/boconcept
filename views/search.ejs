@@ -58,7 +58,7 @@
                         <div class="product-info">
                             <% if (p.category) { %><span class="product-cat"><%= pick(p.category, 'name') %></span><% } %>
                             <h3 class="product-name"><%= pick(p, 'name') %></h3>
-                            <span class="product-price"><%= money(p.price) %></span>
+<%# Giá đã bỏ khỏi TOÀN BỘ trang khách xem theo yêu cầu. %>
                         </div>
                     </a>
                 <% }) %>
