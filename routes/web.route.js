@@ -101,10 +101,21 @@ adminRouter.post('/gallery/:slot', (req, res) => adminGalleryController.update(r
 
 router.use('/admin', adminRouter);
 
-// Health check
+// Health check — READINESS chứ không phải liveness.
+//
+// railway.json trỏ healthcheckPath vào đây, nên endpoint này chính là thứ quyết
+// định bản deploy mới có được thay bản đang chạy hay không. Trả 200 trong lúc DB
+// còn chưa nối được nghĩa là đưa một site 500 toàn tập lên sóng VÀ vứt mất bản
+// cũ đang chạy tốt — nên phải soi cờ dbReady do index.js đặt.
+//
+// Cờ chỉ bật MỘT chiều (xem index.js): DB rớt giữa chừng sẽ không kéo nó về
+// false, vì restartPolicy ON_FAILURE gặp 503 sẽ restart container — một cú chớp
+// mạng của MySQL đủ thành vòng lặp restart.
 const health = (req, res) => {
-    res.status(200).json({
-        status: 'ok',
+    const dbReady = req.app.locals.dbReady === true;
+    res.status(dbReady ? 200 : 503).json({
+        status: dbReady ? 'ok' : 'db_unavailable',
+        db: dbReady ? 'up' : 'down',
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),
     });
