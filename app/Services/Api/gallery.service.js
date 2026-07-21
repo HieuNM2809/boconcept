@@ -109,7 +109,16 @@ class GalleryService {
             await Gallery.destroy({where: {slot: s}, transaction: tx});
             return Gallery.bulkCreate(
                 list.map((x, i) => ({...x, slot: s, sort_order: i, status: 1})),
-                {transaction: tx}
+                {
+                    transaction: tx,
+                    // `fields` KHÔNG thừa: nó khoá cứng danh sách cột được ghi,
+                    // nên `id` không thể lọt vào câu INSERT dù đối tượng truyền
+                    // xuống có mang theo id (form bị sửa tay, hoặc _normalizeOne
+                    // sau này được nới ra). Ghi id có sẵn -> MySQL 1062 trên
+                    // gallery.PRIMARY, mà Sequelize dịch thành đúng một chữ
+                    // "Validation error" — không nói cột nào, không nói khoá nào.
+                    fields: ['slot', 'image', 'alt_vi', 'alt_en', 'sort_order', 'status'],
+                }
             );
         });
     }
