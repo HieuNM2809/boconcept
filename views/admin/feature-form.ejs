@@ -11,15 +11,11 @@
         <!-- Icon: tải file lên HOẶC dán URL. File được mã hoá base64 ngay tại trình
              duyệt rồi nhét vào chính ô `icon` bên dưới, nên không cần multipart,
              không cần thư viện upload, và ảnh nằm trong DB nên sống sót redeploy. -->
-        <label>Icon *</label>
-        <div class="form-upload">
-            <input type="file" id="iconFile" accept="image/*" data-encode-to="icon">
-            <span class="admin-hint">Chọn file (SVG/PNG tối đa 200KB) hoặc dán đường dẫn vào ô dưới.</span>
-        </div>
-        <input name="icon" id="icon" required value="<%= item ? item.icon : '' %>" placeholder="/static/icons/leaf.svg">
-        <img class="form-preview form-preview-icon" id="iconPreview"
-             src="<%= item && item.icon ? item.icon : '' %>"
-             alt="" <%= (item && item.icon) ? '' : 'hidden' %>>
+        <%- include('_image-field', {
+            name: 'icon', label: 'Icon', value: item ? item.icon : '', required: true,
+            placeholder: '/static/icons/leaf.svg', previewClass: 'is-icon',
+            hint: 'SVG nét mảnh cho đẹp nhất; PNG/JPG cũng nhận. SVG được giữ nguyên, không rasterise.'
+        }) %>
 
         <div><label>Tiêu đề (VI) *</label><input name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
         <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>

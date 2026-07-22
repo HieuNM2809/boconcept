@@ -25,19 +25,9 @@
             <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
         </p>
         <label>Mô tả (VI)</label>
-        <div class="editor-toolbar" data-editor-for="description_vi">
-            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
-            <button type="button" data-prefix="## ">H2</button><button type="button" data-prefix="- ">• Danh sách</button>
-            <button type="button" data-link="1">🔗 Link</button>
-        </div>
-        <textarea id="description_vi" name="description_vi" rows="5" class="editor-area"><%= item ? (item.description_vi || '') : '' %></textarea>
+        <%- include('_editor', {name: 'description_vi', rows: 5, value: item ? (item.description_vi || '') : '', tools: ['b','i','h2','ul','link']}) %>
         <label>Mô tả (EN)</label>
-        <div class="editor-toolbar" data-editor-for="description_en">
-            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
-            <button type="button" data-prefix="## ">H2</button><button type="button" data-prefix="- ">• Danh sách</button>
-            <button type="button" data-link="1">🔗 Link</button>
-        </div>
-        <textarea id="description_en" name="description_en" rows="5" class="editor-area"><%= item ? (item.description_en || '') : '' %></textarea>
+        <%- include('_editor', {name: 'description_en', rows: 5, value: item ? (item.description_en || '') : '', tools: ['b','i','h2','ul','link']}) %>
 
         <div class="form-2col">
             <div>

@@ -41,9 +41,45 @@ function normalize(b = {}) {
     };
 }
 
+// Bộ lọc màn danh sách. Giá trị '' = KHÔNG lọc theo trường đó; riêng `status`
+// phải là '' mặc định (không phải 1) vì admin cần thấy cả sản phẩm đang ẩn —
+// mặc định của service là status=1, để nguyên thì hàng ẩn biến mất khỏi màn quản trị.
+const PER_PAGE_CHOICES = [20, 50, 100];
+
+function readFilters(q = {}) {
+    const str = (v) => (v == null ? '' : String(v).trim());
+    const oneOf = (v, allowed, fallback) => (allowed.includes(str(v)) ? str(v) : fallback);
+    const perPage = parseInt(q.per_page, 10);
+    return {
+        q: str(q.q),
+        category_id: /^[1-9][0-9]*$/.test(str(q.category_id)) ? str(q.category_id) : '',
+        status: oneOf(q.status, ['0', '1'], ''),
+        is_featured: oneOf(q.is_featured, ['0', '1'], ''),
+        // Số âm/chữ -> bỏ qua thay vì đẩy NaN xuống service (NaN vào WHERE là 0 hàng)
+        min_price: Number.isFinite(parseFloat(q.min_price)) && parseFloat(q.min_price) >= 0 ? str(q.min_price) : '',
+        max_price: Number.isFinite(parseFloat(q.max_price)) && parseFloat(q.max_price) >= 0 ? str(q.max_price) : '',
+        material: str(q.material),
+        sort: oneOf(q.sort, ['newest', 'oldest', 'price_asc', 'price_desc', 'priority'], 'newest'),
+        per_page: PER_PAGE_CHOICES.includes(perPage) ? perPage : PER_PAGE_CHOICES[0],
+        page: Math.max(parseInt(q.page, 10) || 1, 1),
+    };
+}
+
 async function index(req, res) {
-    const result = await ProductService.getAll({per_page: 100, status: ''}); // '' = mọi trạng thái
-    res.render('admin/products', {pageTitle: 'Sản phẩm', section: 'products', items: toPlain(result.data), meta: result.meta, flash: flashText(req.query.msg)});
+    const filters = readFilters(req.query);
+    const [result, categories] = await Promise.all([
+        ProductService.getAll(filters),
+        CategoryService.getAll(),
+    ]);
+    res.render('admin/products', {
+        pageTitle: 'Sản phẩm',
+        section: 'products',
+        items: toPlain(result.data),
+        meta: result.meta,
+        categories: toPlain(categories),
+        filters,
+        flash: flashText(req.query.msg),
+    });
 }
 
 async function form(req, res) {

@@ -1,0 +1,47 @@
+<%
+/* Phân trang dùng chung cho màn danh sách admin.
+   Tham số: meta {current_page, last_page}, query (object các bộ lọc đang áp),
+            base (đường dẫn, vd '/admin/products')
+
+   Giữ nguyên bộ lọc khi sang trang: bỏ qua bước này thì bấm "trang 2" là văng
+   về danh sách chưa lọc, đúng lúc admin cần nó nhất. */
+const p = {
+    cur: Math.max(parseInt(meta.current_page, 10) || 1, 1),
+    last: Math.max(parseInt(meta.last_page, 10) || 1, 1),
+    base: base,
+};
+
+function url(n) {
+    const usp = new URLSearchParams();
+    Object.keys(query || {}).forEach((k) => {
+        const v = query[k];
+        if (v !== '' && v !== null && v !== undefined && k !== 'page') usp.set(k, v);
+    });
+    if (n > 1) usp.set('page', n);
+    const s = usp.toString();
+    return p.base + (s ? '?' + s : '');
+}
+
+// Cửa sổ số trang: luôn có trang đầu/cuối + 2 trang quanh trang hiện tại, phần
+// bị cắt thay bằng "…". Danh sách 50 trang mà in hết 50 nút thì không bấm nổi.
+const pages = [];
+for (let i = 1; i <= p.last; i++) {
+    if (i === 1 || i === p.last || Math.abs(i - p.cur) <= 2) pages.push(i);
+    else if (pages[pages.length - 1] !== '…') pages.push('…');
+}
+%>
+<% if (p.last > 1) { %>
+    <nav class="admin-pager" aria-label="Phân trang">
+        <% if (p.cur > 1) { %><a href="<%= url(p.cur - 1) %>" rel="prev">← Trước</a><% } %>
+        <% pages.forEach(function (n) { %>
+            <% if (n === '…') { %>
+                <span class="is-gap">…</span>
+            <% } else if (n === p.cur) { %>
+                <span class="is-current" aria-current="page"><%= n %></span>
+            <% } else { %>
+                <a href="<%= url(n) %>"><%= n %></a>
+            <% } %>
+        <% }) %>
+        <% if (p.cur < p.last) { %><a href="<%= url(p.cur + 1) %>" rel="next">Sau →</a><% } %>
+    </nav>
+<% } %>

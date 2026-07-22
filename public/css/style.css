@@ -7,6 +7,10 @@
     --soft: #f6f2ec;
     --accent: #c39a5e;
     --accent-dark: #a97f45;
+    /* Link trong nội dung bài viết — xanh, tách khỏi màu nhấn vàng của thương
+       hiệu để người đọc nhận ra ngay "chỗ này bấm được" */
+    --link: #2f6fd0;
+    --link-dark: #1f52a3;
     --dark: #1b1917;
     --radius: 14px;
     --container: 1200px;
@@ -985,18 +989,114 @@ body.drawer-open { overflow: hidden; }
 .article-body h3 { font-size: 19px; font-weight: 700; margin: 28px 0 10px; }
 .article-body ul { margin: 0 0 20px; padding-left: 22px; }
 .article-body li { margin-bottom: 8px; }
-.article-body a { color: var(--accent-dark); border-bottom: 1px solid currentColor; }
+/* Link trong nội dung bài: xanh, chỉ gạch chân khi rê chuột. Dùng chung cho mọi
+   chỗ in bodyHtml của richtext.helper (tin tức, /about, tab sản phẩm, mô tả loại
+   sản phẩm) VÀ cho khung xem trước trong admin — cùng một class .article-body. */
+.article-body a, .cat-heading-desc a {
+    color: var(--link); border-bottom: 0; text-decoration: none; transition: color .15s;
+}
+.article-body a:hover, .cat-heading-desc a:hover {
+    color: var(--link-dark); text-decoration: underline; text-underline-offset: 3px;
+}
+.article-body a:focus-visible, .cat-heading-desc a:focus-visible {
+    outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px;
+}
 .article-body strong { font-weight: 700; }
 .article-back { margin-top: 34px; }
 
-/* Thanh công cụ soạn thảo trong admin */
-.editor-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
-.editor-toolbar button {
-    font-family: var(--sans); font-size: 13px; padding: 6px 12px; cursor: pointer;
-    background: #fff; border: 1px solid var(--line); border-radius: 6px; transition: .2s;
+/* ── Ô soạn nội dung trong admin (views/admin/_editor.ejs) ────────────────────
+   Thanh công cụ và textarea nằm chung MỘT khung viền: khung sáng lên khi con trỏ
+   vào textarea (:focus-within), nên cả cụm đọc ra là một ô nhập duy nhất thay vì
+   một dãy nút rời lơ lửng phía trên. */
+.editor {
+    margin-bottom: 6px; background: #fff;
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    transition: border-color .18s, box-shadow .18s;
 }
-.editor-toolbar button:hover { background: var(--soft); border-color: var(--muted); }
-.editor-area { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13.5px; line-height: 1.7; }
+.editor:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(195, 154, 94, .12); }
+.editor-toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px;
+    padding: 5px 7px; background: var(--soft); border-bottom: 1px solid var(--line);
+}
+.editor-group { display: flex; align-items: center; gap: 2px; }
+.editor-sep { width: 1px; height: 18px; background: var(--line); margin: 0 6px; }
+.editor-toolbar button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-width: 30px; height: 30px; padding: 0 9px;
+    font-family: var(--sans); font-size: 13px; font-weight: 600; line-height: 1;
+    color: var(--muted); background: transparent; border: 0; border-radius: 7px;
+    cursor: pointer; transition: background .15s, color .15s, box-shadow .15s;
+}
+.editor-toolbar button b { font-family: var(--serif); font-size: 15px; font-weight: 800; }
+.editor-toolbar button i { font-size: 15px; }
+.editor-toolbar button:hover { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(36, 31, 27, .1); }
+.editor-toolbar button:active { background: var(--line); box-shadow: none; }
+.editor-toolbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.editor-icon { width: 15px; height: 15px; flex: 0 0 auto; }
+/* Xem trước không chèn gì vào nội dung mà đổi chế độ cả ô -> đẩy hẳn sang phải */
+.editor-toolbar .editor-preview-btn { margin-left: auto; }
+.editor-toolbar .editor-preview-btn.is-on { background: var(--accent); color: #fff; box-shadow: none; }
+.editor-toolbar .editor-preview-btn.is-on:hover { background: var(--accent-dark); color: #fff; }
+.editor-preview { padding: 14px; overflow-y: auto; }
+.editor-preview[hidden] { display: none; }
+.editor-preview-empty { color: var(--muted); font-size: 13px; font-style: italic; }
+/* Trong khung soạn thảo, chữ đầu/cuối không cần khoảng cách như trên trang thật */
+.editor-preview > :first-child { margin-top: 0; }
+.editor-preview > :last-child { margin-bottom: 0; }
+/* Textarea bỏ hết viền/bo góc riêng — khung đã do .editor lo */
+.admin-form .editor-area {
+    border: 0; border-radius: 0; padding: 12px 14px;
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 13.5px; line-height: 1.7;
+}
+.admin-form .editor-area:focus { outline: none; border: 0; }
+
+@media (max-width: 560px) {
+    /* Nhãn chữ của Danh sách/Link bị cắt trước, giữ lại icon */
+    .editor-sep { margin: 0 3px; }
+    .editor-toolbar button { padding: 0 7px; }
+}
+
+/* ── Hộp thoại admin (hiện dùng cho "Chèn liên kết" — admin.js dựng) ──────── */
+body.modal-open { overflow: hidden; }
+.modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 12vh 20px 20px; }
+.modal[hidden] { display: none; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(27, 25, 23, .45); animation: modalFade .16s ease-out; }
+.modal-card {
+    position: relative; width: min(100%, 520px);
+    background: #fff; border-radius: 12px; box-shadow: 0 18px 50px rgba(27, 25, 23, .25);
+    animation: modalPop .16s ease-out;
+}
+@keyframes modalFade { from { opacity: 0; } }
+@keyframes modalPop { from { opacity: 0; transform: translateY(-8px); } }
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.modal-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.modal-x {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; padding: 0; font-size: 22px; line-height: 1;
+    color: var(--muted); background: transparent; border: 0; border-radius: 7px; cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.modal-x:hover { background: var(--soft); color: var(--ink); }
+.modal-body { padding: 18px; }
+.modal-body label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.modal-body label + input { margin-bottom: 14px; }
+.modal-body input {
+    width: 100%; padding: 11px 13px; font-family: var(--sans); font-size: 14px;
+    color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.modal-body input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(195, 154, 94, .14); }
+.modal-body input.is-error { border-color: #b23b3b; }
+.modal-body input.is-error:focus { box-shadow: 0 0 0 3px rgba(178, 59, 59, .14); }
+.modal-error { margin: -8px 0 14px; color: #b23b3b; font-size: 12.5px; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 0 18px 18px; }
+.modal-foot .modal-ok { background: var(--accent); border-color: var(--accent); color: #fff; }
+.modal-foot .modal-ok:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+
+@media (max-width: 560px) {
+    .modal { padding: 8vh 14px 14px; }
+}
 
 /* Bộ sưu tập ảnh sản phẩm trong admin */
 .gallery-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
@@ -1247,27 +1347,90 @@ body.admin { background: #f4f1ec; display: flex; align-items: stretch; min-heigh
 .admin-bar-link { color: #cfc7bd; font-size: 13px; padding: 0 8px; }
 .admin-bar-link:hover { color: #fff; }
 
-.admin-wrap { flex: 1; min-width: 0; width: auto; max-width: 1100px; margin: 28px auto 60px; padding-inline: 28px; }
+/* Màn danh sách chiếm hết bề ngang: bảng sản phẩm có 8 cột kèm cột thao tác 3
+   nút, bó trong 1100px là cột "Tên" bị bóp và cụm nút tràn ra ngoài viền bảng. */
+.admin-wrap { flex: 1; min-width: 0; width: auto; max-width: none; margin: 28px auto 60px; padding-inline: 28px; }
+/* Màn nhập liệu thì ngược lại — dòng chữ dài quá 720px là mỏi mắt khi đọc/soát */
 .admin-narrow { max-width: 720px; }
 .admin-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .admin-head h1 { font-size: 24px; margin: 0; }
 .admin-flash { background: #e7f5ea; border: 1px solid #b7e0c1; color: #1f7a3f; padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; }
 .admin-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-.admin-table th, .admin-table td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: middle; }
+/* Kẻ ô cả hai chiều: bảng đã kéo hết bề ngang màn hình nên chỉ có vạch ngang thì
+   mắt trượt cột, nhất là mấy cột hẹp (Nổi bật, Trạng thái) nằm giữa. */
+.admin-table th, .admin-table td {
+    text-align: left; padding: 12px 14px; font-size: 14px; vertical-align: middle;
+    border-bottom: 1px solid var(--line); border-right: 1px solid var(--line);
+}
+/* Viền phải của cột cuối trùng với viền bảng -> bỏ, không thì dày gấp đôi */
+.admin-table th:last-child, .admin-table td:last-child { border-right: 0; }
 .admin-table th { background: var(--soft); color: var(--muted); font-weight: 600; }
 .admin-table tr:last-child td { border-bottom: 0; }
+/* Dò một dòng qua 8 cột bằng mắt rất dễ lạc -> tô nhẹ dòng đang trỏ tới */
+.admin-table tbody tr:hover td { background: #fbf8f3; }
 .admin-thumb { width: 90px; height: 50px; object-fit: cover; border-radius: 6px; }
 .admin-empty { text-align: center; color: var(--muted); padding: 30px; }
 .badge-status { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
 .badge-status.on { background: #e7f5ea; color: #1f7a3f; }
 .badge-status.off { background: #f0e7e7; color: #9a5a5a; }
-.admin-row-actions { display: flex; gap: 8px; align-items: center; }
+/* Cột thao tác: KHÔNG dùng display:flex trên chính <td>. Ô đã flex thì nó thôi
+   là table-cell, trình duyệt không tính được bề rộng cột nữa và cụm nút tràn hẳn
+   ra ngoài viền bảng (đúng lỗi nhìn thấy ở màn sản phẩm). Xếp ngang bằng
+   inline-block + nowrap để ô vẫn là ô của bảng. */
+td.admin-row-actions { white-space: nowrap; text-align: right; }
+td.admin-row-actions > * { display: inline-block; vertical-align: middle; margin-left: 6px; }
+td.admin-row-actions > :first-child { margin-left: 0; }
 .admin-row-actions form { margin: 0; }
 .btn-sm { display: inline-block; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--ink); }
 .btn-sm:hover { border-color: var(--accent); color: var(--accent-dark); }
 .btn-sm.danger { color: #b23b3b; border-color: #e6c9c9; }
 .btn-sm.danger:hover { background: #b23b3b; color: #fff; border-color: #b23b3b; }
 .admin-note { color: var(--muted); font-size: 13px; margin-top: 16px; }
+
+/* ── Khung bộ lọc trên màn danh sách ──────────────────────────────────────────
+   Form GET: mọi bộ lọc nằm trong URL nên chia sẻ được link, F5 và nút Back đều
+   giữ nguyên kết quả — khác hẳn lọc bằng JS trên client. */
+.admin-filter { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px; }
+.admin-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px 18px; }
+.admin-filter-field { min-width: 0; }
+.admin-filter-field > label {
+    display: block; margin-bottom: 6px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--muted);
+}
+.admin-filter-field input, .admin-filter-field select {
+    width: 100%; padding: 9px 11px;
+    font-family: var(--sans); font-size: 14px; color: var(--ink);
+    background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.admin-filter-field input:focus, .admin-filter-field select:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(195, 154, 94, .14);
+}
+/* Khoảng giá: hai ô "từ / đến" nằm chung một ô lưới */
+.admin-filter-range { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.admin-filter-actions {
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line);
+}
+.admin-filter-actions .btn-sm.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.admin-filter-actions .btn-sm.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+
+.admin-listbar { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.admin-total { margin: 0; color: var(--muted); font-size: 13px; }
+.admin-total strong { color: var(--ink); font-size: 15px; }
+/* Bảng nhiều cột trên màn hẹp: cuộn ngang TRONG khung, không đẩy cả trang */
+.admin-table-wrap { overflow-x: auto; }
+
+/* Phân trang (views/admin/_pagination.ejs) */
+.admin-pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 18px; }
+.admin-pager a, .admin-pager span {
+    min-width: 34px; height: 34px; padding: 0 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; border-radius: 8px; border: 1px solid var(--line); background: #fff;
+}
+.admin-pager a:hover { border-color: var(--accent); color: var(--accent-dark); }
+.admin-pager .is-current { background: var(--accent); border-color: var(--accent); color: #fff; }
+.admin-pager .is-gap { border: 0; background: none; color: var(--muted); min-width: 18px; padding: 0; }
 .admin-form { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
 .admin-form label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
 .admin-form input, .admin-form select, .admin-form textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; font-family: var(--sans); }
@@ -1287,10 +1450,65 @@ body.admin { background: #f4f1ec; display: flex; align-items: stretch; min-heigh
     .admin-wrap { margin-top: 20px; padding-inline: 18px; }
 }
 .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
-.form-preview { margin-top: 10px; max-height: 120px; border-radius: 8px; border: 1px solid var(--line); }
-.form-preview-icon { max-height: 64px; padding: 8px; background: var(--soft); }
-.form-upload { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
 .admin-hint { color: var(--muted); font-size: 12px; }
+
+/* ── Vùng kéo–thả ảnh (views/admin/_image-field.ejs) ──────────────────────────
+   Ô <input type=file> thật nằm phủ kín khung ở opacity 0: bấm chỗ nào cũng mở
+   hộp chọn file, và thả ảnh vào khung là trình duyệt tự gán file — nên không
+   cần JS nào để "kéo thả chạy được", JS chỉ tô viền và đổi trạng thái. */
+.dropzone {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 168px; padding: 22px;
+    border: 2px dashed var(--line); border-radius: 12px;
+    background: var(--soft); text-align: center;
+    transition: border-color .18s, background .18s, box-shadow .18s;
+}
+.dropzone:hover { border-color: var(--accent); background: #fbf7f1; }
+.dropzone.is-drag {
+    border-color: var(--accent); background: #fdf6ea;
+    box-shadow: inset 0 0 0 3px rgba(195, 154, 94, .14);
+}
+/* Reset các thuộc tính .admin-form input đổ lên — chọn cả [type=file] để thắng
+   độ ưu tiên của khối tạo kiểu nút file mặc định bên dưới. */
+.admin-form input[type="file"].dropzone-input {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    margin: 0; padding: 0; border: 0; background: none;
+    opacity: 0; cursor: pointer; z-index: 1;
+}
+.dropzone-empty { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.dropzone-icon { width: 34px; height: 34px; color: var(--accent); margin-bottom: 4px; }
+.dropzone-title { font-size: 14px; font-weight: 600; }
+.dropzone-sub { font-size: 13px; color: var(--muted); }
+.dropzone-sub u { color: var(--accent-dark); font-weight: 600; text-underline-offset: 3px; }
+.dropzone-empty .admin-hint { max-width: 380px; margin-top: 2px; }
+
+/* Trạng thái đã có ảnh: khung thu gọn, đổi sang viền liền, khoe ảnh xem trước. */
+.dropzone-preview, .dropzone-swap, .dropzone-clear { display: none; }
+.dropzone.has-image { min-height: 0; padding: 14px; border-style: solid; background: #fff; flex-direction: column; gap: 8px; }
+.dropzone.has-image .dropzone-empty { display: none; }
+.dropzone.has-image .dropzone-preview { display: block; max-height: 200px; border-radius: 8px; }
+.dropzone.has-image .dropzone-preview.is-icon { max-height: 88px; padding: 10px; background: var(--soft); border-radius: 8px; }
+.dropzone.has-image .dropzone-swap { display: block; color: var(--muted); font-size: 12px; }
+.dropzone.has-image .dropzone-clear { display: inline-block; position: absolute; top: 10px; right: 10px; z-index: 2; }
+
+.admin-form .dropzone-url { margin-top: 10px; }
+.upload-note:empty { display: none; }
+
+/* Nút file mặc định của trình duyệt (các dòng bộ sưu tập ảnh vẫn dùng) */
+.admin-form input[type="file"] { padding: 6px; background: #fff; cursor: pointer; }
+.admin-form input[type="file"]::file-selector-button {
+    margin-right: 10px; padding: 6px 12px;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--soft); color: var(--ink);
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.admin-form input[type="file"]::file-selector-button:hover { border-color: var(--accent); color: var(--accent-dark); }
+
+@media (max-width: 560px) {
+    .dropzone { min-height: 140px; padding: 18px 14px; }
+    .dropzone-empty .admin-hint { display: none; }
+}
 .admin-thumb-icon { width: 44px; height: 44px; object-fit: contain; background: var(--soft); padding: 4px; }
 .admin-cell-clip { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .admin-subhead { font-size: 16px; margin: 0 0 4px; }

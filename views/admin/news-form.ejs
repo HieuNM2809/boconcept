@@ -8,17 +8,7 @@
     </div>
     <form class="admin-form" method="post" action="<%= action %>">
 
-        <label>Ảnh *</label>
-        <div class="form-upload">
-            <%# 400KB: base64 phình ~33% -> ~533KB, cộng các field khác vẫn dưới
-                giới hạn 1mb của express.urlencoded. Để 600KB là chạm trần. %>
-            <input type="file" id="imageFile" accept="image/*" data-encode-to="image">
-            <span class="admin-hint">Chọn file (tối đa 400KB) hoặc dán đường dẫn vào ô dưới.</span>
-        </div>
-        <input name="image" id="image" required value="<%= item ? item.image : '' %>" placeholder="https://...">
-        <img class="form-preview" id="imagePreview"
-             src="<%= item && item.image ? item.image : '' %>"
-             alt="" <%= (item && item.image) ? '' : 'hidden' %>>
+        <%- include('_image-field', {name: 'image', label: 'Ảnh bài viết', value: item ? item.image : '', required: true}) %>
 
         <div class="form-2col">
             <div><label>Tiêu đề (VI) *</label><input name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
@@ -44,26 +34,10 @@
             <code>- gạch đầu dòng</code> · <code>[chữ](https://...)</code>. Dòng trống để ngăn đoạn.
             Thẻ HTML gõ vào sẽ hiện ra dạng chữ, không chạy — đây là chủ ý để chặn mã độc.
         </p>
-        <div class="editor-toolbar" data-editor-for="body_vi">
-            <button type="button" data-wrap="**">B</button>
-            <button type="button" data-wrap="*"><em>I</em></button>
-            <button type="button" data-prefix="## ">H2</button>
-            <button type="button" data-prefix="### ">H3</button>
-            <button type="button" data-prefix="- ">• Danh sách</button>
-            <button type="button" data-link="1">🔗 Link</button>
-        </div>
-        <textarea id="body_vi" name="body_vi" rows="14" class="editor-area"><%= item ? (item.body_vi || '') : '' %></textarea>
+        <%- include('_editor', {name: 'body_vi', rows: 14, value: item ? (item.body_vi || '') : ''}) %>
 
         <label>Nội dung (EN)</label>
-        <div class="editor-toolbar" data-editor-for="body_en">
-            <button type="button" data-wrap="**">B</button>
-            <button type="button" data-wrap="*"><em>I</em></button>
-            <button type="button" data-prefix="## ">H2</button>
-            <button type="button" data-prefix="### ">H3</button>
-            <button type="button" data-prefix="- ">• Danh sách</button>
-            <button type="button" data-link="1">🔗 Link</button>
-        </div>
-        <textarea id="body_en" name="body_en" rows="14" class="editor-area"><%= item ? (item.body_en || '') : '' %></textarea>
+        <%- include('_editor', {name: 'body_en', rows: 14, value: item ? (item.body_en || '') : ''}) %>
 
         <label>Link ngoài (để trống thì nút trên trang chủ trỏ vào bài viết này)</label>
         <input name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://...">

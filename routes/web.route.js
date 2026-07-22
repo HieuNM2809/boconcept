@@ -13,6 +13,7 @@ const adminFeatureController = require('../app/Http/Controllers/admin.feature.co
 const adminNewsController = require('../app/Http/Controllers/admin.news.controller');
 const adminGalleryController = require('../app/Http/Controllers/admin.gallery.controller');
 const adminPageController = require('../app/Http/Controllers/admin.page.controller');
+const adminPreviewController = require('../app/Http/Controllers/admin.preview.controller');
 const adminAuth = require('../app/Http/Middleware/adminAuth.middleware');
 const navigation = require('../app/Http/Middleware/navigation.middleware');
 
@@ -60,6 +61,11 @@ adminRouter.param('id', (req, res, next, id) => {
     next();
 });
 adminRouter.get('/', (req, res) => res.redirect('/admin/slides'));
+
+// Xem trước nội dung soạn thảo (nút hình con mắt trên thanh công cụ) -> trả JSON,
+// không phải trang. Đặt ở đây, TRƯỚC crudRoutes: tên `preview` không trùng base
+// nào nên không có đường đụng POST /admin/:base.
+adminRouter.post('/preview', (req, res) => adminPreviewController.render(req, res));
 adminRouter.get('/slides', (req, res) => adminController.slidesIndex(req, res));
 adminRouter.get('/slides/new', (req, res) => adminController.slideNew(req, res));
 adminRouter.post('/slides', (req, res) => adminController.slideCreate(req, res));
