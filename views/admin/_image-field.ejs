@@ -1,6 +1,6 @@
 <%
 /* Ô chọn ảnh dùng chung cho MỌI form admin.
-   Tham số: name (bắt buộc), label, value, required
+   Tham số: name (bắt buộc), label, value, required, placeholder, previewClass, hint
 
    Ảnh lớn được thu về tối đa 5 megapixel ngay tại trình duyệt (admin.js), nên
    không còn trần dung lượng theo KB cho từng ô nữa.
@@ -15,17 +15,47 @@ const f = {
     label: typeof label !== 'undefined' ? label : 'Ảnh',
     value: typeof value !== 'undefined' && value ? value : '',
     required: typeof required !== 'undefined' ? required : false,
+    placeholder: typeof placeholder !== 'undefined' ? placeholder : 'https://...',
+    previewClass: typeof previewClass !== 'undefined' ? previewClass : '',
+    hint: typeof hint !== 'undefined' ? hint
+        : 'PNG · JPG · WEBP · SVG — không giới hạn dung lượng, ảnh lớn tự thu về 5 megapixel.',
 };
 %>
 
-<label for="<%= f.name %>"><%= f.label %><%= f.required ? ' *' : '' %></label>
-<div class="form-upload">
-    <input type="file" id="<%= f.name %>File"
-           accept="image/*"
-           data-encode-to="<%= f.name %>">
-    <span class="admin-hint">Chọn ảnh từ máy hoặc dán đường dẫn vào ô dưới. Nhận mọi định dạng ảnh, không giới hạn dung lượng — ảnh lớn được tự thu về 5 megapixel.</span>
+<label for="<%= f.name %>File"><%= f.label %><%= f.required ? ' *' : '' %></label>
+
+<%# Vùng kéo–thả: ô <input type=file> phủ kín khung nên bấm chỗ nào cũng mở hộp
+    chọn file, và THẢ ảnh vào khung là trình duyệt tự gán vào input rồi bắn
+    `change` — không phải tự xử lý DataTransfer. admin.js chỉ lo tô viền lúc kéo
+    qua và bật/tắt lớp has-image. %>
+<div class="dropzone<%= f.value ? ' has-image' : '' %>" data-dropzone>
+    <input type="file" class="dropzone-input" id="<%= f.name %>File"
+           accept="image/*" data-encode-to="<%= f.name %>"
+           aria-label="<%= f.label %>: kéo thả hoặc bấm để chọn ảnh">
+
+    <div class="dropzone-empty">
+        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 15.5V3.5"/>
+            <path d="m7.5 8 4.5-4.5L16.5 8"/>
+            <path d="M3.5 14.5v3a3 3 0 0 0 3 3h11a3 3 0 0 0 3-3v-3"/>
+        </svg>
+        <span class="dropzone-title">Kéo &amp; thả ảnh vào đây</span>
+        <span class="dropzone-sub">hoặc <u>bấm để chọn từ máy</u></span>
+        <span class="admin-hint"><%= f.hint %></span>
+    </div>
+
+    <%# src rỗng sẽ bị trình duyệt hiểu là "tải lại chính trang này" -> bỏ hẳn
+        thuộc tính khi chưa có ảnh. %>
+    <img class="dropzone-preview <%= f.previewClass %>" id="<%= f.name %>Preview"
+         <% if (f.value) { %>src="<%= f.value %>"<% } %> alt="">
+    <span class="dropzone-swap">Bấm hoặc thả ảnh khác để thay</span>
+    <button type="button" class="btn-sm danger dropzone-clear">Xoá ảnh</button>
 </div>
-<input name="<%= f.name %>" id="<%= f.name %>" value="<%= f.value %>"
-       placeholder="https://..." <%= f.required ? 'required' : '' %>>
-<img class="form-preview" id="<%= f.name %>Preview"
-     src="<%= f.value %>" alt="" <%= f.value ? '' : 'hidden' %>>
+<%# admin.js ghi thông báo (đã thu ảnh / đọc file lỗi) vào đây thay vì tự chèn
+    thẻ vào trong khung — chèn vào trong sẽ nằm dưới lớp phủ của ô file. %>
+<span class="admin-hint upload-note" data-note-for="<%= f.name %>"></span>
+
+<input class="dropzone-url" name="<%= f.name %>" id="<%= f.name %>" value="<%= f.value %>"
+       placeholder="<%= f.placeholder %>" <%= f.required ? 'required' : '' %>>
+<span class="admin-hint">Hoặc dán sẵn đường dẫn ảnh vào ô trên.</span>

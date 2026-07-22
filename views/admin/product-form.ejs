@@ -80,32 +80,14 @@
             Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
             <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
         </p>
-        <div class="editor-toolbar" data-editor-for="extra_vi">
-            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
-            <button type="button" data-prefix="## ">H2</button><button type="button" data-prefix="- ">• Danh sách</button>
-            <button type="button" data-link="1">🔗 Link</button>
-        </div>
-        <textarea id="extra_vi" name="extra_vi" rows="8" class="editor-area"><%= item ? (item.extra_vi || '') : '' %></textarea>
+        <%- include('_editor', {name: 'extra_vi', rows: 8, value: item ? (item.extra_vi || '') : '', tools: ['b','i','h2','ul','link']}) %>
         <label>Thông tin thêm (EN)</label>
-        <div class="editor-toolbar" data-editor-for="extra_en">
-            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
-            <button type="button" data-prefix="## ">H2</button><button type="button" data-prefix="- ">• Danh sách</button>
-            <button type="button" data-link="1">🔗 Link</button>
-        </div>
-        <textarea id="extra_en" name="extra_en" rows="8" class="editor-area"><%= item ? (item.extra_en || '') : '' %></textarea>
+        <%- include('_editor', {name: 'extra_en', rows: 8, value: item ? (item.extra_en || '') : '', tools: ['b','i','h2','ul','link']}) %>
 
         <h2 class="admin-subhead">Thông tin vận chuyển</h2>
-        <div class="editor-toolbar" data-editor-for="shipping_vi">
-            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
-            <button type="button" data-prefix="- ">• Danh sách</button>
-        </div>
-        <textarea id="shipping_vi" name="shipping_vi" rows="6" class="editor-area"><%= item ? (item.shipping_vi || '') : '' %></textarea>
+        <%- include('_editor', {name: 'shipping_vi', rows: 6, value: item ? (item.shipping_vi || '') : '', tools: ['b','i','ul']}) %>
         <label>Thông tin vận chuyển (EN)</label>
-        <div class="editor-toolbar" data-editor-for="shipping_en">
-            <button type="button" data-wrap="**">B</button><button type="button" data-wrap="*"><em>I</em></button>
-            <button type="button" data-prefix="- ">• Danh sách</button>
-        </div>
-        <textarea id="shipping_en" name="shipping_en" rows="6" class="editor-area"><%= item ? (item.shipping_en || '') : '' %></textarea>
+        <%- include('_editor', {name: 'shipping_en', rows: 6, value: item ? (item.shipping_en || '') : '', tools: ['b','i','ul']}) %>
 
         <% if (item && item.variants && item.variants.length) { %>
             <p class="admin-note">Biến thể hiện có: <%= item.variants.map(function (v) { return v.name; }).join(', ') %> (quản lý biến thể sẽ bổ sung sau).</p>

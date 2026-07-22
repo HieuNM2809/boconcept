@@ -7,33 +7,111 @@
         <a class="btn btn-primary" href="/admin/products/new">+ Thêm sản phẩm</a>
     </div>
     <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
-    <table class="admin-table">
-        <thead>
-        <tr><th>#</th><th>Ảnh</th><th>Tên (VI)</th><th>Danh mục</th><th>Giá</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
-        </thead>
-        <tbody>
-        <% if (!items.length) { %><tr><td colspan="8" class="admin-empty">Chưa có sản phẩm.</td></tr><% } %>
-        <% items.forEach(function (p) { %>
-            <tr>
-                <td><%= p.id %></td>
-                <td><% if (p.thumbnail) { %><img class="admin-thumb" src="<%= p.thumbnail %>" alt="" loading="lazy"><% } else { %>—<% } %></td>
-                <td><%= p.name_vi %></td>
-                <td><%= p.category ? p.category.name_vi : '—' %></td>
-                <td><%= Number(p.price || 0).toLocaleString('vi-VN') %> ₫</td>
-                <td><%= p.is_featured ? '★' : '' %></td>
-                <td><span class="badge-status <%= p.status ? 'on' : 'off' %>"><%= p.status ? 'Hiện' : 'Ẩn' %></span></td>
-                <td class="admin-row-actions">
-                    <a class="btn-sm" href="/admin/products/<%= p.id %>/edit">Sửa</a>
-                    <a class="btn-sm" href="/products/<%= p.id %>" target="_blank" rel="noopener">Xem</a>
-                    <form method="post" action="/admin/products/<%= p.id %>/delete" data-confirm="Xóa sản phẩm này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
-                </td>
-            </tr>
-        <% }) %>
-        </tbody>
-    </table>
-    <% if (meta && meta.total > items.length) { %>
-        <p class="admin-note">Hiển thị <%= items.length %>/<%= meta.total %> sản phẩm (giới hạn 100 — bổ sung phân trang khi cần).</p>
-    <% } %>
+
+    <%# Form GET: bộ lọc nằm hết trong URL nên chia sẻ link, F5 và nút Back đều
+        giữ nguyên kết quả. `page` KHÔNG có ô nhập — đổi bộ lọc là phải về trang
+        1, nếu giữ page cũ thì lọc còn 3 kết quả mà vẫn đứng ở trang 4 -> trống. %>
+    <form class="admin-filter" method="get" action="/admin/products">
+        <div class="admin-filter-grid">
+            <div class="admin-filter-field">
+                <label for="f_q">Tên sản phẩm</label>
+                <input type="text" id="f_q" name="q" value="<%= filters.q %>" placeholder="Gõ tên VI hoặc EN">
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_cat">Danh mục</label>
+                <select id="f_cat" name="category_id">
+                    <option value="">Tất cả</option>
+                    <% categories.forEach(function (c) { %>
+                        <option value="<%= c.id %>" <%= String(filters.category_id) === String(c.id) ? 'selected' : '' %>><%= c.name_vi %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_status">Trạng thái</label>
+                <select id="f_status" name="status">
+                    <option value="">Tất cả</option>
+                    <option value="1" <%= filters.status === '1' ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= filters.status === '0' ? 'selected' : '' %>>Ẩn</option>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_feat">Nổi bật</label>
+                <select id="f_feat" name="is_featured">
+                    <option value="">Tất cả</option>
+                    <option value="1" <%= filters.is_featured === '1' ? 'selected' : '' %>>Có</option>
+                    <option value="0" <%= filters.is_featured === '0' ? 'selected' : '' %>>Không</option>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_min">Khoảng giá (₫)</label>
+                <div class="admin-filter-range">
+                    <input type="number" id="f_min" name="min_price" value="<%= filters.min_price %>" placeholder="Từ" min="0" step="1000">
+                    <input type="number" name="max_price" value="<%= filters.max_price %>" placeholder="Đến" min="0" step="1000">
+                </div>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_mat">Chất liệu</label>
+                <input type="text" id="f_mat" name="material" value="<%= filters.material %>" placeholder="Gỗ sồi, vải nỉ...">
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_sort">Sắp xếp</label>
+                <select id="f_sort" name="sort">
+                    <option value="newest" <%= filters.sort === 'newest' ? 'selected' : '' %>>Mới nhất</option>
+                    <option value="oldest" <%= filters.sort === 'oldest' ? 'selected' : '' %>>Cũ nhất</option>
+                    <option value="price_asc" <%= filters.sort === 'price_asc' ? 'selected' : '' %>>Giá tăng dần</option>
+                    <option value="price_desc" <%= filters.sort === 'price_desc' ? 'selected' : '' %>>Giá giảm dần</option>
+                    <option value="priority" <%= filters.sort === 'priority' ? 'selected' : '' %>>Thứ tự ưu tiên</option>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_per">Số dòng / trang</label>
+                <select id="f_per" name="per_page">
+                    <% [20, 50, 100].forEach(function (n) { %>
+                        <option value="<%= n %>" <%= String(filters.per_page) === String(n) ? 'selected' : '' %>><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
+        </div>
+        <div class="admin-filter-actions">
+            <a class="btn-sm" href="/admin/products">Làm lại</a>
+            <button class="btn-sm primary" type="submit">Lọc</button>
+        </div>
+    </form>
+
+    <div class="admin-listbar">
+        <p class="admin-total">Tổng: <strong><%= meta.total %></strong> sản phẩm<% if (meta.last_page > 1) { %> · trang <%= meta.current_page %>/<%= meta.last_page %><% } %></p>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+            <tr><th>#</th><th>Ảnh</th><th>Tên (VI)</th><th>Danh mục</th><th>Giá</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
+            </thead>
+            <tbody>
+            <% if (!items.length) { %>
+                <tr><td colspan="8" class="admin-empty">Không có sản phẩm nào khớp bộ lọc.</td></tr>
+            <% } %>
+            <% items.forEach(function (p) { %>
+                <tr>
+                    <td><%= p.id %></td>
+                    <td><% if (p.thumbnail) { %><img class="admin-thumb" src="<%= p.thumbnail %>" alt="" loading="lazy"><% } else { %>—<% } %></td>
+                    <td><%= p.name_vi %></td>
+                    <td><%= p.category ? p.category.name_vi : '—' %></td>
+                    <td><%= Number(p.price || 0).toLocaleString('vi-VN') %> ₫</td>
+                    <td><%= p.is_featured ? '★' : '' %></td>
+                    <td><span class="badge-status <%= p.status ? 'on' : 'off' %>"><%= p.status ? 'Hiện' : 'Ẩn' %></span></td>
+                    <td class="admin-row-actions">
+                        <a class="btn-sm" href="/admin/products/<%= p.id %>/edit">Sửa</a>
+                        <a class="btn-sm" href="/products/<%= p.id %>" target="_blank" rel="noopener">Xem</a>
+                        <form method="post" action="/admin/products/<%= p.id %>/delete" data-confirm="Xóa sản phẩm này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                    </td>
+                </tr>
+            <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <%- include('_pagination', {meta: meta, query: filters, base: '/admin/products'}) %>
 </main>
 <script src="/static/js/admin.js"></script>
 </body>
