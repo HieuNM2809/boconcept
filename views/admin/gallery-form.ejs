@@ -1,73 +1,111 @@
 <%- include('../partials/head') %>
 <body class="admin">
 <%- include('_nav', {section: 'gallery'}) %>
-<main class="admin-wrap admin-narrow">
+
+<%# Bố cục 2 cột chiếm hết bề ngang màn hình (giống form slide / chứng nhận) chứ
+    không bó trong admin-narrow 720px: nội dung của khe là ẢNH — khe slider có
+    thể tới 8 dòng, mỗi dòng 4 ô nhập, nhồi vào cột 720px thì ô đường dẫn (chứa
+    data URI base64) bị bóp còn vài pixel. Ảnh chiếm cột lớn bên trái, phần giải
+    thích và nút lưu dồn sang cột phải. %>
+<main class="admin-wrap">
     <div class="admin-head">
         <h1><%= label %></h1>
         <a class="btn-sm" href="/admin/gallery">← Quay lại</a>
     </div>
 
-    <form class="admin-form" method="post" action="<%= action %>">
-        <% if (isSlider) { %>
-            <%# ── Khe SLIDER: nhiều ảnh, tự chuyển ngoài trang chủ ──────────────
-                Ba mảng slot_image[] / slot_alt_vi[] / slot_alt_en[] đi song song theo
-                thứ tự DOM, controller ghép lại theo chỉ số. Mỗi dòng đóng góp đúng một
-                phần tử cho cả ba mảng nên chúng luôn thẳng hàng, kể cả khi xoá dòng giữa.
+    <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
+        <div class="form-main">
+            <% if (isSlider) { %>
+                <%# ── Khe SLIDER: nhiều ảnh, tự chuyển ngoài trang chủ ──────────
+                    Ba mảng slot_image[] / slot_alt_vi[] / slot_alt_en[] đi song song theo
+                    thứ tự DOM, controller ghép lại theo chỉ số. Mỗi dòng đóng góp đúng một
+                    phần tử cho cả ba mảng nên chúng luôn thẳng hàng, kể cả khi xoá dòng giữa.
 
-                Tên phải giữ tiền tố `slot_`: chúng nằm trong whitelist của hpp
-                (index.middleware.js). Đổi sang `image[]` là hpp gộp mảng về ảnh CUỐI
-                và chỉ lưu được 1 ảnh, không báo lỗi gì cả. %>
-            <p class="admin-hint">
-                Ô này tự chuyển ảnh 5 giây một lần theo đúng thứ tự dưới đây. Kéo thả
-                chưa hỗ trợ — muốn đổi thứ tự thì sửa lại đường dẫn giữa các dòng.
-                Xoá hết chữ trong ô đường dẫn là ảnh đó bị bỏ khi lưu.
-                Để đúng <strong>một</strong> ảnh thì ô đứng yên như ảnh tĩnh.
-            </p>
+                    Tên phải giữ tiền tố `slot_`: chúng nằm trong whitelist của hpp
+                    (index.middleware.js). Đổi sang `image[]` là hpp gộp mảng về ảnh CUỐI
+                    và chỉ lưu được 1 ảnh, không báo lỗi gì cả. %>
+                <section class="form-card">
+                    <h2 class="admin-subhead">Ảnh trong khe</h2>
+                    <p class="admin-hint">
+                        Thứ tự chuyển ảnh đúng bằng thứ tự các dòng dưới đây. Kéo thả chưa
+                        hỗ trợ — muốn đổi thứ tự thì sửa lại đường dẫn giữa các dòng.
+                        Xoá hết chữ trong ô đường dẫn là ảnh đó bị bỏ khi lưu.
+                    </p>
 
-            <div id="slotRows" class="gallery-rows">
-                <% item.images.forEach(function (im, i) { %>
-                    <%# 3 cột: ảnh · cụm ô nhập (xếp dọc) · nút xoá. Nhồi cả 5 ô nhập
-                        thành 5 cột ngang thì ô đường dẫn bị bóp còn vài pixel trong
-                        khung admin-narrow. %>
-                    <div class="gallery-row slot-row">
-                        <img class="gallery-row-thumb" src="<%= im.image %>" alt="" data-preview-for="slotimg<%= i %>">
-                        <div class="slot-row-fields">
-                            <input type="file" accept="image/*" data-encode-to="slotimg<%= i %>">
-                            <input type="text" id="slotimg<%= i %>" name="slot_image[]" value="<%= im.image %>" placeholder="https://...">
-                            <div class="slot-row-alts">
-                                <input type="text" name="slot_alt_vi[]" value="<%= im.alt_vi || '' %>" placeholder="Mô tả VI">
-                                <input type="text" name="slot_alt_en[]" value="<%= im.alt_en || '' %>" placeholder="Mô tả EN">
+                    <div id="slotRows" class="gallery-rows">
+                        <% item.images.forEach(function (im, i) { %>
+                            <%# 4 cột: số thứ tự · ảnh · cụm ô nhập · nút xoá. Số thứ tự do
+                                CSS counter sinh ra nên xoá dòng giữa là tự đánh số lại. %>
+                            <div class="gallery-row slot-row">
+                                <img class="gallery-row-thumb" src="<%= im.image %>" alt="" data-preview-for="slotimg<%= i %>">
+                                <div class="slot-row-fields">
+                                    <label class="slot-field">Ảnh từ máy
+                                        <input type="file" accept="image/*" data-encode-to="slotimg<%= i %>">
+                                    </label>
+                                    <label class="slot-field">Đường dẫn ảnh
+                                        <input type="text" id="slotimg<%= i %>" name="slot_image[]" value="<%= im.image %>" placeholder="https://...">
+                                    </label>
+                                    <div class="slot-row-alts">
+                                        <label class="slot-field">Mô tả ảnh (VI)
+                                            <input type="text" name="slot_alt_vi[]" value="<%= im.alt_vi || '' %>" placeholder="Dùng cho trình đọc màn hình">
+                                        </label>
+                                        <label class="slot-field">Mô tả ảnh (EN)
+                                            <input type="text" name="slot_alt_en[]" value="<%= im.alt_en || '' %>">
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-sm danger" data-remove-row>Xóa</button>
                             </div>
-                        </div>
-                        <button type="button" class="btn-sm danger" data-remove-row>Xóa</button>
+                        <% }) %>
                     </div>
-                <% }) %>
-            </div>
-            <button type="button" class="btn-sm" id="addSlotRow">+ Thêm ảnh</button>
-            <p class="admin-hint" id="slotRowsWarn" hidden>
-                Nhiều ảnh làm dữ liệu gửi lên rất nặng và có thể vượt giới hạn của máy chủ.
-                Nên giữ dưới 8 ảnh mỗi khe.
-            </p>
-        <% } else { %>
-            <%# ── Khe TĨNH: đúng một ảnh ────────────────────────────────────────
-                Cùng tên trường với khe slider nhưng ở dạng chuỗi đơn (slot_image,
-                không phải slot_image[]); collectImages san phẳng được cả hai kiểu. %>
-            <p class="admin-hint">Ô này chỉ hiển thị <strong>một ảnh</strong>, không tự chuyển.</p>
 
-            <%- include('_image-field', {name: 'slot_image', label: 'Ảnh', value: item.images[0].image, required: true}) %>
-
-            <div class="form-2col">
-                <div><label>Mô tả ảnh (VI)</label><input name="slot_alt_vi" value="<%= item.images[0].alt_vi || '' %>" placeholder="Dùng cho trình đọc màn hình"></div>
-                <div><label>Mô tả ảnh (EN)</label><input name="slot_alt_en" value="<%= item.images[0].alt_en || '' %>"></div>
-            </div>
-        <% } %>
-
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
-            <a class="btn btn-outline" href="/admin/gallery">Hủy</a>
+                    <button type="button" class="btn-sm" id="addSlotRow">+ Thêm ảnh</button>
+                    <p class="admin-hint" id="slotRowsWarn" hidden>
+                        Nhiều ảnh làm dữ liệu gửi lên rất nặng và có thể vượt giới hạn của máy chủ.
+                        Nên giữ dưới 8 ảnh mỗi khe.
+                    </p>
+                </section>
+            <% } else { %>
+                <%# ── Khe TĨNH: đúng một ảnh ────────────────────────────────────
+                    Cùng tên trường với khe slider nhưng ở dạng chuỗi đơn (slot_image,
+                    không phải slot_image[]); collectImages san phẳng được cả hai kiểu. %>
+                <section class="form-card is-media">
+                    <%- include('_image-field', {name: 'slot_image', label: 'Ảnh', value: item.images[0].image, required: true, previewClass: 'is-wide'}) %>
+                </section>
+            <% } %>
         </div>
+
+        <%# Cột phải: giải thích khe + (khe tĩnh) hai ô mô tả, rồi tới nút lưu.
+            Nút lưu nằm CUỐI thẻ cuối cùng chứ không ở thẻ riêng: .form-actions
+            trong form rộng có sẵn vạch ngăn phía trên, đứng một mình sẽ thành
+            một cái hộp trắng chỉ có vạch kẻ với hai cái nút. %>
+        <aside class="form-side">
+            <section class="form-card">
+                <h2 class="admin-subhead">Về khe này</h2>
+                <% if (isSlider) { %>
+                    <p class="admin-hint">
+                        Ô này tự chuyển ảnh 5 giây một lần theo đúng thứ tự bên trái.
+                        Để đúng <strong>một</strong> ảnh thì ô đứng yên như ảnh tĩnh.
+                    </p>
+                <% } else { %>
+                    <p class="admin-hint">Ô này chỉ hiển thị <strong>một ảnh</strong>, không tự chuyển.</p>
+
+                    <h2 class="admin-subhead">Mô tả ảnh</h2>
+                    <label for="slot_alt_vi">Mô tả ảnh (VI)</label>
+                    <input id="slot_alt_vi" name="slot_alt_vi" value="<%= item.images[0].alt_vi || '' %>" placeholder="Dùng cho trình đọc màn hình">
+                    <label for="slot_alt_en">Mô tả ảnh (EN)</label>
+                    <input id="slot_alt_en" name="slot_alt_en" value="<%= item.images[0].alt_en || '' %>">
+                <% } %>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+                    <a class="btn btn-outline" href="/admin/gallery">Hủy</a>
+                </div>
+            </section>
+        </aside>
     </form>
 </main>
+
 <script src="/static/js/admin.js"></script>
 </body>
 </html>

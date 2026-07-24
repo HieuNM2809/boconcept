@@ -1,61 +1,89 @@
 <%- include('../partials/head') %>
 <body class="admin">
 <%- include('_nav', {section: 'news'}) %>
-<main class="admin-wrap admin-narrow">
+
+<%# Bố cục 2 cột chiếm hết bề ngang (như form sản phẩm) chứ không bó trong
+    admin-narrow 720px: bài viết có 2 ô soạn nội dung 14 dòng + 6 ô chữ, nhồi vào
+    một cột hẹp thì phải cuộn rất dài mới soát hết. Nội dung bên trái, ảnh và
+    thiết lập xuất bản dồn sang cột phải dính theo màn hình. %>
+<main class="admin-wrap">
     <div class="admin-head">
         <h1><%= item ? ('Sửa bài viết #' + item.id) : 'Thêm bài viết' %></h1>
         <a class="btn-sm" href="/admin/news">← Quay lại</a>
     </div>
-    <form class="admin-form" method="post" action="<%= action %>">
 
-        <%- include('_image-field', {name: 'image', label: 'Ảnh bài viết', value: item ? item.image : '', required: true}) %>
+    <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
+        <div class="form-main">
+            <section class="form-card">
+                <h2 class="admin-subhead">Thông tin bài viết</h2>
+                <%# VI và EN đặt CẠNH nhau: dịch nội dung là việc đối chiếu hai bản,
+                    xếp dọc thì phải cuộn qua lại mới so được. %>
+                <div class="form-pair">
+                    <div><label for="title_vi">Tiêu đề (VI) *</label><input id="title_vi" name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
+                    <div><label for="title_en">Tiêu đề (EN)</label><input id="title_en" name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+                    <div><label for="excerpt_vi">Mô tả (VI)</label><textarea id="excerpt_vi" name="excerpt_vi" rows="4" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
+                    <div><label for="excerpt_en">Mô tả (EN)</label><textarea id="excerpt_en" name="excerpt_en" rows="4" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
+                    <div><label for="cta_vi">Nhãn link (VI)</label><input id="cta_vi" name="cta_vi" value="<%= item ? (item.cta_vi || '') : '' %>" placeholder="Khám phá thêm"></div>
+                    <div><label for="cta_en">Nhãn link (EN)</label><input id="cta_en" name="cta_en" value="<%= item ? (item.cta_en || '') : '' %>" placeholder="Discover more"></div>
+                </div>
+            </section>
 
-        <div class="form-2col">
-            <div><label>Tiêu đề (VI) *</label><input name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
-            <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
-            <div><label>Mô tả (VI)</label><textarea name="excerpt_vi" rows="4" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
-            <div><label>Mô tả (EN)</label><textarea name="excerpt_en" rows="4" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
-            <div><label>Nhãn link (VI)</label><input name="cta_vi" value="<%= item ? (item.cta_vi || '') : '' %>" placeholder="Khám phá thêm"></div>
-            <div><label>Nhãn link (EN)</label><input name="cta_en" value="<%= item ? (item.cta_en || '') : '' %>" placeholder="Discover more"></div>
+            <section class="form-card">
+                <h2 class="admin-subhead">Nội dung bài viết</h2>
+                <p class="admin-hint">
+                    Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
+                    <code>- gạch đầu dòng</code> · <code>[chữ](https://...)</code>. Dòng trống để ngăn đoạn.
+                    Thẻ HTML gõ vào sẽ hiện ra dạng chữ, không chạy — đây là chủ ý để chặn mã độc.
+                </p>
+                <div class="form-pair">
+                    <div>
+                        <label for="body_vi">Tiếng Việt</label>
+                        <%- include('_editor', {name: 'body_vi', rows: 18, value: item ? (item.body_vi || '') : ''}) %>
+                    </div>
+                    <div>
+                        <label for="body_en">English</label>
+                        <%- include('_editor', {name: 'body_en', rows: 18, value: item ? (item.body_en || '') : ''}) %>
+                    </div>
+                </div>
+            </section>
         </div>
 
-        <div class="form-2col">
-            <div><label>Tác giả</label><input name="author" value="<%= item ? (item.author || '') : '' %>" placeholder="Nguyễn Văn A"></div>
-            <div><label>Ngày đăng</label>
+        <%# Cột phải dính theo màn hình: nút Lưu luôn trong tầm mắt, không phải cuộn
+            xuống đáy sau mỗi lần sửa một ô. %>
+        <aside class="form-side">
+            <section class="form-card">
+                <%- include('_image-field', {name: 'image', label: 'Ảnh bài viết', value: item ? item.image : '', required: true}) %>
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Xuất bản</h2>
+                <label for="author">Tác giả</label>
+                <input id="author" name="author" value="<%= item ? (item.author || '') : '' %>" placeholder="Nguyễn Văn A">
+
+                <label for="published_at">Ngày đăng</label>
                 <%# datetime-local cần định dạng YYYY-MM-DDTHH:mm, không nhận ISO có 'Z' %>
-                <input type="datetime-local" name="published_at"
+                <input type="datetime-local" id="published_at" name="published_at"
                        value="<%= item && item.published_at ? new Date(new Date(item.published_at).getTime() - new Date(item.published_at).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '' %>">
-            </div>
-        </div>
 
-        <h2 class="admin-subhead">Nội dung bài viết</h2>
-        <p class="admin-hint">
-            Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
-            <code>- gạch đầu dòng</code> · <code>[chữ](https://...)</code>. Dòng trống để ngăn đoạn.
-            Thẻ HTML gõ vào sẽ hiện ra dạng chữ, không chạy — đây là chủ ý để chặn mã độc.
-        </p>
-        <%- include('_editor', {name: 'body_vi', rows: 14, value: item ? (item.body_vi || '') : ''}) %>
+                <label for="link">Link ngoài</label>
+                <input id="link" name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://...">
+                <span class="admin-hint">Để trống thì nút trên trang chủ trỏ vào chính bài viết này.</span>
 
-        <label>Nội dung (EN)</label>
-        <%- include('_editor', {name: 'body_en', rows: 14, value: item ? (item.body_en || '') : ''}) %>
+                <label for="sort_order">Thứ tự</label>
+                <input type="number" id="sort_order" name="sort_order" value="<%= item ? item.sort_order : 0 %>">
 
-        <label>Link ngoài (để trống thì nút trên trang chủ trỏ vào bài viết này)</label>
-        <input name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://...">
-
-        <div class="form-2col">
-            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
-            <div><label>Trạng thái</label>
-                <select name="status">
+                <label for="status">Trạng thái</label>
+                <select id="status" name="status">
                     <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
                     <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
                 </select>
-            </div>
-        </div>
 
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
-            <a class="btn btn-outline" href="/admin/news">Hủy</a>
-        </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+                    <a class="btn btn-outline" href="/admin/news">Hủy</a>
+                </div>
+            </section>
+        </aside>
     </form>
 </main>
 <script src="/static/js/admin.js"></script>

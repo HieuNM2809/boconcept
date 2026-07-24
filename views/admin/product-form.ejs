@@ -1,101 +1,144 @@
 <%- include('../partials/head') %>
 <body class="admin">
 <%- include('_nav', {section: 'products'}) %>
-<main class="admin-wrap admin-narrow">
+<%# Form sản phẩm KHÔNG dùng admin-narrow (720px) như các form khác: nó có tới
+    ~20 trường + 4 ô soạn thảo, nhồi vào một cột hẹp thì phải cuộn rất dài.
+    Bố cục 2 cột — nội dung bên trái, thiết lập xuất bản bên phải — thay vì kéo
+    dãn một cột cho hết màn hình: một ô "Slug" rộng 1900px còn khó dùng hơn. %>
+<main class="admin-wrap">
     <div class="admin-head">
         <h1><%= item ? ('Sửa sản phẩm #' + item.id) : 'Thêm sản phẩm' %></h1>
         <a class="btn-sm" href="/admin/products">← Quay lại</a>
     </div>
-    <form class="admin-form" method="post" action="<%= action %>">
-        <div class="form-2col">
-            <div><label>Tên (VI) *</label><input name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
-            <div><label>Tên (EN)</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
+    <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
+        <div class="form-main">
+            <section class="form-card">
+                <h2 class="admin-subhead">Thông tin cơ bản</h2>
+                <%# form-grid-auto: số cột tự co theo bề ngang (mỗi ô tối thiểu 240px).
+                    Màn rộng xếp 3 ô một hàng, laptop 13" xuống 2, điện thoại còn 1 —
+                    không phải viết media query cho từng mức. %>
+                <div class="form-grid-auto">
+                    <div><label for="name_vi">Tên (VI) *</label><input id="name_vi" name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
+                    <div><label for="name_en">Tên (EN)</label><input id="name_en" name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
+                    <div><label for="slug">Slug</label><input id="slug" name="slug" value="<%= item ? (item.slug || '') : '' %>" placeholder="tu-dong-sinh-neu-de-trong"></div>
+                </div>
+                <%# VI và EN đặt CẠNH nhau chứ không trên–dưới: dịch nội dung là việc
+                    đối chiếu hai bản, xếp dọc thì phải cuộn qua lại mới so được. %>
+                <div class="form-pair">
+                    <div><label for="description_vi">Mô tả (VI)</label><textarea id="description_vi" name="description_vi" rows="4"><%= item ? (item.description_vi || '') : '' %></textarea></div>
+                    <div><label for="description_en">Mô tả (EN)</label><textarea id="description_en" name="description_en" rows="4"><%= item ? (item.description_en || '') : '' %></textarea></div>
+                </div>
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Thuộc tính</h2>
+                <p class="admin-hint">Dùng cho bộ lọc ở trang danh sách.</p>
+                <div class="form-grid-auto">
+                    <div><label for="material_vi">Chất liệu (VI)</label><input id="material_vi" name="material_vi" value="<%= item ? (item.material_vi || '') : '' %>" placeholder="Gỗ sồi · Vải"></div>
+                    <div><label for="material_en">Chất liệu (EN)</label><input id="material_en" name="material_en" value="<%= item ? (item.material_en || '') : '' %>" placeholder="Oak · Fabric"></div>
+                    <div><label for="color_vi">Màu (VI)</label><input id="color_vi" name="color_vi" value="<%= item ? (item.color_vi || '') : '' %>" placeholder="Nâu cognac"></div>
+                    <div><label for="color_en">Màu (EN)</label><input id="color_en" name="color_en" value="<%= item ? (item.color_en || '') : '' %>" placeholder="Cognac brown"></div>
+                    <div><label for="dimensions_vi">Kích thước (VI)</label><input id="dimensions_vi" name="dimensions_vi" value="<%= item ? (item.dimensions_vi || '') : '' %>" placeholder="Ghế: 10x30x60"></div>
+                    <div><label for="dimensions_en">Kích thước (EN)</label><input id="dimensions_en" name="dimensions_en" value="<%= item ? (item.dimensions_en || '') : '' %>" placeholder="Chair: 10x30x60"></div>
+                    <div><label for="weight">Khối lượng (kg)</label><input type="number" step="0.01" min="0" id="weight" name="weight" value="<%= item && item.weight != null ? Number(item.weight) : '' %>" placeholder="Để trống nếu không có"></div>
+                </div>
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Bộ sưu tập hình ảnh</h2>
+                <p class="admin-hint">
+                    Ảnh phụ hiện ở trang chi tiết cùng “Ảnh chính”. Bấm “+ Thêm ảnh” để thêm dòng,
+                    mỗi dòng chọn được ảnh từ máy hoặc dán đường dẫn. Xoá hết chữ trong ô là ảnh đó bị bỏ khi lưu.
+                </p>
+                <%# Tên trường dạng mảng gallery[] — controller lọc bỏ ô rỗng rồi ghi lại
+                    toàn bộ danh sách, nên thêm/xoá/đổi thứ tự đều xử lý được trong một lần lưu. %>
+                <div id="galleryRows" class="gallery-rows">
+                    <% (item && item.images ? item.images : []).forEach(function (img, i) { %>
+                        <div class="gallery-row">
+                            <img class="gallery-row-thumb" src="<%= img.url %>" alt="" data-preview-for="gal<%= i %>">
+                            <input type="file" accept="image/*" data-encode-to="gal<%= i %>">
+                            <input type="text" id="gal<%= i %>" name="gallery[]" value="<%= img.url %>" placeholder="https://...">
+                            <button type="button" class="btn-sm danger" data-remove-row>Xóa</button>
+                        </div>
+                    <% }) %>
+                </div>
+                <button type="button" class="btn-sm" id="addGalleryRow">+ Thêm ảnh</button>
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Thông tin thêm</h2>
+                <p class="admin-hint">
+                    Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
+                    <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
+                </p>
+                <div class="form-pair">
+                    <div>
+                        <label for="extra_vi">Tiếng Việt</label>
+                        <%- include('_editor', {name: 'extra_vi', rows: 12, value: item ? (item.extra_vi || '') : '', tools: 'full'}) %>
+                    </div>
+                    <div>
+                        <label for="extra_en">English</label>
+                        <%- include('_editor', {name: 'extra_en', rows: 12, value: item ? (item.extra_en || '') : '', tools: 'full'}) %>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Thông tin vận chuyển</h2>
+                <div class="form-pair">
+                    <div>
+                        <label for="shipping_vi">Tiếng Việt</label>
+                        <%- include('_editor', {name: 'shipping_vi', rows: 8, value: item ? (item.shipping_vi || '') : '', tools: ['b','i','ul']}) %>
+                    </div>
+                    <div>
+                        <label for="shipping_en">English</label>
+                        <%- include('_editor', {name: 'shipping_en', rows: 8, value: item ? (item.shipping_en || '') : '', tools: ['b','i','ul']}) %>
+                    </div>
+                </div>
+            </section>
         </div>
-        <%- include('_image-field', {name: 'thumbnail', label: 'Ảnh chính', value: item ? (item.thumbnail || '') : ''}) %>
-        <div class="form-2col">
-            <div>
-                <label>Danh mục</label>
-                <select name="category_id">
+
+        <%# Cột phải dính theo màn hình (sticky): nút Lưu luôn trong tầm mắt, không
+            phải cuộn xuống đáy trang dài sau mỗi lần sửa một ô. %>
+        <aside class="form-side">
+            <section class="form-card">
+                <%- include('_image-field', {name: 'thumbnail', label: 'Ảnh chính', value: item ? (item.thumbnail || '') : ''}) %>
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Xuất bản</h2>
+                <label for="category_id">Danh mục</label>
+                <select id="category_id" name="category_id">
                     <option value="">— Không —</option>
                     <% categories.forEach(function (c) { %>
                         <option value="<%= c.id %>" <%= (item && item.category_id === c.id) ? 'selected' : '' %>><%= c.name_vi %></option>
                     <% }) %>
                 </select>
-            </div>
-            <div><label>Giá (₫)</label><input type="number" step="1000" min="0" name="price" value="<%= item ? Number(item.price || 0) : 0 %>"></div>
-            <div><label>Nổi bật (hero/trang chủ)</label>
-                <select name="is_featured">
-                    <option value="0" <%= (!item || !item.is_featured) ? 'selected' : '' %>>Không</option>
-                    <option value="1" <%= (item && item.is_featured) ? 'selected' : '' %>>Có</option>
-                </select>
-            </div>
-            <div><label>Ưu tiên (thứ tự)</label><input type="number" name="priority" value="<%= item ? item.priority : 0 %>"></div>
-            <div><label>Slug</label><input name="slug" value="<%= item ? (item.slug || '') : '' %>"></div>
-            <div><label>Trạng thái</label>
-                <select name="status">
+                <label for="price">Giá (₫)</label>
+                <input type="number" step="1000" min="0" id="price" name="price" value="<%= item ? Number(item.price || 0) : 0 %>">
+                <label for="status">Trạng thái</label>
+                <select id="status" name="status">
                     <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
                     <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
                 </select>
-            </div>
-        </div>
-        <h2 class="admin-subhead">Thuộc tính (dùng cho bộ lọc ở trang danh sách)</h2>
-        <div class="form-2col">
-            <div><label>Chất liệu (VI)</label><input name="material_vi" value="<%= item ? (item.material_vi || '') : '' %>" placeholder="Gỗ sồi · Vải"></div>
-            <div><label>Chất liệu (EN)</label><input name="material_en" value="<%= item ? (item.material_en || '') : '' %>" placeholder="Oak · Fabric"></div>
-            <div><label>Màu (VI)</label><input name="color_vi" value="<%= item ? (item.color_vi || '') : '' %>" placeholder="Nâu cognac"></div>
-            <div><label>Màu (EN)</label><input name="color_en" value="<%= item ? (item.color_en || '') : '' %>" placeholder="Cognac brown"></div>
-        </div>
-        <label>Kích thước (VI)</label>
-        <input name="dimensions_vi" value="<%= item ? (item.dimensions_vi || '') : '' %>" placeholder="Ghế: 10x30x60 · Bàn: 60x70x80">
-        <label>Kích thước (EN)</label>
-        <input name="dimensions_en" value="<%= item ? (item.dimensions_en || '') : '' %>" placeholder="Chair: 10x30x60 · Table: 60x70x80">
-        <label>Khối lượng (kg) — để trống nếu không có</label>
-        <input type="number" step="0.01" min="0" name="weight" value="<%= item && item.weight != null ? Number(item.weight) : '' %>">
+                <label for="is_featured">Nổi bật (hero/trang chủ)</label>
+                <select id="is_featured" name="is_featured">
+                    <option value="0" <%= (!item || !item.is_featured) ? 'selected' : '' %>>Không</option>
+                    <option value="1" <%= (item && item.is_featured) ? 'selected' : '' %>>Có</option>
+                </select>
+                <label for="priority">Ưu tiên (thứ tự)</label>
+                <input type="number" id="priority" name="priority" value="<%= item ? item.priority : 0 %>">
 
-        <label>Mô tả (VI)</label>
-        <textarea name="description_vi" rows="3"><%= item ? (item.description_vi || '') : '' %></textarea>
-        <label>Mô tả (EN)</label>
-        <textarea name="description_en" rows="3"><%= item ? (item.description_en || '') : '' %></textarea>
-        <h2 class="admin-subhead">Bộ sưu tập hình ảnh</h2>
-        <p class="admin-hint">
-            Ảnh phụ hiện ở trang chi tiết cùng “Ảnh chính”. Bấm “+ Thêm ảnh” để thêm dòng,
-            mỗi dòng chọn được ảnh từ máy hoặc dán đường dẫn. Xoá hết chữ trong ô là ảnh đó bị bỏ khi lưu.
-        </p>
-        <%# Tên trường dạng mảng gallery[] — controller lọc bỏ ô rỗng rồi ghi lại
-            toàn bộ danh sách, nên thêm/xoá/đổi thứ tự đều xử lý được trong một lần lưu. %>
-        <div id="galleryRows" class="gallery-rows">
-            <% (item && item.images ? item.images : []).forEach(function (img, i) { %>
-                <div class="gallery-row">
-                    <img class="gallery-row-thumb" src="<%= img.url %>" alt="" data-preview-for="gal<%= i %>">
-                    <input type="file" accept="image/*" data-encode-to="gal<%= i %>">
-                    <input type="text" id="gal<%= i %>" name="gallery[]" value="<%= img.url %>" placeholder="https://...">
-                    <button type="button" class="btn-sm danger" data-remove-row>Xóa</button>
+                <% if (item && item.variants && item.variants.length) { %>
+                    <p class="admin-note">Biến thể hiện có: <%= item.variants.map(function (v) { return v.name; }).join(', ') %> (quản lý biến thể sẽ bổ sung sau).</p>
+                <% } %>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+                    <a class="btn btn-outline" href="/admin/products">Hủy</a>
                 </div>
-            <% }) %>
-        </div>
-        <button type="button" class="btn-sm" id="addGalleryRow">+ Thêm ảnh</button>
-
-        <h2 class="admin-subhead">Thông tin thêm</h2>
-        <p class="admin-hint">
-            Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
-            <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
-        </p>
-        <%- include('_editor', {name: 'extra_vi', rows: 8, value: item ? (item.extra_vi || '') : '', tools: ['b','i','h2','ul','link']}) %>
-        <label>Thông tin thêm (EN)</label>
-        <%- include('_editor', {name: 'extra_en', rows: 8, value: item ? (item.extra_en || '') : '', tools: ['b','i','h2','ul','link']}) %>
-
-        <h2 class="admin-subhead">Thông tin vận chuyển</h2>
-        <%- include('_editor', {name: 'shipping_vi', rows: 6, value: item ? (item.shipping_vi || '') : '', tools: ['b','i','ul']}) %>
-        <label>Thông tin vận chuyển (EN)</label>
-        <%- include('_editor', {name: 'shipping_en', rows: 6, value: item ? (item.shipping_en || '') : '', tools: ['b','i','ul']}) %>
-
-        <% if (item && item.variants && item.variants.length) { %>
-            <p class="admin-note">Biến thể hiện có: <%= item.variants.map(function (v) { return v.name; }).join(', ') %> (quản lý biến thể sẽ bổ sung sau).</p>
-        <% } %>
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
-            <a class="btn btn-outline" href="/admin/products">Hủy</a>
-        </div>
+            </section>
+        </aside>
     </form>
 </main>
 <script src="/static/js/admin.js"></script>

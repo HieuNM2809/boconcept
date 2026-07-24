@@ -1,7 +1,9 @@
 <%- include('../partials/head') %>
 <body class="admin">
 <%- include('_nav', {section: 'categories'}) %>
-<main class="admin-wrap admin-narrow">
+<%# Không dùng admin-narrow (720px): form có 2 ô soạn thảo mô tả VI/EN, bó vào
+    cột hẹp thì gõ rất bí — cho dãn hết màn hình như /admin/pages. %>
+<main class="admin-wrap">
     <div class="admin-head">
         <h1><%= item ? ('Sửa loại #' + item.id) : 'Thêm loại sản phẩm' %></h1>
         <a class="btn-sm" href="/admin/categories">← Quay lại</a>
@@ -25,11 +27,11 @@
             <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
         </p>
         <label>Mô tả (VI)</label>
-        <%- include('_editor', {name: 'description_vi', rows: 5, value: item ? (item.description_vi || '') : '', tools: ['b','i','h2','ul','link']}) %>
+        <%- include('_editor', {name: 'description_vi', rows: 5, value: item ? (item.description_vi || '') : '', tools: 'full'}) %>
         <label>Mô tả (EN)</label>
-        <%- include('_editor', {name: 'description_en', rows: 5, value: item ? (item.description_en || '') : '', tools: ['b','i','h2','ul','link']}) %>
+        <%- include('_editor', {name: 'description_en', rows: 5, value: item ? (item.description_en || '') : '', tools: 'full'}) %>
 
-        <div class="form-2col">
+        <div class="form-auto">
             <div>
                 <label>Danh mục cha</label>
                 <select name="parent_id">

@@ -1,30 +1,53 @@
 <%- include('../partials/head') %>
 <body class="admin">
 <%- include('_nav', {section: 'certificates'}) %>
-<main class="admin-wrap admin-narrow">
+
+<%# Bố cục 2 cột chiếm hết bề ngang màn hình (giống form slide) chứ không bó
+    trong admin-narrow 720px: chứng nhận chỉ có 4 ô chữ ngắn, còn ẢNH mới là nội
+    dung chính — ảnh chiếm cột lớn bên trái, chữ và thiết lập dồn sang cột phải. %>
+<main class="admin-wrap">
     <div class="admin-head">
         <h1><%= item ? ('Sửa chứng nhận #' + item.id) : 'Thêm chứng nhận' %></h1>
         <a class="btn-sm" href="/admin/certificates">← Quay lại</a>
     </div>
-    <form class="admin-form" method="post" action="<%= action %>">
-        <%- include('_image-field', {name: 'image', label: 'Ảnh chứng nhận', value: item ? item.image : '', required: true}) %>
-        <div class="form-2col">
-            <div><label>Tiêu đề (VI)</label><input name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>"></div>
-            <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
-            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
-            <div><label>Trạng thái</label>
-                <select name="status">
+
+    <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
+        <div class="form-main">
+            <section class="form-card is-media">
+                <%# is-wide: ảnh xem trước cao tới 380px — bản scan chứng nhận nhỏ
+                    200px thì không đọc nổi chữ để soát xem đúng bản chưa. %>
+                <%- include('_image-field', {name: 'image', label: 'Ảnh chứng nhận', value: item ? item.image : '', required: true, previewClass: 'is-wide'}) %>
+            </section>
+        </div>
+
+        <aside class="form-side">
+            <section class="form-card">
+                <h2 class="admin-subhead">Tiêu đề</h2>
+                <label for="title_vi">Tiêu đề (VI)</label>
+                <input id="title_vi" name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>">
+                <label for="title_en">Tiêu đề (EN)</label>
+                <input id="title_en" name="title_en" value="<%= item ? (item.title_en || '') : '' %>">
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Hiển thị</h2>
+                <label for="sort_order">Thứ tự</label>
+                <input type="number" id="sort_order" name="sort_order" value="<%= item ? item.sort_order : 0 %>">
+                <label for="status">Trạng thái</label>
+                <select id="status" name="status">
                     <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
                     <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
                 </select>
-            </div>
-        </div>
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
-            <a class="btn btn-outline" href="/admin/certificates">Hủy</a>
-        </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+                    <a class="btn btn-outline" href="/admin/certificates">Hủy</a>
+                </div>
+            </section>
+        </aside>
     </form>
 </main>
+
 <script src="/static/js/admin.js"></script>
 </body>
 </html>

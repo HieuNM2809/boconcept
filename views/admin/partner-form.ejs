@@ -1,30 +1,55 @@
 <%- include('../partials/head') %>
 <body class="admin">
 <%- include('_nav', {section: 'partners'}) %>
-<main class="admin-wrap admin-narrow">
+
+<%# Bố cục 2 cột như form slide: đối tác chỉ có 4 ô chữ ngắn, thứ đáng xem là
+    LOGO — nên logo chiếm cột lớn bên trái, chữ và thiết lập dồn sang cột phải. %>
+<main class="admin-wrap">
     <div class="admin-head">
         <h1><%= item ? ('Sửa đối tác #' + item.id) : 'Thêm đối tác' %></h1>
         <a class="btn-sm" href="/admin/partners">← Quay lại</a>
     </div>
-    <form class="admin-form" method="post" action="<%= action %>">
-        <label>Tên đối tác *</label>
-        <input name="name" required value="<%= item ? item.name : '' %>">
-        <%- include('_image-field', {name: 'logo', label: 'Logo — để trống sẽ hiển thị bằng chữ', value: item ? (item.logo || '') : ''}) %>
-        <div class="form-2col">
-            <div><label>Link (khi bấm vào)</label><input name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://..."></div>
-            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
+
+    <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
+        <div class="form-main">
+            <section class="form-card is-media">
+                <%- include('_image-field', {
+                    name: 'logo',
+                    label: 'Logo — để trống sẽ hiển thị bằng chữ',
+                    value: item ? (item.logo || '') : '',
+                    previewClass: 'is-wide'
+                }) %>
+            </section>
         </div>
-        <label>Trạng thái</label>
-        <select name="status">
-            <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
-            <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
-        </select>
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
-            <a class="btn btn-outline" href="/admin/partners">Hủy</a>
-        </div>
+
+        <aside class="form-side">
+            <section class="form-card">
+                <h2 class="admin-subhead">Thông tin</h2>
+                <label for="name">Tên đối tác *</label>
+                <input id="name" name="name" required value="<%= item ? item.name : '' %>">
+                <label for="link">Link (khi bấm vào)</label>
+                <input id="link" name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://...">
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Hiển thị</h2>
+                <label for="sort_order">Thứ tự</label>
+                <input type="number" id="sort_order" name="sort_order" value="<%= item ? item.sort_order : 0 %>">
+                <label for="status">Trạng thái</label>
+                <select id="status" name="status">
+                    <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
+                </select>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+                    <a class="btn btn-outline" href="/admin/partners">Hủy</a>
+                </div>
+            </section>
+        </aside>
     </form>
 </main>
+
 <script src="/static/js/admin.js"></script>
 </body>
 </html>

@@ -43,7 +43,7 @@
                 </select>
             </div>
             <div class="admin-filter-field">
-                <label for="f_min">Khoảng giá (₫)</label>
+                <label for="f_min">Khoảng giá</label>
                 <div class="admin-filter-range">
                     <input type="number" id="f_min" name="min_price" value="<%= filters.min_price %>" placeholder="Từ" min="0" step="1000">
                     <input type="number" name="max_price" value="<%= filters.max_price %>" placeholder="Đến" min="0" step="1000">
@@ -56,8 +56,10 @@
             <div class="admin-filter-field">
                 <label for="f_sort">Sắp xếp</label>
                 <select id="f_sort" name="sort">
-                    <option value="newest" <%= filters.sort === 'newest' ? 'selected' : '' %>>Mới nhất</option>
-                    <option value="oldest" <%= filters.sort === 'oldest' ? 'selected' : '' %>>Cũ nhất</option>
+                    <%# Đặt tên theo cột id vì đó là con số admin nhìn thấy ở cột đầu bảng;
+                        gọi "Mới nhất / Cũ nhất" thì không đoán được nó ảnh hưởng cột nào. %>
+                    <option value="oldest" <%= filters.sort === 'oldest' ? 'selected' : '' %>>ID tăng dần (1, 2, 3…)</option>
+                    <option value="newest" <%= filters.sort === 'newest' ? 'selected' : '' %>>ID giảm dần (mới nhất)</option>
                     <option value="price_asc" <%= filters.sort === 'price_asc' ? 'selected' : '' %>>Giá tăng dần</option>
                     <option value="price_desc" <%= filters.sort === 'price_desc' ? 'selected' : '' %>>Giá giảm dần</option>
                     <option value="priority" <%= filters.sort === 'priority' ? 'selected' : '' %>>Thứ tự ưu tiên</option>
@@ -78,32 +80,59 @@
         </div>
     </form>
 
+    <%
+    // Link "về trang đầu": giữ bộ lọc, bỏ page. URLSearchParams là global của Node
+    // nên dùng được trong EJS; `require` thì KHÔNG (template compile bằng new Function).
+    const firstPageUrl = (function () {
+        const usp = new URLSearchParams();
+        Object.keys(filters).forEach(function (k) {
+            const v = filters[k];
+            if (v !== '' && v !== null && v !== undefined && k !== 'page') usp.set(k, v);
+        });
+        const s = usp.toString();
+        return '/admin/products' + (s ? '?' + s : '');
+    })();
+    %>
     <div class="admin-listbar">
-        <p class="admin-total">Tổng: <strong><%= meta.total %></strong> sản phẩm<% if (meta.last_page > 1) { %> · trang <%= meta.current_page %>/<%= meta.last_page %><% } %></p>
+        <p class="admin-total">Tổng: <strong><%= meta.total %></strong></p>
     </div>
 
     <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
-            <tr><th>#</th><th>Ảnh</th><th>Tên (VI)</th><th>Danh mục</th><th>Giá</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
+            <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Danh mục</th><th>Giá</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
-            <% if (!items.length) { %>
+            <%# Trang trống vì vượt quá trang cuối (hay gặp sau khi xoá bớt hàng) thì
+                thanh phân trang cũng biến mất -> không có đường quay lại. Cho lối thoát. %>
+            <% if (!items.length && meta.total > 0) { %>
+                <tr><td colspan="8" class="admin-empty">Trang <%= meta.current_page %> không có dữ liệu (chỉ có <%= meta.last_page %> trang). <a href="<%= firstPageUrl %>">Về trang đầu</a></td></tr>
+            <% } else if (!items.length) { %>
                 <tr><td colspan="8" class="admin-empty">Không có sản phẩm nào khớp bộ lọc.</td></tr>
             <% } %>
-            <% items.forEach(function (p) { %>
+            <% items.forEach(function (p, i) { %>
                 <tr>
-                    <td><%= p.id %></td>
+                    <%# Lấy thẳng cột id của bảng products (không phải số đếm theo dòng):
+                        id là thứ dùng để đối chiếu DB và nằm trong URL /admin/products/:id.
+                        Đọc ra 1,2,3… là nhờ sắp xếp mặc định id tăng dần ở controller. %>
+                    <td class="admin-stt"><%= p.id %></td>
                     <td><% if (p.thumbnail) { %><img class="admin-thumb" src="<%= p.thumbnail %>" alt="" loading="lazy"><% } else { %>—<% } %></td>
                     <td><%= p.name_vi %></td>
                     <td><%= p.category ? p.category.name_vi : '—' %></td>
                     <td><%= Number(p.price || 0).toLocaleString('vi-VN') %> ₫</td>
-                    <td><%= p.is_featured ? '★' : '' %></td>
+                    <%# Ô trống khi không nổi bật đọc mơ hồ (chưa set? hay tắt?) -> để dấu
+                        sao mờ, sao vàng đặc mới là bật. title cho người dùng rê chuột. %>
+                    <td class="admin-star"><% if (p.is_featured) { %><span class="star on" title="Nổi bật">★</span><% } else { %><span class="star off" title="Không nổi bật">★</span><% } %></td>
                     <td><span class="badge-status <%= p.status ? 'on' : 'off' %>"><%= p.status ? 'Hiện' : 'Ẩn' %></span></td>
                     <td class="admin-row-actions">
                         <a class="btn-sm" href="/admin/products/<%= p.id %>/edit">Sửa</a>
                         <a class="btn-sm" href="/products/<%= p.id %>" target="_blank" rel="noopener">Xem</a>
-                        <form method="post" action="/admin/products/<%= p.id %>/delete" data-confirm="Xóa sản phẩm này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                        <%# data-confirm-name: hiện tên ngay trong hộp xác nhận. Các nút Xóa
+                            nằm sát nhau theo dòng, bấm nhầm dòng là chuyện thường — đọc lại
+                            tên là chốt chặn cuối. %>
+                        <form method="post" action="/admin/products/<%= p.id %>/delete"
+                              data-confirm="Xóa sản phẩm này khỏi website?"
+                              data-confirm-name="<%= p.name_vi %>"><button class="btn-sm danger" type="submit">Xóa</button></form>
                     </td>
                 </tr>
             <% }) %>

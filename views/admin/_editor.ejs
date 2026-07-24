@@ -2,76 +2,118 @@
 /* Ô soạn nội dung dùng chung cho MỌI form admin: thanh công cụ + textarea.
    Tham số: name (bắt buộc), value, rows, tools
 
-   `tools` chọn các nút hiện ra, theo thứ tự nhóm cố định bên dưới:
-       b · i · h2 · h3 · ul · link       (mặc định: đủ cả 6)
+   `tools` là mảng khoá nút, hoặc chuỗi 'full' để lấy hết. Thứ tự nhóm cố định
+   bên dưới, không theo thứ tự người gọi truyền vào.
+
+   MỖI NÚT Ở ĐÂY ĐỀU PHẢI CÓ CÚ PHÁP TƯƠNG ỨNG TRONG app/Helpers/richtext.helper.js.
+   Thêm nút mà renderer không hiểu thì admin gõ xong, lưu xong, ra trang thật vẫn
+   thấy ký hiệu thô — nên sửa helper (kèm test) trước, thêm nút sau.
 
    VÌ SAO KHÔNG DÙNG Quill/TinyMCE/CKEditor: các thư viện đó xuất ra HTML, mà
-   app/Helpers/richtext.helper.js cố ý ESCAPE TOÀN BỘ nội dung rồi mới dựng lại
-   một tập thẻ do chính nó sinh — nên HTML của editor sẽ hiện ra thành chữ thô
-   trên trang. Muốn dùng chúng thì phải lưu HTML và sanitize ở server, mà repo
-   không có sanitize-html/DOMPurify; tự lọc bằng regex là đường dẫn thẳng tới
-   stored XSS. Ở đây giữ nội dung là CHỮ THUẦN (Markdown rút gọn) và chỉ làm
-   thanh công cụ cho tử tế. */
+   richtext.helper.js cố ý ESCAPE TOÀN BỘ nội dung rồi mới dựng lại một tập thẻ
+   do chính nó sinh — nên HTML của editor sẽ hiện ra thành chữ thô trên trang.
+   Muốn dùng chúng thì phải lưu HTML và sanitize ở server, mà repo không có
+   sanitize-html/DOMPurify; tự lọc bằng regex là đường dẫn thẳng tới stored XSS.
+   Ở đây giữ nội dung là CHỮ THUẦN (Markdown rút gọn) và làm thanh công cụ cho đủ. */
+
+// SVG dùng lại nhiều lần -> gom vào hàm cho khỏi lặp thuộc tính
+const svg = (paths, extra) => '<svg class="editor-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" '
+    + 'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths + '</svg>';
+const dots = (y) => '<circle cx="3" cy="' + y + '" r="1.1" fill="currentColor" stroke="none"/>';
+const num = (y, n) => '<text x="1.2" y="' + (y + 1.6) + '" font-size="5" fill="currentColor" stroke="none">' + n + '</text>';
+
+const BTN = {
+    // ── chữ ──────────────────────────────────────────────────────────────────
+    b:     {g: 'text', attr: 'data-wrap="**"',  title: 'Đậm (Ctrl+B)',    label: 'Đậm',        html: '<b>B</b>'},
+    i:     {g: 'text', attr: 'data-wrap="*"',   title: 'Nghiêng (Ctrl+I)', label: 'Nghiêng',   html: '<i>I</i>'},
+    s:     {g: 'text', attr: 'data-wrap="~~"',  title: 'Gạch ngang',      label: 'Gạch ngang', html: '<s>S</s>'},
+    sup:   {g: 'text', attr: 'data-wrap="^"',   title: 'Mũ (x²)',         label: 'Mũ',         html: 'x<sup>2</sup>'},
+    code:  {g: 'text', attr: 'data-wrap="`"',   title: 'Mã trong dòng',   label: 'Mã',         html: '&lt;/&gt;'},
+    // ── tiêu đề ──────────────────────────────────────────────────────────────
+    h1:    {g: 'head', attr: 'data-prefix="# "',   title: 'Tiêu đề mức 1', label: 'H1', html: 'H<sub>1</sub>'},
+    h2:    {g: 'head', attr: 'data-prefix="## "',  title: 'Tiêu đề mức 2', label: 'H2', html: 'H<sub>2</sub>'},
+    h3:    {g: 'head', attr: 'data-prefix="### "', title: 'Tiêu đề mức 3', label: 'H3', html: 'H<sub>3</sub>'},
+    // ── khối ─────────────────────────────────────────────────────────────────
+    ul:    {g: 'block', attr: 'data-prefix="- "',  title: 'Gạch đầu dòng', label: 'Danh sách',
+            html: svg(dots(4) + '<path d="M6.5 4h7"/>' + dots(8) + '<path d="M6.5 8h7"/>' + dots(12) + '<path d="M6.5 12h7"/>')},
+    ol:    {g: 'block', attr: 'data-prefix="1. "', title: 'Danh sách đánh số', label: 'Đánh số',
+            html: svg(num(3, 1) + '<path d="M6.5 4h7"/>' + num(7, 2) + '<path d="M6.5 8h7"/>' + num(11, 3) + '<path d="M6.5 12h7"/>')},
+    quote: {g: 'block', attr: 'data-prefix="&gt; "', title: 'Trích dẫn', label: 'Trích dẫn',
+            html: svg('<path d="M3 11V7a2 2 0 0 1 2-2"/><path d="M3 11h3V7.5"/><path d="M9 11V7a2 2 0 0 1 2-2"/><path d="M9 11h3V7.5"/>')},
+    table: {g: 'block', attr: 'data-block="table"', title: 'Chèn bảng', label: 'Bảng',
+            html: svg('<rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6.5h12M6.5 6.5V13"/>')},
+    hr:    {g: 'block', attr: 'data-block="hr"', title: 'Đường kẻ ngang', label: 'Kẻ ngang',
+            html: svg('<path d="M2.5 8h11"/>')},
+    // ── chèn ─────────────────────────────────────────────────────────────────
+    link:  {g: 'insert', attr: 'data-link="1"', title: 'Chèn liên kết', label: 'Link',
+            html: svg('<path d="M6.6 9.4a2.8 2.8 0 0 0 4 0l2.2-2.2a2.8 2.8 0 1 0-4-4l-1 1"/><path d="M9.4 6.6a2.8 2.8 0 0 0-4 0L3.2 8.8a2.8 2.8 0 1 0 4 4l1-1"/>')},
+    image: {g: 'insert', attr: 'data-image="1"', title: 'Chèn ảnh', label: 'Ảnh',
+            html: svg('<rect x="2" y="3" width="12" height="10" rx="1.5"/><circle cx="6" cy="6.5" r="1.1"/><path d="m2.8 12 3.4-3.2 2.3 2.1 2-1.7 2.7 2.5"/>')},
+    // ── công cụ (đẩy sang phải) ──────────────────────────────────────────────
+    undo:  {g: 'tool', attr: 'data-history="undo"', title: 'Hoàn tác (Ctrl+Z)', label: 'Hoàn tác',
+            html: svg('<path d="M3 8h7a3 3 0 1 1 0 6H7"/><path d="m5.5 5.5-2.5 2.5 2.5 2.5"/>')},
+    redo:  {g: 'tool', attr: 'data-history="redo"', title: 'Làm lại (Ctrl+Y)', label: 'Làm lại',
+            html: svg('<path d="M13 8H6a3 3 0 1 0 0 6h3"/><path d="m10.5 5.5 2.5 2.5-2.5 2.5"/>')},
+    split: {g: 'tool', attr: 'data-split="1" aria-pressed="false"', title: 'Vừa gõ vừa xem (Ctrl+Shift+S)', label: 'Chia đôi',
+            html: svg('<rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M8 3v10"/>')},
+    full:  {g: 'tool', attr: 'data-full="1" aria-pressed="false"', title: 'Toàn màn hình (F11 của riêng ô này)', label: 'Toàn màn hình',
+            html: svg('<path d="M6 2.5H2.5V6M10 2.5h3.5V6M6 13.5H2.5V10M10 13.5h3.5V10"/>')},
+    help:  {g: 'tool', attr: 'data-help="1"', title: 'Cú pháp hỗ trợ', label: 'Trợ giúp',
+            html: svg('<circle cx="8" cy="8" r="6"/><path d="M6.4 6.2a1.7 1.7 0 1 1 2 1.9V9.4"/><circle cx="8.4" cy="11.4" r=".6" fill="currentColor" stroke="none"/>')},
+};
+
+const ALL = Object.keys(BTN);
+const GROUPS = ['text', 'head', 'block', 'insert'];
+
 const e = {
     name: name,
     value: typeof value !== 'undefined' && value ? value : '',
     rows: typeof rows !== 'undefined' ? rows : 10,
-    tools: typeof tools !== 'undefined' ? tools : ['b', 'i', 'h2', 'h3', 'ul', 'link'],
+    tools: typeof tools === 'undefined' || tools === 'full' ? ALL : tools,
 };
-const has = (k) => e.tools.indexOf(k) !== -1;
-// Vạch ngăn chỉ vẽ khi CẢ HAI nhóm nó ngăn cách đều có nút — không thì thanh
-// công cụ của ô "vận chuyển" (chỉ B/I/danh sách) sẽ có vạch cụt lơ lửng.
-const gHead = has('h2') || has('h3');
-const gIns = has('ul') || has('link');
+// Bỏ khoá lạ thay vì để nổ khi render: form cũ truyền tên nút đã đổi thì thanh
+// công cụ chỉ thiếu một nút, không làm trắng cả trang sửa sản phẩm.
+const picked = e.tools.filter((k) => BTN[k]);
+const inGroup = (g) => picked.filter((k) => BTN[k].g === g);
+// Vạch ngăn chỉ vẽ khi CÒN nhóm phía trước đã in — không thì thanh công cụ của ô
+// "vận chuyển" (chỉ B/I/danh sách) sẽ có vạch cụt lơ lửng ở đầu.
+let printed = 0;
 %>
 
 <div class="editor">
     <div class="editor-toolbar" data-editor-for="<%= e.name %>" role="toolbar" aria-label="Định dạng nội dung">
-        <div class="editor-group">
-            <% if (has('b')) { %><button type="button" data-wrap="**" title="Đậm (Ctrl+B)" aria-label="Đậm"><b>B</b></button><% } %>
-            <% if (has('i')) { %><button type="button" data-wrap="*" title="Nghiêng (Ctrl+I)" aria-label="Nghiêng"><i>I</i></button><% } %>
+        <% GROUPS.forEach(function (g) { %>
+            <% const keys = inGroup(g); if (!keys.length) return; %>
+            <% if (printed++) { %><span class="editor-sep" aria-hidden="true"></span><% } %>
+            <div class="editor-group">
+                <% keys.forEach(function (k) { %>
+                    <button type="button" <%- BTN[k].attr %> title="<%= BTN[k].title %>" aria-label="<%= BTN[k].label %>"><%- BTN[k].html %></button>
+                <% }) %>
+            </div>
+        <% }) %>
+
+        <%# Nhóm công cụ đẩy hẳn sang phải: mấy nút này không chèn gì vào nội dung
+            mà đổi cách hiển thị của cả ô, để lẫn vào nhóm chèn là gây bấm nhầm. %>
+        <div class="editor-group editor-tools">
+            <button type="button" class="editor-preview-btn" data-preview="1"
+                    title="Xem trước (Ctrl+Shift+P)" aria-pressed="false">
+                <svg class="editor-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1.5 8S3.9 3.5 8 3.5 14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8Z"/>
+                    <circle cx="8" cy="8" r="2.1"/>
+                </svg><span class="editor-preview-label">Xem trước</span>
+            </button>
+            <% inGroup('tool').forEach(function (k) { %>
+                <button type="button" <%- BTN[k].attr %> title="<%= BTN[k].title %>" aria-label="<%= BTN[k].label %>"><%- BTN[k].html %></button>
+            <% }) %>
         </div>
-
-        <% if (gHead) { %><span class="editor-sep" aria-hidden="true"></span>
-        <div class="editor-group">
-            <% if (has('h2')) { %><button type="button" data-prefix="## " title="Tiêu đề mức 2">H2</button><% } %>
-            <% if (has('h3')) { %><button type="button" data-prefix="### " title="Tiêu đề mức 3">H3</button><% } %>
-        </div><% } %>
-
-        <% if (gIns) { %><span class="editor-sep" aria-hidden="true"></span>
-        <div class="editor-group">
-            <% if (has('ul')) { %>
-                <button type="button" data-prefix="- " title="Gạch đầu dòng">
-                    <svg class="editor-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-                        <circle cx="3" cy="4" r="1.1" fill="currentColor" stroke="none"/><path d="M6.5 4h7"/>
-                        <circle cx="3" cy="8" r="1.1" fill="currentColor" stroke="none"/><path d="M6.5 8h7"/>
-                        <circle cx="3" cy="12" r="1.1" fill="currentColor" stroke="none"/><path d="M6.5 12h7"/>
-                    </svg>Danh sách</button>
-            <% } %>
-            <% if (has('link')) { %>
-                <button type="button" data-link="1" title="Chèn liên kết">
-                    <svg class="editor-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M6.6 9.4a2.8 2.8 0 0 0 4 0l2.2-2.2a2.8 2.8 0 1 0-4-4l-1 1"/>
-                        <path d="M9.4 6.6a2.8 2.8 0 0 0-4 0L3.2 8.8a2.8 2.8 0 1 0 4 4l1-1"/>
-                    </svg>Link</button>
-            <% } %>
-        </div><% } %>
-
-        <%# Xem trước đẩy sang phải, tách hẳn khỏi nhóm nút chèn: nó không chèn gì
-            vào nội dung mà đổi chế độ hiển thị của cả ô. %>
-        <button type="button" class="editor-preview-btn" data-preview="1"
-                title="Xem trước (Ctrl+Shift+P)" aria-pressed="false">
-            <svg class="editor-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M1.5 8S3.9 3.5 8 3.5 14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8Z"/>
-                <circle cx="8" cy="8" r="2.1"/>
-            </svg><span class="editor-preview-label">Xem trước</span>
-        </button>
     </div>
 
-    <textarea id="<%= e.name %>" name="<%= e.name %>" rows="<%= e.rows %>" class="editor-area"><%= e.value %></textarea>
-    <%# Khung xem trước dùng chính class .article-body của trang public để chữ,
-        tiêu đề và link hiện y hệt lúc đăng — khác class là xem trước nói dối. %>
-    <%# KHÔNG dùng tên data-preview-for: attribute đó đã là của ảnh xem trước
-        trong dòng bộ sưu tập (bindEncoders tra theo nó). %>
-    <div class="editor-preview article-body" data-preview-pane="<%= e.name %>" hidden></div>
+    <div class="editor-panes">
+        <textarea id="<%= e.name %>" name="<%= e.name %>" rows="<%= e.rows %>" class="editor-area"><%= e.value %></textarea>
+        <%# Khung xem trước dùng chính class .article-body của trang public để chữ,
+            tiêu đề và link hiện y hệt lúc đăng — khác class là xem trước nói dối. %>
+        <%# KHÔNG dùng tên data-preview-for: attribute đó đã là của ảnh xem trước
+            trong dòng bộ sưu tập (bindEncoders tra theo nó). %>
+        <div class="editor-preview article-body" data-preview-pane="<%= e.name %>" hidden></div>
+    </div>
 </div>

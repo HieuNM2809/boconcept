@@ -22,11 +22,49 @@ function normalize(b = {}) {
     };
 }
 
+// Bộ lọc màn danh sách — cùng quy ước với admin.product.controller: '' = KHÔNG
+// lọc theo trường đó, và `status` mặc định '' (không phải 1) vì admin cần thấy
+// cả loại đang ẩn.
+const PER_PAGE_CHOICES = [20, 50, 100];
+
+function readFilters(q = {}) {
+    const str = (v) => (v == null ? '' : String(v).trim());
+    const oneOf = (v, allowed, fallback) => (allowed.includes(str(v)) ? str(v) : fallback);
+    const perPage = parseInt(q.per_page, 10);
+    return {
+        q: str(q.q),
+        // 'root' = chỉ danh mục gốc; ngoài ra chỉ nhận id dương
+        parent_id: str(q.parent_id) === 'root' ? 'root'
+            : (/^[1-9][0-9]*$/.test(str(q.parent_id)) ? str(q.parent_id) : ''),
+        status: oneOf(q.status, ['0', '1'], ''),
+        is_featured: oneOf(q.is_featured, ['0', '1'], ''),
+        sort: oneOf(q.sort, ['oldest', 'newest', 'sort_order', 'name_asc', 'name_desc'], 'oldest'),
+        per_page: PER_PAGE_CHOICES.includes(perPage) ? perPage : PER_PAGE_CHOICES[0],
+        page: Math.max(parseInt(q.page, 10) || 1, 1),
+    };
+}
+
 async function index(req, res) {
-    const cats = toPlain(await CategoryService.getAll());
-    const nameById = new Map(cats.map((c) => [c.id, c.name_vi]));
-    cats.forEach((c) => { c.parent_name = c.parent_id ? (nameById.get(c.parent_id) || '') : ''; });
-    res.render('admin/categories', {pageTitle: 'Loại sản phẩm', section: 'categories', items: cats, flash: flashText(req.query.msg)});
+    const filters = readFilters(req.query);
+    // Vẫn nạp TOÀN BỘ danh mục song song: cần cho ô chọn "Danh mục cha" của bộ
+    // lọc và để tra tên cha của những hàng có cha nằm ngoài trang hiện tại.
+    const [result, all] = await Promise.all([
+        CategoryService.getPaged(filters),
+        CategoryService.getAll(),
+    ]);
+    const allCats = toPlain(all);
+    const nameById = new Map(allCats.map((c) => [c.id, c.name_vi]));
+    const items = toPlain(result.data);
+    items.forEach((c) => { c.parent_name = c.parent_id ? (nameById.get(c.parent_id) || '') : ''; });
+    res.render('admin/categories', {
+        pageTitle: 'Loại sản phẩm',
+        section: 'categories',
+        items,
+        meta: result.meta,
+        categories: allCats,
+        filters,
+        flash: flashText(req.query.msg),
+    });
 }
 
 async function form(req, res) {

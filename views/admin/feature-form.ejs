@@ -1,46 +1,66 @@
 <%- include('../partials/head') %>
 <body class="admin">
 <%- include('_nav', {section: 'features'}) %>
-<main class="admin-wrap admin-narrow">
+
+<%# Bố cục 2 cột: khác form slide/đối tác, ở đây ảnh chỉ là ICON nhỏ (xem trước
+    88px) nên không đáng chiếm cột lớn — cột chính dành cho các cặp VI–EN đặt
+    cạnh nhau để đối chiếu bản dịch, icon và thiết lập dồn sang cột phải. %>
+<main class="admin-wrap">
     <div class="admin-head">
         <h1><%= item ? ('Sửa mục #' + item.id) : 'Thêm mục công năng' %></h1>
         <a class="btn-sm" href="/admin/features">← Quay lại</a>
     </div>
-    <form class="admin-form" method="post" action="<%= action %>">
 
-        <!-- Icon: tải file lên HOẶC dán URL. File được mã hoá base64 ngay tại trình
-             duyệt rồi nhét vào chính ô `icon` bên dưới, nên không cần multipart,
-             không cần thư viện upload, và ảnh nằm trong DB nên sống sót redeploy. -->
-        <%- include('_image-field', {
-            name: 'icon', label: 'Icon', value: item ? item.icon : '', required: true,
-            placeholder: '/static/icons/leaf.svg', previewClass: 'is-icon',
-            hint: 'SVG nét mảnh cho đẹp nhất; PNG/JPG cũng nhận. SVG được giữ nguyên, không rasterise.'
-        }) %>
+    <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
+        <div class="form-main">
+            <section class="form-card">
+                <h2 class="admin-subhead">Nội dung</h2>
+                <div class="form-pair">
+                    <div><label for="title_vi">Tiêu đề (VI) *</label>
+                        <input id="title_vi" name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
+                    <div><label for="title_en">Tiêu đề (EN)</label>
+                        <input id="title_en" name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+                </div>
+                <div class="form-pair">
+                    <div><label for="description_vi">Mô tả (VI) — chỉ hiện khi di chuột vào</label>
+                        <textarea id="description_vi" name="description_vi" rows="5" maxlength="500"><%= item ? (item.description_vi || '') : '' %></textarea></div>
+                    <div><label for="description_en">Mô tả (EN)</label>
+                        <textarea id="description_en" name="description_en" rows="5" maxlength="500"><%= item ? (item.description_en || '') : '' %></textarea></div>
+                </div>
+            </section>
+        </div>
 
-        <div><label>Tiêu đề (VI) *</label><input name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
-        <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+        <aside class="form-side">
+            <section class="form-card">
+                <!-- Icon: tải file lên HOẶC dán URL. File được mã hoá base64 ngay tại trình
+                     duyệt rồi nhét vào chính ô `icon` bên dưới, nên không cần multipart,
+                     không cần thư viện upload, và ảnh nằm trong DB nên sống sót redeploy. -->
+                <%- include('_image-field', {
+                    name: 'icon', label: 'Icon', value: item ? item.icon : '', required: true,
+                    placeholder: '/static/icons/leaf.svg', previewClass: 'is-icon',
+                    hint: 'SVG nét mảnh cho đẹp nhất; PNG/JPG cũng nhận. SVG được giữ nguyên, không rasterise.'
+                }) %>
+            </section>
 
-        <div><label>Mô tả (VI) — chỉ hiện khi di chuột vào</label>
-            <textarea name="description_vi" rows="2" maxlength="500"><%= item ? (item.description_vi || '') : '' %></textarea></div>
-        <div><label>Mô tả (EN)</label>
-            <textarea name="description_en" rows="2" maxlength="500"><%= item ? (item.description_en || '') : '' %></textarea></div>
-
-        <div class="form-2col">
-            <div><label>Thứ tự</label><input type="number" name="sort_order" value="<%= item ? item.sort_order : 0 %>"></div>
-            <div><label>Trạng thái</label>
-                <select name="status">
+            <section class="form-card">
+                <h2 class="admin-subhead">Hiển thị</h2>
+                <label for="sort_order">Thứ tự</label>
+                <input type="number" id="sort_order" name="sort_order" value="<%= item ? item.sort_order : 0 %>">
+                <label for="status">Trạng thái</label>
+                <select id="status" name="status">
                     <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
                     <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
                 </select>
-            </div>
-        </div>
 
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
-            <a class="btn btn-outline" href="/admin/features">Hủy</a>
-        </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+                    <a class="btn btn-outline" href="/admin/features">Hủy</a>
+                </div>
+            </section>
+        </aside>
     </form>
 </main>
+
 <script src="/static/js/admin.js"></script>
 </body>
 </html>
