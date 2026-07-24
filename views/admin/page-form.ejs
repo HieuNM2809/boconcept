@@ -1,7 +1,9 @@
 <%- include('../partials/head') %>
 <body class="admin">
 <%- include('_nav', {section: 'pages'}) %>
-<main class="admin-wrap admin-narrow">
+<%# Trang giới thiệu KHÔNG dùng admin-narrow (720px): nội dung chính là hai ô
+    soạn thảo VI/EN dài, bó vào cột hẹp thì gõ rất bí — cho dãn hết màn hình. %>
+<main class="admin-wrap">
     <div class="admin-head">
         <h1>Giới thiệu công ty</h1>
         <a class="btn-sm" href="/" target="_blank" rel="noopener">Xem trang chủ ↗</a>
@@ -47,7 +49,7 @@
         <%- include('_editor', {name: 'body_en', rows: 16, value: item ? (item.body_en || '') : ''}) %>
 
         <label>Trạng thái</label>
-        <select name="status">
+        <select class="field-narrow" name="status">
             <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
             <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn</option>
         </select>

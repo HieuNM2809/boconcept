@@ -7,30 +7,122 @@
         <a class="btn btn-primary" href="/admin/categories/new">+ Thêm loại</a>
     </div>
     <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
-    <table class="admin-table">
-        <thead>
-        <tr><th>#</th><th>Ảnh</th><th>Tên (VI)</th><th>Tên (EN)</th><th>Danh mục cha</th><th>Thứ tự</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
-        </thead>
-        <tbody>
-        <% if (!items.length) { %><tr><td colspan="9" class="admin-empty">Chưa có loại sản phẩm.</td></tr><% } %>
-        <% items.forEach(function (c) { %>
-            <tr>
-                <td><%= c.id %></td>
-                <td><% if (c.image) { %><img class="admin-thumb" src="<%= c.image %>" alt="" loading="lazy"><% } else { %>—<% } %></td>
-                <td><%= c.name_vi %></td>
-                <td><%= c.name_en || '—' %></td>
-                <td><%= c.parent_name || '—' %></td>
-                <td><%= c.sort_order %></td>
-                <td><%= c.is_featured ? '★' : '' %></td>
-                <td><span class="badge-status <%= c.status ? 'on' : 'off' %>"><%= c.status ? 'Hiện' : 'Ẩn' %></span></td>
-                <td class="admin-row-actions">
-                    <a class="btn-sm" href="/admin/categories/<%= c.id %>/edit">Sửa</a>
-                    <form method="post" action="/admin/categories/<%= c.id %>/delete" data-confirm="Xóa loại sản phẩm này?"><button class="btn-sm danger" type="submit">Xóa</button></form>
-                </td>
-            </tr>
-        <% }) %>
-        </tbody>
-    </table>
+
+    <%# Form GET như màn sản phẩm: bộ lọc nằm hết trong URL nên chia sẻ link, F5
+        và nút Back đều giữ nguyên kết quả. `page` KHÔNG có ô nhập — đổi bộ lọc là
+        phải về trang 1, giữ page cũ thì lọc còn 3 kết quả mà vẫn đứng ở trang 4. %>
+    <form class="admin-filter" method="get" action="/admin/categories">
+        <div class="admin-filter-grid">
+            <div class="admin-filter-field">
+                <label for="f_q">Tên loại</label>
+                <input type="text" id="f_q" name="q" value="<%= filters.q %>" placeholder="Gõ tên VI hoặc EN">
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_parent">Danh mục cha</label>
+                <select id="f_parent" name="parent_id">
+                    <option value="">Tất cả</option>
+                    <option value="root" <%= filters.parent_id === 'root' ? 'selected' : '' %>>— Danh mục gốc —</option>
+                    <% categories.forEach(function (c) { %>
+                        <option value="<%= c.id %>" <%= String(filters.parent_id) === String(c.id) ? 'selected' : '' %>><%= c.name_vi %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_status">Trạng thái</label>
+                <select id="f_status" name="status">
+                    <option value="">Tất cả</option>
+                    <option value="1" <%= filters.status === '1' ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= filters.status === '0' ? 'selected' : '' %>>Ẩn</option>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_feat">Nổi bật</label>
+                <select id="f_feat" name="is_featured">
+                    <option value="">Tất cả</option>
+                    <option value="1" <%= filters.is_featured === '1' ? 'selected' : '' %>>Có</option>
+                    <option value="0" <%= filters.is_featured === '0' ? 'selected' : '' %>>Không</option>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_sort">Sắp xếp</label>
+                <select id="f_sort" name="sort">
+                    <%# Đặt tên theo cột id vì đó là con số admin nhìn thấy ở cột đầu bảng. %>
+                    <option value="oldest" <%= filters.sort === 'oldest' ? 'selected' : '' %>>ID tăng dần (1, 2, 3…)</option>
+                    <option value="newest" <%= filters.sort === 'newest' ? 'selected' : '' %>>ID giảm dần (mới nhất)</option>
+                    <option value="sort_order" <%= filters.sort === 'sort_order' ? 'selected' : '' %>>Thứ tự hiển thị</option>
+                    <option value="name_asc" <%= filters.sort === 'name_asc' ? 'selected' : '' %>>Tên A → Z</option>
+                    <option value="name_desc" <%= filters.sort === 'name_desc' ? 'selected' : '' %>>Tên Z → A</option>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_per">Số dòng / trang</label>
+                <select id="f_per" name="per_page">
+                    <% [20, 50, 100].forEach(function (n) { %>
+                        <option value="<%= n %>" <%= String(filters.per_page) === String(n) ? 'selected' : '' %>><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
+        </div>
+        <div class="admin-filter-actions">
+            <a class="btn-sm" href="/admin/categories">Làm lại</a>
+            <button class="btn-sm primary" type="submit">Lọc</button>
+        </div>
+    </form>
+
+    <%
+    // Link "về trang đầu": giữ bộ lọc, bỏ page. URLSearchParams là global của Node
+    // nên dùng được trong EJS; `require` thì KHÔNG (template compile bằng new Function).
+    const firstPageUrl = (function () {
+        const usp = new URLSearchParams();
+        Object.keys(filters).forEach(function (k) {
+            const v = filters[k];
+            if (v !== '' && v !== null && v !== undefined && k !== 'page') usp.set(k, v);
+        });
+        const s = usp.toString();
+        return '/admin/categories' + (s ? '?' + s : '');
+    })();
+    %>
+    <div class="admin-listbar">
+        <p class="admin-total">Tổng: <strong><%= meta.total %></strong></p>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+            <tr><th>STT</th><th>Ảnh</th><th>Tên (VI)</th><th>Tên (EN)</th><th>Danh mục cha</th><th>Thứ tự</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
+            </thead>
+            <tbody>
+            <%# Trang trống vì vượt quá trang cuối (hay gặp sau khi xoá bớt hàng) thì
+                thanh phân trang cũng biến mất -> không có đường quay lại. Cho lối thoát. %>
+            <% if (!items.length && meta.total > 0) { %>
+                <tr><td colspan="9" class="admin-empty">Trang <%= meta.current_page %> không có dữ liệu (chỉ có <%= meta.last_page %> trang). <a href="<%= firstPageUrl %>">Về trang đầu</a></td></tr>
+            <% } else if (!items.length) { %>
+                <tr><td colspan="9" class="admin-empty">Không có loại sản phẩm nào khớp bộ lọc.</td></tr>
+            <% } %>
+            <% items.forEach(function (c) { %>
+                <tr>
+                    <td class="admin-stt"><%= c.id %></td>
+                    <td><% if (c.image) { %><img class="admin-thumb" src="<%= c.image %>" alt="" loading="lazy"><% } else { %>—<% } %></td>
+                    <td><%= c.name_vi %></td>
+                    <td><%= c.name_en || '—' %></td>
+                    <td><%= c.parent_name || '—' %></td>
+                    <td><%= c.sort_order %></td>
+                    <td class="admin-star"><% if (c.is_featured) { %><span class="star on" title="Nổi bật">★</span><% } else { %><span class="star off" title="Không nổi bật">★</span><% } %></td>
+                    <td><span class="badge-status <%= c.status ? 'on' : 'off' %>"><%= c.status ? 'Hiện' : 'Ẩn' %></span></td>
+                    <td class="admin-row-actions">
+                        <a class="btn-sm" href="/admin/categories/<%= c.id %>/edit">Sửa</a>
+                        <form method="post" action="/admin/categories/<%= c.id %>/delete"
+                              data-confirm="Xóa loại sản phẩm này?"
+                              data-confirm-name="<%= c.name_vi %>"><button class="btn-sm danger" type="submit">Xóa</button></form>
+                    </td>
+                </tr>
+            <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <%- include('_pagination', {meta: meta, query: filters, base: '/admin/categories'}) %>
+
     <p class="admin-note">Không xóa được loại còn danh mục con hoặc còn sản phẩm.</p>
 </main>
 <script src="/static/js/admin.js"></script>

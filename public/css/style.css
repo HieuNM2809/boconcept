@@ -987,8 +987,36 @@ body.drawer-open { overflow: hidden; }
 .article-body p { margin: 0 0 20px; }
 .article-body h2 { font-size: 24px; font-weight: 700; margin: 34px 0 12px; line-height: 1.3; }
 .article-body h3 { font-size: 19px; font-weight: 700; margin: 28px 0 10px; }
-.article-body ul { margin: 0 0 20px; padding-left: 22px; }
+/* h1/h4 mới có từ khi editor thêm nút — h1 hiếm dùng trong nội dung (tiêu đề
+   trang đã là h1) nên để nhỏ hơn h2 một chút cho khỏi lấn át. */
+.article-body h1 { font-size: 27px; font-weight: 800; margin: 34px 0 12px; line-height: 1.25; }
+.article-body h4 { font-size: 16.5px; font-weight: 700; margin: 22px 0 8px; }
+.article-body ul, .article-body ol { margin: 0 0 20px; padding-left: 22px; }
 .article-body li { margin-bottom: 8px; }
+.article-body blockquote {
+    margin: 0 0 20px; padding: 6px 18px; border-left: 3px solid var(--accent);
+    color: var(--muted); font-style: italic;
+}
+.article-body hr { border: 0; border-top: 1px solid var(--line); margin: 30px 0; }
+.article-body del { color: var(--muted); }
+.article-body code {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .9em;
+    background: var(--soft); padding: 2px 6px; border-radius: 5px;
+}
+.article-body pre {
+    margin: 0 0 20px; padding: 14px 16px; overflow-x: auto;
+    background: var(--soft); border: 1px solid var(--line); border-radius: 10px;
+}
+/* Trong <pre>, thẻ <code> không cần nền/đệm riêng nữa — <pre> đã lo */
+.article-body pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.6; }
+.article-body img { border-radius: 10px; margin: 0 0 20px; }
+/* Bảng cuộn ngang TRONG khung trên màn hẹp, không đẩy cả trang */
+.article-body table {
+    width: 100%; margin: 0 0 20px; border-collapse: collapse;
+    border: 1px solid var(--line); font-size: 15px; display: block; overflow-x: auto;
+}
+.article-body th, .article-body td { padding: 9px 13px; border: 1px solid var(--line); text-align: left; }
+.article-body th { background: var(--soft); font-weight: 600; }
 /* Link trong nội dung bài: xanh, chỉ gạch chân khi rê chuột. Dùng chung cho mọi
    chỗ in bodyHtml của richtext.helper (tin tức, /about, tab sản phẩm, mô tả loại
    sản phẩm) VÀ cho khung xem trước trong admin — cùng một class .article-body. */
@@ -1033,10 +1061,33 @@ body.drawer-open { overflow: hidden; }
 .editor-toolbar button:active { background: var(--line); box-shadow: none; }
 .editor-toolbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .editor-icon { width: 15px; height: 15px; flex: 0 0 auto; }
-/* Xem trước không chèn gì vào nội dung mà đổi chế độ cả ô -> đẩy hẳn sang phải */
-.editor-toolbar .editor-preview-btn { margin-left: auto; }
-.editor-toolbar .editor-preview-btn.is-on { background: var(--accent); color: #fff; box-shadow: none; }
-.editor-toolbar .editor-preview-btn.is-on:hover { background: var(--accent-dark); color: #fff; }
+.editor-toolbar button sub, .editor-toolbar button sup { font-size: 9px; }
+.editor-toolbar button s { font-size: 14px; }
+/* Nhóm công cụ không chèn gì vào nội dung mà đổi chế độ cả ô -> đẩy hẳn sang phải */
+.editor-tools { margin-left: auto; }
+.editor-toolbar button.is-on { background: var(--accent); color: #fff; box-shadow: none; }
+.editor-toolbar button.is-on:hover { background: var(--accent-dark); color: #fff; }
+
+/* Chia đôi: gõ bên trái, kết quả bên phải */
+.editor-panes { display: block; }
+.editor.is-split .editor-panes { display: grid; grid-template-columns: 1fr 1fr; }
+.editor.is-split .editor-preview { border-left: 1px solid var(--line); }
+/* Hai khung phải cao bằng nhau, nếu không khung ngắn hơn để lại mảng trắng lệch */
+.editor.is-split .editor-area, .editor.is-split .editor-preview { min-height: 320px; }
+
+/* Toàn màn hình: phủ kín viewport để soạn bài dài không phải cuộn cả trang form */
+.editor.is-full {
+    position: fixed; inset: 0; z-index: 300; margin: 0;
+    border-radius: 0; border: 0;
+    display: flex; flex-direction: column;
+}
+body.editor-full-open { overflow: hidden; }
+/* min-height:0 là bắt buộc: mặc định flex item không co nhỏ hơn nội dung nên
+   textarea sẽ tràn khỏi màn hình thay vì tự cuộn bên trong. */
+.editor.is-full .editor-panes { flex: 1; min-height: 0; }
+.editor.is-full .editor-area { height: 100%; resize: none; }
+.editor.is-full .editor-preview { height: 100%; }
+
 .editor-preview { padding: 14px; overflow-y: auto; }
 .editor-preview[hidden] { display: none; }
 .editor-preview-empty { color: var(--muted); font-size: 13px; font-style: italic; }
@@ -1090,9 +1141,43 @@ body.modal-open { overflow: hidden; }
 .modal-body input.is-error { border-color: #b23b3b; }
 .modal-body input.is-error:focus { box-shadow: 0 0 0 3px rgba(178, 59, 59, .14); }
 .modal-error { margin: -8px 0 14px; color: #b23b3b; font-size: 12.5px; }
+.modal-img-preview { max-height: 160px; margin: 4px 0 14px; border-radius: 8px; border: 1px solid var(--line); }
+/* Bảng cú pháp trong hộp trợ giúp */
+.modal-help .modal-body { max-height: 60vh; overflow-y: auto; }
+.help-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.help-table td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.help-table td:first-child { white-space: nowrap; width: 1%; }
+.help-table code {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    background: var(--soft); padding: 2px 6px; border-radius: 5px;
+}
 .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 0 18px 18px; }
 .modal-foot .modal-ok { background: var(--accent); border-color: var(--accent); color: #fff; }
 .modal-foot .modal-ok:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+/* Nút xác nhận xoá phải ĐỎ chứ không vàng đồng như nút chèn link: cùng một vị trí
+   trong hộp thoại, khác hẳn hậu quả — màu là thứ duy nhất phân biệt trước khi bấm. */
+.modal-foot .modal-ok.is-danger { background: #b23b3b; border-color: #b23b3b; }
+.modal-foot .modal-ok.is-danger:hover { background: #8f2f2f; border-color: #8f2f2f; }
+.modal-foot .modal-ok.is-danger:focus-visible { outline: 2px solid #b23b3b; outline-offset: 2px; }
+
+/* Hộp xác nhận hẹp hơn hộp chèn link: chỉ có chữ, kéo rộng 520px làm câu hỏi
+   trải thành một dòng dài, mắt phải quét ngang mới đọc hết. */
+.modal-confirm .modal-card { width: min(100%, 430px); }
+.confirm-body { display: flex; gap: 14px; align-items: flex-start; }
+.confirm-icon {
+    flex: none; display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 50%;
+    color: #b23b3b; background: #fbeaea;
+}
+.confirm-text { min-width: 0; }
+.confirm-msg { margin: 0; font-size: 15px; font-weight: 600; }
+/* Tên món đang xoá: cắt bằng ellipsis chứ không xuống dòng vô hạn — tên sản phẩm
+   dài sẽ đẩy hai nút Hủy/Xóa trôi xuống khỏi tầm nhìn. */
+.confirm-name {
+    margin: 6px 0 0; font-size: 14px; color: var(--ink); font-weight: 700;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.confirm-note { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); }
 
 @media (max-width: 560px) {
     .modal { padding: 8vh 14px 14px; }
@@ -1119,16 +1204,35 @@ body.modal-open { overflow: hidden; }
 }
 .gallery-row input[type="text"] { width: 100%; }
 .admin-form .gallery-row input { margin: 0; }
-/* Dòng ảnh của khe slider (/admin/gallery). Ba cột: ảnh · cụm ô nhập · nút xoá.
-   Cụm ô nhập XẾP DỌC chứ không dàn ngang: dòng này có 5 ô (file, đường dẫn, alt
-   VI, alt EN) mà form nằm trong .admin-narrow, dàn ngang thì ô đường dẫn bị bóp
-   còn vài pixel. */
-.gallery-row.slot-row { grid-template-columns: 72px 1fr auto; align-items: start; }
-.slot-row .gallery-row-thumb { width: 72px; height: 72px; }
+/* Dòng ảnh của khe slider (/admin/gallery). Bốn cột: số thứ tự · ảnh · cụm ô
+   nhập · nút xoá. Form khe ảnh nay chiếm hết bề ngang màn hình (admin-form-wide)
+   nên cụm ô nhập DÀN NGANG 2×2 thay vì xếp dọc như hồi còn bó trong 720px. */
+.gallery-rows { counter-reset: slotrow; }
+.gallery-row.slot-row {
+    grid-template-columns: 26px 132px minmax(0, 1fr) auto;
+    align-items: start; gap: 14px; padding: 12px 14px;
+}
+/* Số thứ tự do CSS counter sinh ra, KHÔNG phải do JS đánh: xoá dòng giữa là
+   trình duyệt tự đánh lại số, không cần chạy vòng lặp cập nhật nào.
+   ::before của grid container con cũng là một grid item -> nó chiếm cột 26px. */
+.slot-row::before {
+    counter-increment: slotrow; content: counter(slotrow);
+    display: grid; place-items: center;
+    width: 26px; height: 26px; margin-top: 4px;
+    border: 1px solid var(--line); border-radius: 50%; background: #fff;
+    font-size: 12px; font-weight: 700; color: var(--muted);
+}
+.slot-row .gallery-row-thumb { width: 132px; height: 100px; }
 /* min-width:0 là bắt buộc: mặc định min-width của grid item là auto, ô input dài
    sẽ đẩy cột 1fr phình ra ngoài khung thay vì co lại. */
-.slot-row-fields { display: grid; gap: 8px; min-width: 0; }
-.slot-row-alts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; }
+.slot-row-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 14px; min-width: 0; }
+.slot-row-alts { display: grid; grid-column: 1 / -1; grid-template-columns: 1fr 1fr; gap: 10px 14px; min-width: 0; }
+/* Nhãn bọc luôn ô nhập nên không cần thuộc tính `for` — ô file và hai ô mô tả
+   không có id. Ghi đè lề 14px của .admin-form label: trong dòng thì quá thưa. */
+.admin-form .slot-field {
+    display: grid; gap: 4px; min-width: 0; margin: 0;
+    font-size: 12px; font-weight: 600; color: var(--muted);
+}
 .admin-form .slot-row input { margin: 0; }
 .slot-row input[type="file"] { max-width: 100%; }
 
@@ -1139,11 +1243,12 @@ body.modal-open { overflow: hidden; }
        ẩn hẳn ô ảnh trống thay vì để một khung rỗng cao 120px chiếm chỗ.
        .slot-row thì KHÔNG: nó vẫn giữ 3 cột ở đây (xem ghi chú dưới). */
     .gallery-row:not(.slot-row) .gallery-row-thumb[hidden] { display: none; }
-    /* slot-row GIỮ 3 cột trên mobile: cụm ô đã xếp dọc nên vẫn vừa, và ảnh nhỏ
-       bên trái giúp phân biệt các dòng khi cuộn. */
-    .gallery-row.slot-row { grid-template-columns: 56px 1fr auto; }
-    .slot-row .gallery-row-thumb { width: 56px; height: 56px; }
-    .slot-row-alts { grid-template-columns: 1fr; }
+    /* slot-row GIỮ đủ cột trên mobile: ảnh nhỏ bên trái giúp phân biệt các dòng
+       khi cuộn, chỉ có cụm ô nhập tụt về 1 cột. */
+    .gallery-row.slot-row { grid-template-columns: 22px 64px minmax(0, 1fr) auto; gap: 10px; }
+    .slot-row::before { width: 22px; height: 22px; margin-top: 2px; }
+    .slot-row .gallery-row-thumb { width: 64px; height: 52px; }
+    .slot-row-fields, .slot-row-alts { grid-template-columns: 1fr; }
 }
 
 /* Dải thumbnail ở bảng /admin/gallery — khe slider có nhiều ảnh trên một hàng */
@@ -1316,7 +1421,20 @@ body.modal-open { overflow: hidden; }
    ========================================================================== */
 /* Menu DỌC bên trái. `body.admin` thành flex để sidebar và nội dung nằm cạnh
    nhau; sidebar tự cuộn riêng nên menu dài không đẩy nội dung xuống. */
-body.admin { background: #f4f1ec; display: flex; align-items: stretch; min-height: 100vh; }
+
+/* ── Bảng màu riêng cho khu quản trị: TRẮNG–XÁM TRUNG TÍNH ────────────────────
+   Ghi đè token chỉ trong phạm vi body.admin, KHÔNG sửa :root — trang khách của
+   BoConcept vẫn giữ tông be/vàng đồng của thương hiệu. Admin là công cụ làm
+   việc: nền trắng + vạch xám làm dữ liệu (ảnh sản phẩm, badge, sao vàng) nổi
+   lên, còn nền be nhuộm màu lên mọi thứ nằm trên nó. */
+body.admin {
+    --line: #e5e8eb;      /* vạch kẻ: xám trung tính thay cho be #ece6dc */
+    --soft: #f7f8fa;      /* nền phụ (đầu bảng, nút hover) */
+    --muted: #6b7280;
+    --ink: #1f2328;
+    background: #f5f6f8;  /* nền ngoài xám cực nhạt để thẻ trắng còn tách ra được */
+    display: flex; align-items: stretch; min-height: 100vh;
+}
 
 .admin-skip {
     position: absolute; left: -9999px; top: 0; z-index: 100;
@@ -1324,28 +1442,36 @@ body.admin { background: #f4f1ec; display: flex; align-items: stretch; min-heigh
 }
 .admin-skip:focus { left: 0; } /* chỉ hiện khi tab tới — người dùng bàn phím khỏi phải tab qua cả menu */
 
+/* Sidebar TRẮNG (trước là nền tối #1b1917): mảng tối 232px chạy suốt chiều cao
+   màn hình là thứ chiếm nhiều diện tích nhất, để nguyên thì "màu chủ đạo trắng"
+   không thành. Ngăn cách với nội dung bằng một vạch kẻ thay vì bằng màu nền. */
 .admin-side {
     flex: 0 0 232px; width: 232px; align-self: stretch;
-    background: var(--dark); color: #cfc7bd;
+    background: #fff; color: var(--ink); border-right: 1px solid var(--line);
     display: flex; flex-direction: column; gap: 18px;
     padding: 20px 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
 }
-.admin-brand { font-weight: 700; color: #fff; font-size: 16px; padding: 0 8px; }
+.admin-brand { font-weight: 700; color: var(--ink); font-size: 16px; padding: 0 8px; }
 .admin-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .admin-nav-group {
     margin: 14px 0 4px; padding: 0 8px;
-    font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: #7d7469;
+    font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: #9aa1aa;
 }
 .admin-nav-group:first-child { margin-top: 0; }
 .admin-nav a {
     display: flex; align-items: center; gap: 10px;
-    color: #cfc7bd; font-size: 14px; padding: 9px 10px; border-radius: 8px; transition: .18s;
+    color: #414a53; font-size: 14px; padding: 9px 10px; border-radius: 8px; transition: .18s;
 }
-.admin-nav a:hover { background: #2b2824; color: #fff; }
-.admin-nav a.active { background: var(--accent); color: #fff; font-weight: 600; }
+.admin-nav a:hover { background: var(--soft); color: var(--ink); }
+/* Mục đang mở: nền vàng nhạt + vạch dọc bên trái. Trên nền trắng, tô đặc màu
+   nhấn như bản cũ sẽ thành một khối chói giữa menu. */
+.admin-nav a.active {
+    background: rgba(195, 154, 94, .14); color: var(--accent-dark); font-weight: 600;
+    box-shadow: inset 3px 0 0 var(--accent);
+}
 .admin-nav-icon { font-size: 15px; line-height: 1; }
-.admin-bar-link { color: #cfc7bd; font-size: 13px; padding: 0 8px; }
-.admin-bar-link:hover { color: #fff; }
+.admin-bar-link { color: var(--muted); font-size: 13px; padding: 0 8px; }
+.admin-bar-link:hover { color: var(--accent-dark); }
 
 /* Màn danh sách chiếm hết bề ngang: bảng sản phẩm có 8 cột kèm cột thao tác 3
    nút, bó trong 1100px là cột "Tên" bị bóp và cụm nút tràn ra ngoài viền bảng. */
@@ -1367,7 +1493,7 @@ body.admin { background: #f4f1ec; display: flex; align-items: stretch; min-heigh
 .admin-table th { background: var(--soft); color: var(--muted); font-weight: 600; }
 .admin-table tr:last-child td { border-bottom: 0; }
 /* Dò một dòng qua 8 cột bằng mắt rất dễ lạc -> tô nhẹ dòng đang trỏ tới */
-.admin-table tbody tr:hover td { background: #fbf8f3; }
+.admin-table tbody tr:hover td { background: #f6f8fa; }
 .admin-thumb { width: 90px; height: 50px; object-fit: cover; border-radius: 6px; }
 .admin-empty { text-align: center; color: var(--muted); padding: 30px; }
 .badge-status { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
@@ -1386,6 +1512,18 @@ td.admin-row-actions > :first-child { margin-left: 0; }
 .btn-sm.danger { color: #b23b3b; border-color: #e6c9c9; }
 .btn-sm.danger:hover { background: #b23b3b; color: #fff; border-color: #b23b3b; }
 .admin-note { color: var(--muted); font-size: 13px; margin-top: 16px; }
+
+/* STT là số đếm, căn phải để hàng đơn vị thẳng cột khi sang 3 chữ số (trang 21+). */
+.admin-stt { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; width: 1%; white-space: nowrap; }
+
+/* Cột "Nổi bật": sao vàng đặc = bật, sao xám nhạt = tắt. Cột hẹp nên căn giữa,
+   chữ ★ mặc định nhỏ hơn chữ thường một chút -> nâng cỡ cho cân với các cột khác. */
+.admin-star { text-align: center; }
+.admin-star .star { font-size: 17px; line-height: 1; }
+.admin-star .star.on { color: #f0b429; }
+/* Màu là tín hiệu duy nhất phân biệt hai trạng thái -> người mù màu vàng/xám sẽ
+   không thấy khác nhau. title trên thẻ span cho họ rê chuột đọc được. */
+.admin-star .star.off { color: #d5dae0; }
 
 /* ── Khung bộ lọc trên màn danh sách ──────────────────────────────────────────
    Form GET: mọi bộ lọc nằm trong URL nên chia sẻ được link, F5 và nút Back đều
@@ -1443,6 +1581,8 @@ td.admin-row-actions > :first-child { margin-left: 0; }
         flex: 0 0 auto; width: 100%; height: auto; position: static;
         flex-direction: row; align-items: center; gap: 12px;
         padding: 10px 14px; overflow-x: auto;
+        /* Nằm ngang thì vạch ngăn phải ở CẠNH DƯỚI, không phải cạnh phải */
+        border-right: 0; border-bottom: 1px solid var(--line);
     }
     .admin-nav { flex-direction: row; flex: 1; gap: 4px; }
     .admin-nav-group { display: none; }  /* nhãn nhóm vô nghĩa khi xếp ngang */
@@ -1451,6 +1591,60 @@ td.admin-row-actions > :first-child { margin-left: 0; }
 }
 .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
 .admin-hint { color: var(--muted); font-size: 12px; }
+/* Ô ngắn (Trạng thái…) trong form full-width: để nguyên width:100% thì cái
+   select 2 lựa chọn kéo dài hết màn hình, trông rất kỳ. */
+.admin-form .field-narrow { max-width: 260px; }
+/* Khối nhiều ô ngắn (slug, thứ tự, trạng thái…) trong form full-width: tự chia
+   cột theo bề rộng còn lại — màn to xếp 4–5 ô một hàng, màn nhỏ tụt về 1 cột. */
+.form-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 18px; }
+
+/* ── Form rộng 2 cột (views/admin/product-form.ejs) ───────────────────────────
+   Nội dung bên trái, thiết lập xuất bản bên phải. Form sản phẩm có ~20 trường +
+   4 ô soạn thảo — nhồi vào cột 720px như các form khác thì cuộn rất dài, mà kéo
+   dãn một cột cho hết màn hình lại cho ra ô "Slug" rộng gần 2 mét. */
+.admin-form-wide {
+    display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px;
+    /* align-items:start là BẮT BUỘC để sticky ở cột phải hoạt động: mặc định
+       grid item bị kéo cao bằng hàng nên không còn khoảng nào để "dính". */
+    align-items: start;
+    /* Khung trắng chuyển xuống từng .form-card, form chỉ còn là lưới */
+    background: none; border: 0; padding: 0;
+}
+.form-main, .form-side { display: grid; gap: 18px; min-width: 0; }
+.form-side { position: sticky; top: 20px; }
+.form-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
+/* Thẻ chỉ chứa mỗi khung ảnh (form slide): khung 168px mặc định làm cột trái lùn
+   tịt bên cạnh cột phải cao gấp ba. Kéo cao ra cho cân, tiện thể vùng thả rộng hơn. */
+.form-card.is-media .dropzone { min-height: 320px; }
+/* Nhãn đầu tiên trong thẻ không cần lề trên — đã có padding của thẻ */
+.form-card > label:first-child, .form-card > .admin-subhead + label { margin-top: 0; }
+.form-card > .admin-subhead { margin-bottom: 10px; }
+.form-card > .admin-subhead + .admin-hint { margin: -6px 0 0; }
+/* Tiêu đề phụ THỨ HAI trong cùng một thẻ (form khe ảnh: "Về khe này" rồi tới
+   "Mô tả ảnh") cần khoảng thở, khác với cái đầu tiên đã có padding của thẻ. */
+.form-card > .admin-hint + .admin-subhead { margin-top: 20px; }
+
+/* Số cột tự co theo bề ngang, mỗi ô tối thiểu 240px: màn rộng xếp 3–4 ô một
+   hàng, laptop nhỏ tự xuống 2 rồi 1 — không phải viết media query từng mức. */
+.form-grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 18px; }
+.form-grid-auto > div { min-width: 0; }
+
+/* Cặp VI–EN đặt cạnh nhau: dịch nội dung là việc đối chiếu hai bản. */
+.form-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+.form-pair > div { min-width: 0; }
+
+.admin-form-wide .form-actions { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.admin-form-wide .form-actions .btn { flex: 1; text-align: center; }
+
+/* Dưới 1180px cột phải 340px làm ô soạn thảo bên trái hẹp quá -> xếp dọc.
+   Bỏ sticky luôn: một cột dính trong luồng dọc sẽ che mất nội dung phía dưới. */
+@media (max-width: 1180px) {
+    .admin-form-wide { grid-template-columns: 1fr; }
+    .form-side { position: static; }
+}
+@media (max-width: 760px) {
+    .form-pair { grid-template-columns: 1fr; }
+}
 
 /* ── Vùng kéo–thả ảnh (views/admin/_image-field.ejs) ──────────────────────────
    Ô <input type=file> thật nằm phủ kín khung ở opacity 0: bấm chỗ nào cũng mở
@@ -1464,7 +1658,7 @@ td.admin-row-actions > :first-child { margin-left: 0; }
     background: var(--soft); text-align: center;
     transition: border-color .18s, background .18s, box-shadow .18s;
 }
-.dropzone:hover { border-color: var(--accent); background: #fbf7f1; }
+.dropzone:hover { border-color: var(--accent); background: #f2f4f7; }
 .dropzone.is-drag {
     border-color: var(--accent); background: #fdf6ea;
     box-shadow: inset 0 0 0 3px rgba(195, 154, 94, .14);
@@ -1489,6 +1683,9 @@ td.admin-row-actions > :first-child { margin-left: 0; }
 .dropzone.has-image .dropzone-empty { display: none; }
 .dropzone.has-image .dropzone-preview { display: block; max-height: 200px; border-radius: 8px; }
 .dropzone.has-image .dropzone-preview.is-icon { max-height: 88px; padding: 10px; background: var(--soft); border-radius: 8px; }
+/* is-wide: ảnh banner (slide) nằm ở cột chính rộng — 200px như thumbnail sản phẩm
+   thì không nhìn ra chữ trên ảnh có bị bố cục che hay không. */
+.dropzone.has-image .dropzone-preview.is-wide { max-height: 380px; }
 .dropzone.has-image .dropzone-swap { display: block; color: var(--muted); font-size: 12px; }
 .dropzone.has-image .dropzone-clear { display: inline-block; position: absolute; top: 10px; right: 10px; z-index: 2; }
 

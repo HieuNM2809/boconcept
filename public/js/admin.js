@@ -1,9 +1,27 @@
 (function () {
     'use strict';
-    // Xác nhận trước khi submit form có data-confirm (vd: xóa slide)
+    // Xác nhận trước khi submit form có data-confirm (vd: xóa sản phẩm).
+    // Thay window.confirm bằng hộp thoại riêng: hộp mặc định của trình duyệt không
+    // tô đỏ được hành động xoá, không kèm được tên món đang xoá, và Chrome sẽ hiện
+    // ô "chặn hộp thoại" nếu admin xoá liên tiếp vài lần.
     document.querySelectorAll('form[data-confirm]').forEach(function (f) {
         f.addEventListener('submit', function (e) {
-            if (!window.confirm(f.dataset.confirm)) e.preventDefault();
+            if (f.dataset.confirmed === '1') return; // đã xác nhận -> cho đi thẳng
+            e.preventDefault();
+            var btn = f.querySelector('[type=submit]');
+            openConfirmModal({
+                title: f.dataset.confirmTitle || 'Xác nhận xóa',
+                message: f.dataset.confirm,
+                name: f.dataset.confirmName || '',
+                okLabel: f.dataset.confirmOk || 'Xóa',
+                onOk: function () {
+                    // Khoá nút lại: xoá là POST, bấm hai lần sẽ bắn hai request và
+                    // lần thứ hai ăn 404 vì hàng đã biến mất.
+                    f.dataset.confirmed = '1';
+                    if (btn) { btn.disabled = true; btn.textContent = 'Đang xóa…'; }
+                    if (f.requestSubmit) f.requestSubmit(); else f.submit();
+                },
+            });
         });
     });
 
@@ -56,12 +74,20 @@
             row.innerHTML =
                 '<img class="gallery-row-thumb" alt="" hidden data-preview-for="' + id + '">' +
                 '<div class="slot-row-fields">' +
-                    '<input type="file" accept="image/*" data-encode-to="' + id + '">' +
+                    '<label class="slot-field">Ảnh từ máy' +
+                        '<input type="file" accept="image/*" data-encode-to="' + id + '">' +
+                    '</label>' +
                     // Tên phải khớp whitelist hpp — xem admin.gallery.controller.js
-                    '<input type="text" id="' + id + '" name="slot_image[]" placeholder="https://...">' +
+                    '<label class="slot-field">Đường dẫn ảnh' +
+                        '<input type="text" id="' + id + '" name="slot_image[]" placeholder="https://...">' +
+                    '</label>' +
                     '<div class="slot-row-alts">' +
-                        '<input type="text" name="slot_alt_vi[]" placeholder="Mô tả VI">' +
-                        '<input type="text" name="slot_alt_en[]" placeholder="Mô tả EN">' +
+                        '<label class="slot-field">Mô tả ảnh (VI)' +
+                            '<input type="text" name="slot_alt_vi[]" placeholder="Dùng cho trình đọc màn hình">' +
+                        '</label>' +
+                        '<label class="slot-field">Mô tả ảnh (EN)' +
+                            '<input type="text" name="slot_alt_en[]">' +
+                        '</label>' +
                     '</div>' +
                 '</div>' +
                 '<button type="button" class="btn-sm danger" data-remove-row>Xóa</button>';
@@ -96,11 +122,37 @@
 
         function apply(fn) {
             var s = ta.selectionStart, e = ta.selectionEnd;
-            var before = ta.value.slice(0, s), sel = ta.value.slice(s, e), after = ta.value.slice(e);
+            var sel = ta.value.slice(s, e);
             var r = fn(sel);
-            ta.value = before + r.text + after;
+
             ta.focus();
+            ta.setSelectionRange(s, e);
+            // execCommand('insertText') GIỮ ĐƯỢC ngăn xếp hoàn tác của trình duyệt;
+            // gán thẳng ta.value thì xoá sạch nó — bấm Đậm xong Ctrl+Z không quay
+            // lại được, mà thanh công cụ lại có nút Hoàn tác. execCommand tuy đã
+            // deprecated nhưng đây là cách DUY NHẤT làm được việc này trên textarea.
+            var ok = false;
+            try { ok = document.execCommand('insertText', false, r.text); } catch (err) { ok = false; }
+            if (!ok) ta.value = ta.value.slice(0, s) + r.text + ta.value.slice(e);
+
             ta.setSelectionRange(s + r.caret, s + r.caret + (r.select == null ? sel.length : r.select));
+            // Chế độ chia đôi phải vẽ lại: input event không bắn khi sửa bằng script
+            ta.dispatchEvent(new Event('input', {bubbles: true}));
+        }
+
+        // Khối nhiều dòng: phải nằm trên dòng riêng và cách đoạn trên bằng một
+        // dòng trống, không thì renderer gom nó vào <p> của đoạn đang gõ dở.
+        var BLOCKS = {
+            table: '| Cột 1 | Cột 2 |\n|---|---|\n| Nội dung | Nội dung |',
+            hr: '---',
+        };
+
+        function insertBlock(text) {
+            var before = ta.value.slice(0, ta.selectionStart);
+            var lead = !before ? '' : (/\n\n$/.test(before) ? '' : (/\n$/.test(before) ? '\n' : '\n\n'));
+            apply(function () {
+                return {text: lead + text + '\n\n', caret: lead.length + text.length + 2, select: 0};
+            });
         }
 
         // Ctrl/Cmd+B, Ctrl/Cmd+I — gõ tới đâu định dạng tới đó, khỏi rời tay khỏi
@@ -118,26 +170,17 @@
         // ── Xem trước ─────────────────────────────────────────────────────────
         // HTML do SERVER dựng (POST /admin/preview) bằng đúng richtext.helper mà
         // trang public dùng — xem trước và trang thật không thể lệch nhau.
+        var wrap = bar.closest('.editor');
         var pane = document.querySelector('[data-preview-pane="' + bar.dataset.editorFor + '"]');
         var previewBtn = bar.querySelector('[data-preview]');
+        var splitBtn = bar.querySelector('[data-split]');
+        var fullBtn = bar.querySelector('[data-full]');
         var previewOn = false;
+        var splitOn = false;
+        var fullOn = false;
 
-        function setPreview(on) {
-            previewOn = on;
-            ta.hidden = on;
-            pane.hidden = !on;
-            previewBtn.classList.toggle('is-on', on);
-            previewBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-            // Textarea bị ẩn thì tiêu điểm rơi ra ngoài -> dời sang chính nút,
-            // để phím tắt bật/tắt vẫn nhận được và Tab không nhảy về đầu trang.
-            if (!on) { ta.focus(); return; }
-            previewBtn.focus();
-
-            // Chiều cao tối thiểu bằng đúng textarea đang có: không thì bấm xem
-            // trước là cả form giật lên vài trăm pixel rồi lại tụt xuống.
-            pane.style.minHeight = ta.offsetHeight + 'px';
+        function renderPreview() {
             pane.innerHTML = '<p class="editor-preview-empty">Đang dựng…</p>';
-
             fetch('/admin/preview', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -155,24 +198,102 @@
                 });
         }
 
+        function setPreview(on) {
+            previewOn = on;
+            if (on && splitOn) setSplit(false); // hai chế độ loại trừ nhau
+            ta.hidden = on;
+            pane.hidden = !on;
+            previewBtn.classList.toggle('is-on', on);
+            previewBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            // Textarea bị ẩn thì tiêu điểm rơi ra ngoài -> dời sang chính nút,
+            // để phím tắt bật/tắt vẫn nhận được và Tab không nhảy về đầu trang.
+            if (!on) { ta.focus(); return; }
+            previewBtn.focus();
+
+            // Chiều cao tối thiểu bằng đúng textarea đang có: không thì bấm xem
+            // trước là cả form giật lên vài trăm pixel rồi lại tụt xuống.
+            pane.style.minHeight = ta.offsetHeight + 'px';
+            renderPreview();
+        }
+
+        // Chia đôi: gõ bên trái, kết quả bên phải, cập nhật sau khi ngừng gõ.
+        function setSplit(on) {
+            splitOn = on;
+            if (on && previewOn) setPreview(false);
+            wrap.classList.toggle('is-split', on);
+            if (splitBtn) {
+                splitBtn.classList.toggle('is-on', on);
+                splitBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            }
+            ta.hidden = false;
+            pane.hidden = !on;
+            if (on) { pane.style.minHeight = ''; renderPreview(); }
+        }
+
+        // Gọi /admin/preview sau mỗi lần gõ sẽ bắn hàng chục request một câu ->
+        // chỉ dựng lại khi đã ngừng gõ 400ms.
+        var typeTimer = null;
+        ta.addEventListener('input', function () {
+            if (!splitOn) return;
+            clearTimeout(typeTimer);
+            typeTimer = setTimeout(renderPreview, 400);
+        });
+
+        function setFull(on) {
+            fullOn = on;
+            wrap.classList.toggle('is-full', on);
+            // Khoá cuộn trang nền, nếu không cuộn chuột trong ô sẽ kéo cả trang phía sau
+            document.body.classList.toggle('editor-full-open', on);
+            if (fullBtn) {
+                fullBtn.classList.toggle('is-on', on);
+                fullBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            }
+            if (on) ta.focus();
+        }
+
         if (pane && previewBtn) {
             previewBtn.addEventListener('click', function () { setPreview(!previewOn); });
-            // Ctrl/Cmd+Shift+P — gắn trên CẢ khung .editor chứ không riêng
-            // textarea: lúc đang xem trước textarea bị ẩn nên không nhận được
-            // phím nào, và người dùng sẽ không tắt lại được bằng bàn phím.
-            bar.closest('.editor').addEventListener('keydown', function (ev) {
-                if ((ev.ctrlKey || ev.metaKey) && ev.shiftKey && String(ev.key).toLowerCase() === 'p') {
-                    ev.preventDefault();
-                    setPreview(!previewOn);
-                }
-            });
         }
+        // Phím tắt gắn trên CẢ khung .editor chứ không riêng textarea: lúc đang
+        // xem trước textarea bị ẩn nên không nhận được phím nào, và người dùng sẽ
+        // không tắt lại được bằng bàn phím.
+        wrap.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Escape' && fullOn) { ev.preventDefault(); setFull(false); return; }
+            if (!(ev.ctrlKey || ev.metaKey) || !ev.shiftKey) return;
+            var k = String(ev.key).toLowerCase();
+            if (k === 'p') { ev.preventDefault(); setPreview(!previewOn); }
+            else if (k === 's' && splitBtn) { ev.preventDefault(); setSplit(!splitOn); }
+        });
 
         bar.addEventListener('click', function (ev) {
             var btn = ev.target.closest('button');
             if (!btn || btn.dataset.preview) return;
 
-            if (btn.dataset.wrap) {
+            if (btn.dataset.block) {
+                insertBlock(BLOCKS[btn.dataset.block] || '');
+            } else if (btn.dataset.history) {
+                // Hoàn tác/Làm lại của CHÍNH trình duyệt — dùng được vì mọi thao
+                // tác chèn ở trên đều đi qua execCommand nên nằm trong ngăn xếp đó.
+                ta.focus();
+                try { document.execCommand(btn.dataset.history); } catch (err) { /* trình duyệt không cho thì thôi */ }
+            } else if (btn.dataset.split) {
+                setSplit(!splitOn);
+            } else if (btn.dataset.full) {
+                setFull(!fullOn);
+            } else if (btn.dataset.help) {
+                openHelpModal();
+            } else if (btn.dataset.image) {
+                // Chốt vùng chọn TRƯỚC khi mở hộp thoại, như nút Link
+                var is0 = ta.selectionStart, ie0 = ta.selectionEnd;
+                var restoreImg = function () { ta.focus(); ta.setSelectionRange(is0, ie0); };
+                openImageModal(ta.value.slice(is0, ie0), function (src, alt) {
+                    restoreImg();
+                    apply(function (sel) {
+                        var text = alt || sel || 'mô tả ảnh';
+                        return {text: '![' + text + '](' + src + ')', caret: 2, select: text.length};
+                    });
+                }, restoreImg);
+            } else if (btn.dataset.wrap) {
                 var w = btn.dataset.wrap;
                 apply(function (sel) { return {text: w + (sel || 'chữ') + w, caret: w.length}; });
             } else if (btn.dataset.prefix) {
@@ -202,6 +323,104 @@
     bindEncoders(document);
     bindDropzones(document);
 })();
+
+/* ── Hộp thoại xác nhận (xóa) ─────────────────────────────────────────────────
+   Dùng chung cho mọi form có data-confirm nên cả 8 màn danh sách admin đều được,
+   không phải sửa từng view. Thuộc tính đọc trên form:
+     data-confirm       nội dung câu hỏi (bắt buộc — có nó mới bật xác nhận)
+     data-confirm-name  tên món đang xoá, hiện đậm để admin đối chiếu
+     data-confirm-title tiêu đề, mặc định "Xác nhận xóa"
+     data-confirm-ok    chữ trên nút đỏ, mặc định "Xóa" */
+var confirmModal = null;
+
+function buildConfirmModal() {
+    var el = document.createElement('div');
+    el.className = 'modal modal-confirm';
+    el.hidden = true;
+    el.innerHTML =
+        '<div class="modal-backdrop" data-modal-close></div>' +
+        // alertdialog (không phải dialog): báo cho trình đọc màn hình đây là cảnh
+        // báo cần trả lời ngay, nội dung được đọc lên khi hộp mở.
+        '<div class="modal-card" role="alertdialog" aria-modal="true" ' +
+             'aria-labelledby="confirmModalTitle" aria-describedby="confirmModalMsg">' +
+            '<div class="modal-head">' +
+                '<h2 id="confirmModalTitle">Xác nhận xóa</h2>' +
+                '<button type="button" class="modal-x" data-modal-close aria-label="Đóng">&times;</button>' +
+            '</div>' +
+            '<div class="modal-body confirm-body">' +
+                '<span class="confirm-icon" aria-hidden="true">' +
+                    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" ' +
+                         'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>' +
+                    '</svg>' +
+                '</span>' +
+                '<div class="confirm-text">' +
+                    '<p id="confirmModalMsg" class="confirm-msg"></p>' +
+                    '<p class="confirm-name" hidden></p>' +
+                    '<p class="confirm-note">Sau khi xóa, mục này biến mất khỏi website và khỏi trang quản trị.</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="modal-foot">' +
+                '<button type="button" class="btn-sm" data-modal-close>Hủy</button>' +
+                '<button type="button" class="btn-sm modal-ok is-danger">Xóa</button>' +
+            '</div>' +
+        '</div>';
+    document.body.appendChild(el);
+    return el;
+}
+
+function openConfirmModal(opts) {
+    if (!confirmModal) confirmModal = buildConfirmModal();
+
+    var titleEl = confirmModal.querySelector('#confirmModalTitle');
+    var msgEl = confirmModal.querySelector('.confirm-msg');
+    var nameEl = confirmModal.querySelector('.confirm-name');
+    var okBtn = confirmModal.querySelector('.modal-ok');
+    var cancelBtn = confirmModal.querySelector('.modal-foot [data-modal-close]');
+    // Trả con trỏ về đúng nút vừa bấm khi đóng, nếu không tiêu điểm rơi về đầu
+    // trang và người dùng bàn phím phải Tab lại từ đầu bảng.
+    var opener = document.activeElement;
+
+    titleEl.textContent = opts.title || 'Xác nhận xóa';
+    msgEl.textContent = opts.message || 'Bạn có chắc chắn?';
+    // textContent chứ KHÔNG innerHTML: tên sản phẩm do người dùng nhập, ghép
+    // thẳng vào HTML là mở đường XSS ngay trong trang quản trị.
+    nameEl.textContent = opts.name || '';
+    nameEl.hidden = !opts.name;
+    okBtn.textContent = opts.okLabel || 'Xóa';
+
+    confirmModal.hidden = false;
+    document.body.classList.add('modal-open');
+    // Tiêu điểm đặt ở "Hủy", không phải "Xóa": gõ Enter theo quán tính ngay sau
+    // khi bấm nút xóa thì không được xóa mất hàng.
+    cancelBtn.focus();
+
+    function close() {
+        confirmModal.hidden = true;
+        document.body.classList.remove('modal-open');
+        document.removeEventListener('keydown', onKey);
+        confirmModal.removeEventListener('click', onClick);
+        okBtn.removeEventListener('click', ok);
+        if (opener && opener.focus) opener.focus();
+    }
+
+    function ok() {
+        close();
+        opts.onOk();
+    }
+
+    function onKey(ev) {
+        if (ev.key === 'Escape') { ev.preventDefault(); close(); }
+    }
+
+    function onClick(ev) {
+        if (ev.target.closest('[data-modal-close]')) close();
+    }
+
+    document.addEventListener('keydown', onKey);
+    confirmModal.addEventListener('click', onClick);
+    okBtn.addEventListener('click', ok);
+}
 
 /* ── Hộp thoại "Chèn liên kết" ────────────────────────────────────────────────
    Thay cho window.prompt: prompt không tạo kiểu được, không kiểm tra được địa
@@ -313,6 +532,180 @@ function openLinkModal(selected, onSubmit, onClose) {
     linkModal.addEventListener('click', onClick);
     okBtn.addEventListener('click', submit);
     url.addEventListener('input', clearError);
+}
+
+/* ── Hộp thoại "Chèn ảnh" ─────────────────────────────────────────────────────
+   Có cả ô chọn file: ảnh của web này được mã hoá base64 ngay tại trình duyệt rồi
+   lưu vào DB (Railway xoá filesystem mỗi lần redeploy), nên "chọn từ máy" phải
+   dùng lại đúng đường bindEncoders + shrinkImage như các ô ảnh khác. */
+var imageModal = null;
+
+// Bản sao của safeImageSrc trong richtext.helper.js — server vẫn là nơi quyết
+// định, kiểm ở đây chỉ để admin biết NGAY thay vì lưu xong mới thấy ảnh biến mất.
+function isSafeImageSrc(raw) {
+    var url = String(raw).trim();
+    if (/^data:image\/(png|jpe?g|gif|webp|avif);base64,/i.test(url)) return true;
+    return isSafeHref(url);
+}
+
+function buildImageModal() {
+    var el = document.createElement('div');
+    el.className = 'modal';
+    el.hidden = true;
+    el.innerHTML =
+        '<div class="modal-backdrop" data-modal-close></div>' +
+        '<div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="imgModalTitle">' +
+            '<div class="modal-head">' +
+                '<h2 id="imgModalTitle">Chèn ảnh</h2>' +
+                '<button type="button" class="modal-x" data-modal-close aria-label="Đóng">&times;</button>' +
+            '</div>' +
+            '<div class="modal-body">' +
+                '<label for="imgModalFile">Chọn từ máy</label>' +
+                '<input type="file" id="imgModalFile" accept="image/*" data-encode-to="imgModalSrc">' +
+                '<span class="admin-hint upload-note" data-note-for="imgModalSrc"></span>' +
+                '<img class="modal-img-preview" id="imgModalSrcPreview" alt="" hidden>' +
+                '<label for="imgModalSrc">Hoặc dán đường dẫn</label>' +
+                '<input type="text" id="imgModalSrc" autocomplete="off" spellcheck="false" placeholder="https://…">' +
+                '<p class="modal-error" hidden></p>' +
+                '<label for="imgModalAlt">Mô tả ảnh</label>' +
+                '<input type="text" id="imgModalAlt" autocomplete="off" placeholder="Trình đọc màn hình đọc dòng này">' +
+            '</div>' +
+            '<div class="modal-foot">' +
+                '<button type="button" class="btn-sm" data-modal-close>Hủy</button>' +
+                '<button type="button" class="btn-sm modal-ok">Chèn ảnh</button>' +
+            '</div>' +
+        '</div>';
+    document.body.appendChild(el);
+    bindEncoders(el); // ô chọn file dùng chung đường thu nhỏ + mã hoá base64
+    return el;
+}
+
+function openImageModal(selected, onSubmit, onClose) {
+    if (!imageModal) imageModal = buildImageModal();
+
+    var src = imageModal.querySelector('#imgModalSrc');
+    var alt = imageModal.querySelector('#imgModalAlt');
+    var file = imageModal.querySelector('#imgModalFile');
+    var img = imageModal.querySelector('#imgModalSrcPreview');
+    var note = imageModal.querySelector('[data-note-for="imgModalSrc"]');
+    var error = imageModal.querySelector('.modal-error');
+    var okBtn = imageModal.querySelector('.modal-ok');
+
+    src.value = '';
+    alt.value = selected || '';
+    file.value = '';
+    note.textContent = '';
+    img.hidden = true;
+    img.removeAttribute('src'); // src="" bị hiểu là tải lại chính trang này
+    error.hidden = true;
+    src.classList.remove('is-error');
+    imageModal.hidden = false;
+    document.body.classList.add('modal-open');
+    src.focus();
+
+    function close() {
+        imageModal.hidden = true;
+        document.body.classList.remove('modal-open');
+        document.removeEventListener('keydown', onKey);
+        imageModal.removeEventListener('click', onClick);
+        okBtn.removeEventListener('click', submit);
+        src.removeEventListener('input', clearError);
+        if (onClose) onClose();
+    }
+
+    function clearError() { error.hidden = true; src.classList.remove('is-error'); }
+
+    function submit() {
+        var v = src.value.trim();
+        if (!v) return fail('Hãy chọn ảnh từ máy hoặc dán đường dẫn.');
+        if (!isSafeImageSrc(v)) return fail('Chỉ nhận http://…, https://…, đường dẫn nội bộ bắt đầu bằng / hoặc ảnh nhúng base64 (không nhận SVG).');
+        // Ngoặc và dấu cách làm vỡ cú pháp ![](…) -> mã hoá lại thay vì để hỏng âm thầm
+        var out = v.replace(/ /g, '%20').replace(/\)/g, '%29');
+        var label = alt.value.trim().replace(/[[\]]/g, '');
+        close();
+        onSubmit(out, label);
+    }
+
+    function fail(msg) {
+        error.textContent = msg;
+        error.hidden = false;
+        src.classList.add('is-error');
+        src.focus();
+    }
+
+    function onKey(ev) {
+        if (ev.key === 'Escape') { ev.preventDefault(); close(); }
+        else if (ev.key === 'Enter' && (ev.target === src || ev.target === alt)) { ev.preventDefault(); submit(); }
+    }
+
+    function onClick(ev) { if (ev.target.closest('[data-modal-close]')) close(); }
+
+    document.addEventListener('keydown', onKey);
+    imageModal.addEventListener('click', onClick);
+    okBtn.addEventListener('click', submit);
+    src.addEventListener('input', clearError);
+}
+
+/* ── Hộp thoại "Cú pháp hỗ trợ" ───────────────────────────────────────────────
+   Danh sách này phải khớp với app/Helpers/richtext.helper.js. Thêm cú pháp ở
+   helper thì nhớ thêm một dòng ở đây, không thì admin không có cách nào biết. */
+var helpModal = null;
+
+var HELP_ROWS = [
+    ['**đậm**', 'đậm'],
+    ['*nghiêng*', 'nghiêng'],
+    ['~~gạch ngang~~', 'gạch ngang'],
+    ['`mã`', 'mã trong dòng'],
+    ['x^2^', 'chỉ số trên (mũ)'],
+    ['# … #### Tiêu đề', 'tiêu đề 4 mức'],
+    ['- mục', 'gạch đầu dòng'],
+    ['1. mục', 'danh sách đánh số'],
+    ['&gt; câu', 'trích dẫn'],
+    ['---', 'đường kẻ ngang'],
+    ['``` … ```', 'khối mã (giữ nguyên xuống dòng)'],
+    ['| A | B |', 'bảng — dòng 2 phải là |---|---|'],
+    ['[chữ](https://…)', 'liên kết'],
+    ['![mô tả](https://…)', 'ảnh'],
+];
+
+function openHelpModal() {
+    if (!helpModal) {
+        var rows = HELP_ROWS.map(function (r) {
+            return '<tr><td><code>' + r[0] + '</code></td><td>' + r[1] + '</td></tr>';
+        }).join('');
+        helpModal = document.createElement('div');
+        helpModal.className = 'modal';
+        helpModal.hidden = true;
+        helpModal.innerHTML =
+            '<div class="modal-backdrop" data-modal-close></div>' +
+            '<div class="modal-card modal-help" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">' +
+                '<div class="modal-head">' +
+                    '<h2 id="helpModalTitle">Cú pháp hỗ trợ</h2>' +
+                    '<button type="button" class="modal-x" data-modal-close aria-label="Đóng">&times;</button>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                    '<table class="help-table"><tbody>' + rows + '</tbody></table>' +
+                    '<p class="admin-hint">Thẻ HTML gõ vào sẽ hiện ra thành chữ, không chạy.</p>' +
+                '</div>' +
+                '<div class="modal-foot"><button type="button" class="btn-sm modal-ok" data-modal-close>Đóng</button></div>' +
+            '</div>';
+        document.body.appendChild(helpModal);
+        helpModal.addEventListener('click', function (ev) {
+            if (ev.target.closest('[data-modal-close]')) closeHelp();
+        });
+    }
+    helpModal.hidden = false;
+    document.body.classList.add('modal-open');
+    helpModal.querySelector('.modal-ok').focus();
+    document.addEventListener('keydown', helpKey);
+}
+
+function helpKey(ev) { if (ev.key === 'Escape') { ev.preventDefault(); closeHelp(); } }
+
+function closeHelp() {
+    helpModal.hidden = true;
+    document.body.classList.remove('modal-open');
+    document.removeEventListener('keydown', helpKey);
 }
 
 var IMG_MAX_PIXELS = 5000000;   // 5 megapixel — trần độ phân giải sau khi thu

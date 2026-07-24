@@ -1,6 +1,16 @@
 const {Op} = require('sequelize');
 const {Category, Product} = require('../../Models/index.model');
 
+// Sắp xếp cho màn danh sách quản trị (getPaged). Tên khoá trùng với giá trị
+// trong ô <select> của views/admin/categories.ejs.
+const CATEGORY_SORT_MAP = {
+    oldest: [['id', 'ASC']],
+    newest: [['id', 'DESC']],
+    sort_order: [['sort_order', 'ASC'], ['id', 'ASC']],
+    name_asc: [['name_vi', 'ASC']],
+    name_desc: [['name_vi', 'DESC']],
+};
+
 class CategoryService {
     /**
      * Danh sách danh mục.
@@ -34,6 +44,59 @@ class CategoryService {
             }
         }
         return roots;
+    }
+
+    /**
+     * Danh sách danh mục CÓ PHÂN TRANG + bộ lọc — dùng cho màn quản trị.
+     * Tách khỏi getAll() thay vì thêm tham số: getAll() đang được menu header,
+     * ô chọn danh mục ở form sản phẩm và form danh mục gọi, tất cả đều cần TOÀN
+     * BỘ danh sách — cắt trang ở đó là menu mất mục.
+     * @param {object} filters - { page, per_page, q, parent_id, status, is_featured, sort }
+     *   parent_id = 'root' -> chỉ danh mục gốc (parent_id IS NULL)
+     * @returns {{data: object[], meta: {total, per_page, current_page, last_page}}}
+     */
+    static async getPaged(filters = {}) {
+        const {
+            page = 1, per_page = 20, q = null,
+            parent_id = '', status = '', is_featured = '', sort = 'oldest',
+        } = filters;
+
+        const _page = Math.max(parseInt(page, 10) || 1, 1);
+        const _perPage = Math.min(Math.max(parseInt(per_page, 10) || 20, 1), 100);
+
+        const where = {};
+        if (status !== undefined && status !== '' && status !== null) where.status = parseInt(status, 10);
+        if (is_featured !== undefined && is_featured !== '' && is_featured !== null) {
+            where.is_featured = parseInt(is_featured, 10);
+        }
+        if (parent_id === 'root') where.parent_id = null;
+        else if (parent_id !== '' && parent_id !== null && parent_id !== undefined) {
+            where.parent_id = parseInt(parent_id, 10);
+        }
+        // Tìm trên CẢ HAI ngôn ngữ (getAll cũ chỉ tìm name_vi): admin gõ "sofa"
+        // phải ra được mục chỉ đặt tên EN.
+        if (q) {
+            where[Op.or] = [
+                {name_vi: {[Op.like]: `%${q}%`}},
+                {name_en: {[Op.like]: `%${q}%`}},
+            ];
+        }
+
+        const order = CATEGORY_SORT_MAP[sort] || CATEGORY_SORT_MAP.oldest;
+
+        const {rows, count} = await Category.findAndCountAll({
+            where, order, limit: _perPage, offset: (_page - 1) * _perPage, raw: true,
+        });
+
+        return {
+            data: rows,
+            meta: {
+                total: count,
+                per_page: _perPage,
+                current_page: _page,
+                last_page: Math.max(Math.ceil(count / _perPage), 1),
+            },
+        };
     }
 
     static async getById(id) {

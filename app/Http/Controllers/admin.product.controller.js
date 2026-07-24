@@ -59,7 +59,9 @@ function readFilters(q = {}) {
         min_price: Number.isFinite(parseFloat(q.min_price)) && parseFloat(q.min_price) >= 0 ? str(q.min_price) : '',
         max_price: Number.isFinite(parseFloat(q.max_price)) && parseFloat(q.max_price) >= 0 ? str(q.max_price) : '',
         material: str(q.material),
-        sort: oneOf(q.sort, ['newest', 'oldest', 'price_asc', 'price_desc', 'priority'], 'newest'),
+        // Mặc định 'oldest' = id tăng dần, để cột id trên màn danh sách chạy
+        // 1, 2, 3… Bên ngoài (trang khách) vẫn 'newest', chỉ màn quản trị đổi.
+        sort: oneOf(q.sort, ['newest', 'oldest', 'price_asc', 'price_desc', 'priority'], 'oldest'),
         per_page: PER_PAGE_CHOICES.includes(perPage) ? perPage : PER_PAGE_CHOICES[0],
         page: Math.max(parseInt(q.page, 10) || 1, 1),
     };
