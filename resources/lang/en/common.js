@@ -18,6 +18,7 @@ module.exports = {
         menu: 'Product categories',
         prev: 'Previous image',
         next: 'Next image',
+        backToTop: 'Back to top',
     },
     menu: {
         promo: 'Get styling advice',
@@ -26,6 +27,7 @@ module.exports = {
         back: 'Back',
         viewAllIn: (name) => `View all ${name}`,
         links: {
+            products: 'All products',
             news: 'News',
             featured: 'Featured collections',
             about: 'About us',

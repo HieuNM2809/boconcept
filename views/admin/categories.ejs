@@ -3,10 +3,9 @@
 <%- include('_nav', {section: 'categories'}) %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1>Loại sản phẩm</h1>
+        <h1>LOẠI SẢN PHẨM</h1>
         <a class="btn btn-primary" href="/admin/categories/new">+ Thêm loại</a>
     </div>
-    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
 
     <%# Form GET như màn sản phẩm: bộ lọc nằm hết trong URL nên chia sẻ link, F5
         và nút Back đều giữ nguyên kết quả. `page` KHÔNG có ô nhập — đổi bộ lọc là
@@ -44,17 +43,6 @@
                 </select>
             </div>
             <div class="admin-filter-field">
-                <label for="f_sort">Sắp xếp</label>
-                <select id="f_sort" name="sort">
-                    <%# Đặt tên theo cột id vì đó là con số admin nhìn thấy ở cột đầu bảng. %>
-                    <option value="oldest" <%= filters.sort === 'oldest' ? 'selected' : '' %>>ID tăng dần (1, 2, 3…)</option>
-                    <option value="newest" <%= filters.sort === 'newest' ? 'selected' : '' %>>ID giảm dần (mới nhất)</option>
-                    <option value="sort_order" <%= filters.sort === 'sort_order' ? 'selected' : '' %>>Thứ tự hiển thị</option>
-                    <option value="name_asc" <%= filters.sort === 'name_asc' ? 'selected' : '' %>>Tên A → Z</option>
-                    <option value="name_desc" <%= filters.sort === 'name_desc' ? 'selected' : '' %>>Tên Z → A</option>
-                </select>
-            </div>
-            <div class="admin-filter-field">
                 <label for="f_per">Số dòng / trang</label>
                 <select id="f_per" name="per_page">
                     <% [20, 50, 100].forEach(function (n) { %>
@@ -89,7 +77,7 @@
     <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
-            <tr><th>STT</th><th>Ảnh</th><th>Tên (VI)</th><th>Tên (EN)</th><th>Danh mục cha</th><th>Thứ tự</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
+            <tr><th>STT</th><th>Ảnh minh họa</th><th>Tên sản phẩm</th><th>Tên tiếng Anh</th><th>Danh mục cha</th><th>Thứ tự</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
             <%# Trang trống vì vượt quá trang cuối (hay gặp sau khi xoá bớt hàng) thì
@@ -123,7 +111,6 @@
 
     <%- include('_pagination', {meta: meta, query: filters, base: '/admin/categories'}) %>
 
-    <p class="admin-note">Không xóa được loại còn danh mục con hoặc còn sản phẩm.</p>
 </main>
 <script src="/static/js/admin.js"></script>
 </body>

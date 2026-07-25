@@ -1,9 +1,13 @@
 <%
 /* Ô chọn ảnh dùng chung cho MỌI form admin.
-   Tham số: name (bắt buộc), label, value, required, placeholder, previewClass, hint
+   Tham số: name (bắt buộc), label, value, required, placeholder, previewClass, hint, crop
 
-   Ảnh lớn được thu về tối đa 5 megapixel ngay tại trình duyệt (admin.js), nên
-   không còn trần dung lượng theo KB cho từng ô nữa.
+   `crop` = tỉ lệ khung cắt dạng "21/9". Có nó thì sau khi chọn ảnh sẽ MỞ NGAY hộp
+   "Điều chỉnh ảnh" (kéo để dời, lăn/kéo thanh để phóng — như đổi ảnh bìa Facebook),
+   và ô ảnh có thêm nút mở lại hộp đó. Không truyền thì ô ảnh chạy y như cũ.
+
+   Ảnh tối đa ~10MB / 12 megapixel: dưới ngưỡng này ảnh được GIỮ NGUYÊN cho nét,
+   chỉ ảnh vượt mới tự thu về 12 megapixel ngay tại trình duyệt (admin.js).
 
    File được mã hoá base64 NGAY TẠI TRÌNH DUYỆT rồi đổ vào ô text bên dưới —
    không upload multipart lên server. Lý do: railway.json không khai báo volume
@@ -17,8 +21,11 @@ const f = {
     required: typeof required !== 'undefined' ? required : false,
     placeholder: typeof placeholder !== 'undefined' ? placeholder : 'https://...',
     previewClass: typeof previewClass !== 'undefined' ? previewClass : '',
+    crop: typeof crop !== 'undefined' && crop ? crop : '',
+    // hideUrl: ẩn ô dán URL bên dưới (một số form không cho nhập URL, chỉ upload máy).
+    hideUrl: typeof hideUrl !== 'undefined' ? hideUrl : false,
     hint: typeof hint !== 'undefined' ? hint
-        : 'PNG · JPG · WEBP · SVG — không giới hạn dung lượng, ảnh lớn tự thu về 5 megapixel.',
+        : 'PNG · JPG · WEBP · SVG — tối đa ~10MB, ảnh lớn tự thu về 12 megapixel (ảnh gốc càng nét càng đẹp).',
 };
 %>
 
@@ -28,7 +35,7 @@ const f = {
     chọn file, và THẢ ảnh vào khung là trình duyệt tự gán vào input rồi bắn
     `change` — không phải tự xử lý DataTransfer. admin.js chỉ lo tô viền lúc kéo
     qua và bật/tắt lớp has-image. %>
-<div class="dropzone<%= f.value ? ' has-image' : '' %>" data-dropzone>
+<div class="dropzone<%= f.value ? ' has-image' : '' %>" data-dropzone<% if (f.crop) { %> data-crop="<%= f.crop %>"<% } %>>
     <input type="file" class="dropzone-input" id="<%= f.name %>File"
            accept="image/*" data-encode-to="<%= f.name %>"
            aria-label="<%= f.label %>: kéo thả hoặc bấm để chọn ảnh">
@@ -50,12 +57,25 @@ const f = {
     <img class="dropzone-preview <%= f.previewClass %>" id="<%= f.name %>Preview"
          <% if (f.value) { %>src="<%= f.value %>"<% } %> alt="">
     <span class="dropzone-swap">Bấm hoặc thả ảnh khác để thay</span>
+    <%# Hai nút này nằm ĐÈ lên khung (position:absolute) để không bị ô file phủ
+        kín bên trên nuốt mất cú bấm — z-index của chúng cao hơn .dropzone-input. %>
+    <% if (f.crop) { %>
+        <button type="button" class="btn-sm dropzone-adjust">Điều chỉnh ảnh</button>
+    <% } %>
     <button type="button" class="btn-sm danger dropzone-clear">Xoá ảnh</button>
 </div>
 <%# admin.js ghi thông báo (đã thu ảnh / đọc file lỗi) vào đây thay vì tự chèn
     thẻ vào trong khung — chèn vào trong sẽ nằm dưới lớp phủ của ô file. %>
 <span class="admin-hint upload-note" data-note-for="<%= f.name %>"></span>
 
-<input class="dropzone-url" name="<%= f.name %>" id="<%= f.name %>" value="<%= f.value %>"
-       placeholder="<%= f.placeholder %>" <%= f.required ? 'required' : '' %>>
-<span class="admin-hint">Hoặc dán sẵn đường dẫn ảnh vào ô trên.</span>
+<% if (f.hideUrl) { %>
+    <%# Ô dán URL bị ẩn theo yêu cầu form này. VẪN giữ input (dạng hidden) vì nó
+        CHÍNH LÀ nơi admin.js đổ base64/URL của ảnh vào -> xoá hẳn là ảnh không gửi
+        lên server được. KHÔNG đặt `required` cho input ẩn: trình duyệt không focus
+        được input ẩn nên sẽ báo "not focusable" và chặn submit im lặng — ràng buộc
+        bắt buộc đã có cột NOT NULL ở DB (lỗi hiện ra dạng toast). %>
+    <input type="hidden" name="<%= f.name %>" id="<%= f.name %>" value="<%= f.value %>">
+<% } else { %>
+    <input class="dropzone-url" name="<%= f.name %>" id="<%= f.name %>" value="<%= f.value %>"
+           placeholder="<%= f.placeholder %>" <%= f.required ? 'required' : '' %>>
+<% } %>

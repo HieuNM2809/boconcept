@@ -14,12 +14,31 @@
     --dark: #1b1917;
     --radius: 14px;
     --container: 1200px;
+    /* Lề trái/phải chừa lại cho các khối ẢNH kéo sát mép (lưới tin tức).
+       CỐ Ý không có mốc max-width như --container: khối phải bám mép màn hình
+       ở MỌI bề rộng. Đặt mốc 1680px thì trên màn ~1900px lề phồng lên hơn
+       100px mỗi bên — đúng thứ đã phải gỡ ra. */
+    --gutter-wide: 32px;
+    /* Hero: dòng HƯƠNG SƠN ENTERTAIMAIN đứng NGOÀI .hero-track (absolute) còn
+       tiêu đề/mô tả nằm TRONG từng slide (flow). Hai thứ khác hệ toạ độ nên
+       không thể tự xếp sát nhau -> hai biến này là chỗ DUY NHẤT chỉnh khoảng
+       cách. Sửa `top` trực tiếp trên .hero-brand sẽ làm chữ dưới không đi theo. */
+    --hero-brand-top: 10px;   /* dòng thương hiệu cách mép trên bao nhiêu */
+    --hero-brand-gap: 52px;   /* chừa chỗ cho chính dòng đó + khoảng thở dưới nó */
     /* Chiều cao 2 hàng của header — panel danh mục dùng để tính max-height */
     --header-row1-h: 36px;
     --header-row2-h: 72px;
     /* Be Vietnam Pro — dễ đọc, tối ưu tiếng Việt. Dùng chung tiêu đề + nội dung. */
     --serif: "Be Vietnam Pro", system-ui, sans-serif; /* font tiêu đề (giữ tên biến cũ) */
     --sans: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    /* Font hình học riêng cho DÒNG TÊN THƯƠNG HIỆU trên hero (chữ 'a' một tầng,
+       bụng chữ tròn) — không dùng ở đâu khác.
+       "Be Vietnam Pro" đứng ngay sau KHÔNG phải cho vui: Poppins không có bộ
+       vietnamese subset (thiếu Ạ Ế Ộ… dải U+1EA0-1EF1). Ư/Ơ của "HƯƠNG SƠN" nằm
+       trong latin-ext nên Poppins vẽ được, nhưng nếu admin đổi tên thương hiệu
+       thành chữ có dấu nặng/mũ thì trình duyệt tự rơi TỪNG KÝ TỰ về Be Vietnam
+       Pro — lệch nét một chút, còn hơn ra ô vuông tofu. */
+    --display: "Poppins", "Be Vietnam Pro", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -36,6 +55,7 @@ img { max-width: 100%; display: block; }
 a { color: inherit; text-decoration: none; }
 
 .container { width: min(100% - 40px, var(--container)); margin-inline: auto; }
+.container-wide { width: calc(100% - var(--gutter-wide) * 2); margin-inline: auto; }
 .center { text-align: center; }
 
 /* ===== Buttons ===== */
@@ -73,6 +93,9 @@ a { color: inherit; text-decoration: none; }
 }
 .find-store { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); transition: .2s; }
 .find-store:hover { color: var(--ink); }
+/* `display:block` để SVG không dính baseline (sinh ~4px thò xuống); `flex:none`
+   để icon không bị co khi chữ dài. Màu lấy từ `currentColor` của .find-store. */
+.find-store-icon { display: block; flex: none; width: 15px; height: 15px; }
 /* Nút đổi ngôn ngữ giờ chỉ có lá cờ. `display:flex` để bỏ khoảng trắng thừa
    dưới SVG (SVG là inline -> nằm trên baseline, sinh ra ~4px thò xuống). */
 .lang-switch {
@@ -288,6 +311,11 @@ body.drawer-open { overflow: hidden; }
     min-width: 100%; height: 74vh; min-height: 460px;
     background-size: cover; background-position: center;
     position: relative;
+    /* Flex column + align-items:center là thứ giữ khối chữ CĂN GIỮA kể cả khi
+       admin nhập tiêu đề dài xuống 2-3 dòng: chiều cao khối tự nở, không có
+       `top` cố định nào để mà lệch. */
+    display: flex; flex-direction: column; align-items: center;
+    padding: calc(var(--hero-brand-top) + var(--hero-brand-gap)) 24px 0;
 }
 /* Vệt tối ĐỔ TỪ TRÊN XUỐNG chứ không từ trái sang: chữ đã dời lên đỉnh giữa,
    vệt ngang cũ chỉ tối mép trái nên chữ nằm chỗ sáng nhất của ảnh.
@@ -300,13 +328,45 @@ body.drawer-open { overflow: hidden; }
    ảnh trượt bên dưới mà chữ không nhúc nhích.
    z-index 3 = ngang mũi tên, để chữ không bị slide kế tiếp trùm lên khi đang trượt. */
 .hero-brand {
-    position: absolute; top: 46px; left: 0; right: 0; z-index: 3;
+    position: absolute; top: var(--hero-brand-top); left: 0; right: 0; z-index: 3;
     text-align: center; color: #fff;
-    font-size: clamp(20px, 2.6vw, 34px); font-weight: 700; letter-spacing: .02em;
+    font-family: var(--display);
+    font-size: clamp(16px, 2vw, 26px); font-weight: 700; letter-spacing: .02em;
     /* Ảnh nền do admin tự upload, không đoán trước được sáng hay tối:
        bóng đổ là lớp bảo hiểm để chữ trắng còn đọc được trên ảnh sáng. */
     text-shadow: 0 2px 12px rgba(0, 0, 0, .45);
     pointer-events: none;
+}
+
+/* ── Chữ theo từng slide (sửa ở /admin/slides) ─────────────────────────────
+   z-index 2 để nằm TRÊN vệt tối .hero-slide::after (::after không có z-index
+   nên chỉ cần một số dương bất kỳ), nhưng vẫn DƯỚI mũi tên/chấm ở z-index 3.
+   pointer-events:none để chữ không nuốt cú bấm rơi vào vùng của nó. */
+.hero-copy {
+    position: relative; z-index: 2;
+    width: min(1040px, 100%);
+    text-align: center; color: #fff;
+    pointer-events: none;
+}
+.hero-slide-title {
+    margin: 0;
+    font-family: var(--display);
+    font-size: clamp(26px, 4.4vw, 56px);
+    /* Nét 400 chứ không 700: tiêu đề đã rất lớn, để đậm là thành biển quảng
+       cáo — ảnh mẫu dùng nét mảnh. */
+    font-weight: 400; line-height: 1.12; letter-spacing: -.01em;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, .45);
+    /* Tiêu đề dài tự ngắt thành các dòng DÀI GẦN BẰNG NHAU thay vì kiểu dòng
+       đầu chật ních - dòng cuối trơ trọi một chữ. Trình duyệt cũ bỏ qua thuộc
+       tính này, chữ vẫn xuống dòng bình thường, không vỡ gì. */
+    text-wrap: balance;
+}
+.hero-slide-sub {
+    margin: 14px 0 0;
+    font-size: clamp(11px, 1.05vw, 14px);
+    font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, .5);
+    text-wrap: balance;
 }
 .hero-arrow {
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
@@ -502,9 +562,11 @@ body.drawer-open { overflow: hidden; }
 }
 .news-cta:hover { color: var(--accent-dark); border-bottom-color: var(--accent-dark); }
 
-.news-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 44px 40px; }
+.news-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 44px 32px; }
 .news-card { min-width: 0; }
-.news-card-media { display: block; overflow: hidden; background: var(--soft); aspect-ratio: 4 / 3; }
+/* 3/2 chứ không phải 4/3: ô đã kéo rộng ra gần mép màn hình, giữ 4/3 thì mỗi
+   ảnh cao hơn 600px trên laptop — đẩy tiêu đề rơi khỏi màn hình. */
+.news-card-media { display: block; overflow: hidden; background: var(--soft); aspect-ratio: 3 / 2; }
 .news-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .55s cubic-bezier(.2, .6, .2, 1); }
 .news-card-media:hover img { transform: scale(1.05); }
 .news-card-title { margin: 18px 0 8px; font-size: 19px; font-weight: 700; line-height: 1.3; }
@@ -548,15 +610,20 @@ body.drawer-open { overflow: hidden; }
     align-items: end; background: none; border: 0;
     padding: 0 0 18px; margin-bottom: 18px;
 }
+/* Biến thể 5 ô lọc (trang "Tất cả sản phẩm" thêm ô chọn loại) -> mở thêm 1 cột
+   để cả hàng vẫn nằm gọn một dòng trên màn rộng. */
+.filter-bar-wide { grid-template-columns: repeat(5, 1fr) auto; }
 .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .filter-field label { font-size: 12px; color: var(--muted); font-weight: 600; }
-.filter-field input {
+.filter-field input,
+.filter-field select {
     font-family: var(--sans); font-size: 14px; padding: 9px 12px;
     border: 1px solid var(--line); border-radius: 8px; background: #fff; min-width: 0;
 }
 /* Bấm vào -> KHÔNG hiện viền. `transparent` chứ không phải `border: 0`: bỏ hẳn
    border sẽ làm ô co lại 2px và cả hàng filter nhảy khi chuyển ô. */
-.filter-field input:focus { outline: none; border-color: transparent; }
+.filter-field input:focus,
+.filter-field select:focus { outline: none; border-color: transparent; }
 .filter-range { display: flex; align-items: center; gap: 8px; }
 .filter-range input { width: 100%; }
 .filter-range span { color: var(--muted); }
@@ -580,124 +647,118 @@ body.drawer-open { overflow: hidden; }
 .product-dims { margin: 3px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
 .product-dims-label { font-weight: 600; }
 
-/* ===== Categories — 2 cột: chữ bên trái, ảnh loại sản phẩm bên phải ===== */
-.cat-layout { display: grid; grid-template-columns: 42% 1fr; gap: 0; align-items: stretch; }
-.cat-intro {
-    background: var(--soft); padding: 52px 44px;
+/* ===== Categories — trên: 2 cột (chữ · ảnh) · dưới: hàng loại cấp 1 / cấp 2 ===== */
+.cat-showcase-grid {
+    display: grid; grid-template-columns: 5fr 7fr; align-items: stretch;
+    min-height: 460px; border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--line);
+}
+/* Cột trái: nền kem, chỉ tiêu đề + mô tả (căn giữa theo chiều dọc). */
+.cat-showcase-panel {
+    background: var(--soft); padding: clamp(28px, 3.5vw, 60px);
     display: flex; flex-direction: column; justify-content: center;
 }
-.cat-intro-title {
-    font-family: var(--serif); font-size: clamp(26px, 2.6vw, 38px); line-height: 1.18;
-    margin: 0 0 18px; font-weight: 700; letter-spacing: -.01em;
+.cat-showcase-title {
+    font-family: var(--serif); font-size: clamp(26px, 3vw, 40px); font-weight: 700;
+    line-height: 1.15; margin: 0 0 18px;
 }
-.cat-intro-desc { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.75; max-width: 46ch; }
-.round-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 22px; cursor: pointer; transition: .2s; }
-.round-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.cat-showcase-sub { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.75; max-width: 44ch; }
 
-/* Bộ chọn loại cấp 1 — danh sách dọc dưới đoạn giới thiệu (thay 2 nút mũi tên cũ) */
-.cat-picker { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-.cat-picker-item {
-    font-family: inherit; font-size: 16px; line-height: 1.5; color: var(--muted);
-    background: none; border: 0; width: 100%; padding: 7px 0 7px 20px;
-    text-align: left; cursor: pointer; position: relative; transition: color .2s;
+/* Cột phải: các ảnh xếp chồng khít, chỉ .is-active hiện. cursor:pointer + gợi ý
+   "rê để xem loại con" để người dùng biết ảnh có tương tác. */
+.cat-showcase-media { position: relative; background: var(--soft); min-height: 340px; }
+.cat-showcase-photo {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background-size: cover; background-position: center; color: #fff;
+    opacity: 0; visibility: hidden; transition: opacity .45s ease;
 }
-/* Dấu › báo mục đang xem. Đặt bằng ::before nên khi tắt không làm chữ nhảy chỗ. */
-.cat-picker-item::before { content: "\203A"; position: absolute; left: 0; top: 7px; opacity: 0; transition: opacity .2s; }
-.cat-picker-item:hover { color: var(--ink); }
-.cat-picker-item.is-active { color: var(--ink); font-weight: 600; }
-.cat-picker-item.is-active::before { opacity: 1; }
-.cat-picker-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* Sân khấu ảnh cấp 1 — các panel chồng khít lên nhau (position:absolute), chỉ
-   .is-active hiện. Xếp chồng thay vì ẩn/hiện trong luồng để đổi loại không làm
-   khối co giãn chiều cao. */
-.cat-stage { position: relative; min-height: 420px; overflow: hidden; }
-.cat-panel {
-    position: absolute; inset: 0; padding: 18px; color: #fff; text-align: center;
-    display: flex; align-items: center; justify-content: center; /* tên nằm GIỮA ảnh */
-    background-size: cover; background-position: center;
-    opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s;
-}
-.cat-panel.is-active { opacity: 1; visibility: visible; }
-/* Phủ mờ nhẹ để chữ trắng đọc được trên mọi ảnh */
-.cat-panel::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .18); }
-.cat-label {
+.cat-showcase-photo.is-active { opacity: 1; visibility: visible; }
+.cat-showcase-photo::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .18); }
+.cat-showcase-photo:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.cat-showcase-photo-name {
     position: relative; z-index: 1;
-    font-size: clamp(24px, 2.4vw, 36px); font-weight: 500; letter-spacing: .5px;
-    text-shadow: 0 2px 14px rgba(0, 0, 0, .35);
+    font-size: clamp(24px, 2.8vw, 42px); font-weight: 600; letter-spacing: .3px;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, .45);
 }
 
-/* Hàng danh mục con cấp 2 — trải hết bề ngang container, ngay dưới khối 2 cột.
-   Track không active để display:none, nên hàng luôn cao đúng một ô ảnh và không
-   nhảy layout khi đổi loại cấp 1. */
-.cat-subs-row {
-    --cat-sub-gap: 12px; margin-top: var(--cat-sub-gap);
-    /* grid 1 hàng chỉ để có thứ animate được về 0: dùng 0fr thì hàng TỰ đo chiều
-       cao ảnh, khỏi đoán max-height (ảnh 3/4 nên cao bao nhiêu tuỳ bề ngang màn). */
-    display: grid; grid-template-rows: 1fr;
-    transition: grid-template-rows .4s ease, margin-top .4s ease,
-                opacity .3s ease, visibility .4s;
+/* ── Hàng dưới: cấp 1 (mặc định) <-> cấp 2 (khi rê vào ảnh lớn) ─────────────── */
+.cat-showcase-below { margin-top: 14px; }
+/* Hàng cấp 1: auto-FIT -> các loại nổi bật lấp đầy hàng. */
+.cat-showcase-l1-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;
+    margin: 0; padding: 0; list-style: none;
 }
-/* .is-idle: rê chuột ra ngoài khối rồi đứng yên 5s (main.js hẹn giờ).
-   visibility chứ không chỉ opacity — mờ 0 mà vẫn tab được vào ô vô hình. */
-.cat-subs-row.is-idle {
-    grid-template-rows: 0fr; margin-top: 0; opacity: 0; visibility: hidden;
+/* Hàng cấp 2: auto-FILL (KHÔNG auto-fit) + căn trái -> khi loại chỉ có 1-2 loại con,
+   thẻ giữ đúng cỡ cột (~200px) thay vì giãn kín cả hàng thành ảnh khổng lồ. */
+.cat-showcase-l2 {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;
+    margin: 0; padding: 0; list-style: none; justify-content: start;
 }
-.cat-subs-track {
-    list-style: none; margin: 0; padding: 0;
-    display: none; gap: var(--cat-sub-gap);
-    /* min-height: 0 — mặc định ô lưới không co xuống dưới chiều cao nội dung,
-       thiếu dòng này thì 0fr chống lên và hàng không bao giờ đóng hết. */
-    min-height: 0;
-    overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none;
-}
-.cat-subs-track::-webkit-scrollbar { display: none; }
-.cat-subs-track.is-active { display: flex; }
-/* 5 ô vừa khít bề ngang. min-width chặn ô bị bóp khi có nhiều hơn 5 con — lúc đó
-   track tự tràn và cuộn ngang (cố ý không có mũi tên). */
-.cat-subs-track > li { flex: 0 0 calc((100% - 4 * var(--cat-sub-gap)) / 5); min-width: 150px; }
-.cat-subs-track a {
+/* Rê vào ảnh lớn -> ẩn hàng cấp 1, hiện track cấp 2 của loại đang chọn. */
+.cat-showcase-body.is-showing-subs .cat-showcase-l1-row { display: none; }
+.cat-showcase-l2-wrap { display: none; }
+.cat-showcase-body.is-showing-subs .cat-showcase-l2-wrap { display: block; }
+.cat-showcase-l2 { display: none; }           /* chỉ track của loại active mới hiện */
+.cat-showcase-l2.is-active { display: grid; }
+
+/* Thẻ ảnh dùng chung cho cả cấp 1 và cấp 2. aspect 4/5 -> card dạng ĐỨNG (dài
+   xuống) thay vì ngang bẹt như trước. */
+.cat-showcase-l1,
+.cat-showcase-l2 a {
     position: relative; display: flex; align-items: flex-end;
-    aspect-ratio: 3 / 4; padding: 18px; overflow: hidden; color: #fff;
+    aspect-ratio: 4 / 5; padding: 15px; overflow: hidden; color: #fff;
     background-size: cover; background-position: center; background-color: var(--soft);
+    transition: transform .3s ease;
 }
-.cat-subs-track a::after {
-    content: ""; position: absolute; inset: 0; transition: background .25s;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, .45) 100%);
+.cat-showcase-l1::after,
+.cat-showcase-l2 a::after {
+    content: ""; position: absolute; inset: 0; transition: background .3s;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, .5) 100%);
 }
-.cat-subs-track a:hover::after { background: rgba(0, 0, 0, .3); }
-.cat-sub-name {
-    position: relative; z-index: 1;
-    font-size: clamp(15px, 1.35vw, 19px); line-height: 1.3; font-weight: 500;
+.cat-showcase-l1:hover,
+.cat-showcase-l2 a:hover { transform: translateY(-3px); }
+.cat-showcase-l1.is-active::after,
+.cat-showcase-l1:hover::after,
+.cat-showcase-l2 a:hover::after {
+    background: linear-gradient(180deg, rgba(0, 0, 0, .12) 25%, rgba(0, 0, 0, .6) 100%);
+}
+.cat-showcase-l1 > span,
+.cat-showcase-l2 a > span {
+    position: relative; z-index: 1; font-weight: 600; font-size: 16px;
     text-shadow: 0 2px 10px rgba(0, 0, 0, .5);
 }
+.cat-showcase-l1:focus-visible,
+.cat-showcase-l2 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
-    .cat-panel, .cat-subs-row { transition-duration: .01ms; }
+    .cat-showcase-photo, .cat-showcase-l1, .cat-showcase-l2 a { transition-duration: .01ms; }
 }
 
 /* ===== Partners ===== */
-/* Khối Đối tác — tràn toàn màn hình, logo to hẳn lên */
+/* Khối Đối tác — tràn toàn màn hình, mỗi logo nằm trong MỘT ô nền trắng cùng cỡ */
 .partners { background: var(--soft); }
 .partners > .container { width: 100%; max-width: none; padding-inline: clamp(24px, 5vw, 80px); }
 .partners-sub { text-align: center; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+/* Số cột CỐ ĐỊNH chứ không auto-fit: auto-fit theo bề ngang màn hình sẽ đẻ ra
+   hàng cuối thiếu ô, các ô còn lại giãn rộng khác hẳn hàng trên — đúng cảnh
+   ảnh nằm lệch lạc mỗi cái một cỡ trước đây. */
 .partner-row {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px; align-items: center; margin-top: 48px;
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    gap: 14px; margin-top: 48px;
 }
+/* aspect-ratio giữ MỌI ô đúng một khuôn, không phụ thuộc ảnh bên trong cao thấp */
 .partner-logo {
     display: flex; align-items: center; justify-content: center;
-    min-height: 170px; padding: 24px 28px;
-    font-size: clamp(28px, 2.6vw, 44px); font-weight: 700; color: #9a9186; letter-spacing: .5px;
-    filter: grayscale(1); opacity: .85; transition: .2s;
+    aspect-ratio: 16 / 9; padding: 16px 20px;
+    background: #fff; border-radius: 2px;
+    font-size: 20px; font-weight: 700; color: #9a9186; letter-spacing: .5px; text-align: center;
 }
-/* `height` + `contain` chứ không chỉ `max-height`: logo nguồn nhỏ (vd 60px) mà chỉ
-   đặt max-height thì nó giữ nguyên cỡ gốc bé tí, không hề phóng lên cho vừa ô. */
+/* 100% + `contain`: ảnh phóng to hết cỡ ô mà vẫn giữ tỉ lệ, không méo, không tràn.
+   Chỉ đặt max-* thì logo nguồn nhỏ giữ nguyên cỡ gốc bé tí giữa ô. */
 .partner-logo img {
-    height: 118px; max-height: 100%; max-width: 100%; width: auto;
+    width: 100%; height: 100%;
     object-fit: contain; display: block;
 }
-.partner-logo:hover { color: var(--ink); filter: none; opacity: 1; }
 
 /* ===== Products ===== */
 .featured-sub { letter-spacing: 3px; color: var(--accent-dark); font-weight: 600; margin: -22px 0 36px; }
@@ -787,6 +848,37 @@ body.drawer-open { overflow: hidden; }
 .footer-policies a:hover { color: var(--ink); }
 .footer-admin { color: var(--muted); font-size: 13px; border: 1px solid var(--line); padding: 7px 16px; border-radius: 999px; background: #fff; transition: .2s; white-space: nowrap; }
 .footer-admin:hover { color: #fff; background: var(--accent-dark); border-color: var(--accent-dark); }
+
+/* ── Nút tròn "lên đầu trang" (góc dưới–phải, nổi trên mọi trang khách) ──────
+   z-index 150: TRÊN nội dung thường nhưng DƯỚI scrim/drawer (190/200) và hộp
+   thoại (300) — mở menu ra thì nút không được nhô lên trên lớp phủ.
+   Ẩn/hiện bằng thuộc tính `hidden` của HTML (main.js gạt), nhưng `display` phải
+   ép lại vì .to-top đặt display:flex sẽ đè mất display:none mặc định của [hidden]. */
+.to-top {
+    position: fixed; right: 24px; bottom: 24px; z-index: 150;
+    width: 48px; height: 48px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    box-shadow: 0 6px 20px rgba(36, 31, 27, .18);
+    cursor: pointer; transition: .2s;
+    /* Điểm neo của hiệu ứng hiện ra bên dưới: mặc định là trạng thái ĐÃ hiện. */
+    opacity: 1; transform: translateY(0);
+}
+.to-top[hidden] { display: none; }
+.to-top:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+.to-top:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 3px; }
+
+/* Vừa gỡ `hidden` thì nút bắt đầu ở trạng thái mờ + thấp hơn 8px; main.js gắn
+   .is-in ở khung hình kế tiếp để trình duyệt có cái để chuyển động từ đó lên. */
+.to-top:not(.is-in) { opacity: 0; transform: translateY(8px); }
+
+@media (max-width: 640px) {
+    .to-top { right: 14px; bottom: 14px; width: 44px; height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .to-top { transition: none; }
+}
 
 /* ===== Listing / Category page ===== */
 .listing { padding: 28px 0 72px; }
@@ -960,13 +1052,9 @@ body.drawer-open { overflow: hidden; }
 .tab-btn.active { color: var(--accent-dark); border-bottom-color: var(--accent); }
 .tab-panel { display: none; padding: 30px 0; }
 .tab-panel.active { display: block; }
-.tab-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
-.tab-h { font-size: 18px; margin: 0 0 16px; }
-.tab-desc { color: var(--muted); max-width: 640px; line-height: 1.8; margin-top: 0; }
-.spec-table { width: 100%; border-collapse: collapse; }
-.spec-table th, .spec-table td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 14px; }
-.spec-table th { color: var(--muted); font-weight: 500; width: 40%; }
-.tab-img { min-height: 260px; border-radius: var(--radius); background-size: cover; background-position: center; border: 1px solid var(--line); }
+/* Hai tab chỉ còn nội dung richtext của admin — bảng thông số, chữ mẫu và ảnh
+   minh hoạ trong tab đã bỏ nên các lớp .tab-2col/.tab-h/.tab-desc/.spec-table/
+   .tab-img không còn được dùng ở đâu nữa. */
 /* ===== Bài viết tin tức ===== */
 .news-head-page { margin-bottom: 44px; }
 .news-grid-3 { grid-template-columns: repeat(3, 1fr); }
@@ -975,6 +1063,8 @@ body.drawer-open { overflow: hidden; }
 .news-card-title a:hover { color: var(--accent-dark); }
 
 .article { max-width: 760px; margin: 0 auto; padding: 8px 0 40px; }
+/* Trang tin chi tiết: bỏ mức 760px để nội dung trải hết bề ngang (theo yêu cầu). */
+.article-wide { max-width: none; }
 .article-title { font-size: clamp(28px, 3.6vw, 44px); font-weight: 700; line-height: 1.18; letter-spacing: -.02em; margin: 0 0 14px; }
 .article-meta { margin: 0 0 22px; font-size: 13.5px; color: var(--muted); }
 .article-meta .sep { margin: 0 8px; }
@@ -1289,6 +1379,7 @@ body.modal-open { overflow: hidden; }
        Dồn hết danh mục vào panel ☰, chỉ giữ nút ☰. */
     .nav-cats { display: none; }
     .header-search { width: 240px; }
+    .partner-row { grid-template-columns: repeat(4, 1fr); }
     .features { padding: 34px 0; }
     .feature-item { padding: 8px 14px; }
     /* Giữ 3 cột, chỉ thu lề và khe lại */
@@ -1301,25 +1392,11 @@ body.modal-open { overflow: hidden; }
 /* Tablet dọc / điện thoại lớn (≤768) — bật menu hamburger */
 @media (max-width: 768px) {
     .section { padding: 44px 0; }
-    /* 2 cột -> xếp dọc: chữ trên, ảnh dưới */
-    .cat-layout { grid-template-columns: 1fr; }
-    .cat-intro { padding: 34px 26px; }
-    .cat-stage { min-height: 340px; }
-    /* Không có hover trên mobile -> danh sách dọc thành dải chip cuộn ngang,
-       chạm để chọn. Dấu › thừa ở dạng chip nên tắt đi. */
-    .cat-picker {
-        flex-direction: row; gap: 8px; overflow-x: auto;
-        scrollbar-width: none; -ms-overflow-style: none;
-    }
-    .cat-picker::-webkit-scrollbar { display: none; }
-    .cat-picker-item {
-        width: auto; white-space: nowrap; padding: 8px 16px;
-        border: 1px solid var(--line); border-radius: 999px; background: #fff;
-    }
-    .cat-picker-item::before { display: none; }
-    .cat-picker-item.is-active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    /* 5 ô/hàng quá hẹp khi màn dưới 768 -> hạ còn ~2.5 ô, phần dư gợi ý còn cuộn được */
-    .cat-subs-track > li { flex-basis: 40%; }
+    .partner-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    /* Khối loại 2 cột -> xếp dọc: danh sách tên ở trên, ảnh xem trước ở dưới.
+       Mobile không hover -> chạm tên là vào thẳng trang danh mục. */
+    .cat-showcase-grid { grid-template-columns: 1fr; min-height: 0; }
+    .cat-showcase-media { min-height: 320px; }
     .news-grid, .news-grid-3 { grid-template-columns: 1fr; gap: 34px; }
     /* Bỏ bố cục so le: 12 cột co lại thì ô 2-3 cột hẹp tới mức không nhìn được ảnh.
        Chuyển sang lưới 2 cột đều, ô lớn chiếm trọn hàng. */
@@ -1360,13 +1437,14 @@ body.modal-open { overflow: hidden; }
     .design-arrow.next { right: 0; }
     .pd-top { grid-template-columns: 1fr; gap: 24px; }
     .pd-info.is-sticky { position: static; }
-    .tab-2col { grid-template-columns: 1fr; gap: 24px; }
-    .tab-img { min-height: 200px; }
 }
 
 /* Điện thoại (≤560) */
 @media (max-width: 560px) {
     .container { width: min(100% - 32px, var(--container)); }
+    /* Trên điện thoại lưới về 1 cột nên không cần rộng hơn — cho hai wrapper
+       trùng lề, nếu lệch thì khối tin tức thò ra so với mọi khối khác. */
+    :root { --gutter-wide: 16px; }
     .section { padding: 36px 0; }
     .brand-logo { height: 46px; }
     .drawer-promo { padding: 2px 60px 20px 24px; }
@@ -1379,9 +1457,7 @@ body.modal-open { overflow: hidden; }
     .hero-arrow { width: 38px; height: 38px; font-size: 22px; }
     .hero-arrow.prev { left: 10px; }
     .hero-arrow.next { right: 10px; }
-    .cat-stage { min-height: 260px; }
-    .cat-subs-track > li { flex-basis: 62%; }
-    .partner-row { gap: 24px 30px; }
+    .partner-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .cert-card { width: 100%; max-width: 300px; }
     .footer-grid { grid-template-columns: 1fr; gap: 26px; }
     .subcat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -1409,10 +1485,11 @@ body.modal-open { overflow: hidden; }
     /* Chỉ còn icon 📍 — link vẫn có tên nhờ aria-label ở markup */
     .find-store-text { display: none; }
     .brand-logo { height: 38px; }
-    /* Header trên di động thấp hơn -> kéo chữ lên gần đỉnh cho cân */
-    .hero-brand { top: 28px; }
-    .partner-logo { min-height: 130px; padding: 16px; }
-    .partner-logo img { height: 84px; }
+    /* Header trên di động thấp hơn -> kéo chữ lên gần đỉnh cho cân.
+       Sửa qua BIẾN chứ không phải `.hero-brand { top }`: tiêu đề/mô tả bên dưới
+       tính chỗ đứng từ chính hai biến này, đặt `top` thẳng thì chúng đứng im. */
+    :root { --hero-brand-top: 45px; --hero-brand-gap: 38px; }
+    .partner-logo { padding: 12px 14px; }
     .variant span { font-size: 13px; }
 }
 
@@ -1481,6 +1558,37 @@ body.admin {
 .admin-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .admin-head h1 { font-size: 24px; margin: 0; }
 .admin-flash { background: #e7f5ea; border: 1px solid #b7e0c1; color: #1f7a3f; padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; }
+
+/* ── Toast: popup nhỏ góc phải-trên, tự ẩn sau vài giây ────────────────────────
+   Chồng theo cột, cái mới xuống dưới. z-index cao để nổi trên mọi lớp phủ admin.
+   position:fixed + pointer-events:none ở stack để toast không chắn thao tác phía
+   sau; riêng từng .toast bật lại pointer-events để bấm đóng được. */
+.toast-stack {
+    position: fixed; top: 18px; right: 18px; z-index: 9999;
+    display: flex; flex-direction: column; gap: 10px;
+    max-width: min(360px, calc(100vw - 36px)); pointer-events: none;
+}
+.toast {
+    pointer-events: auto; display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 14px; border-radius: 10px; font-size: 14px; line-height: 1.45;
+    color: #fff; background: #333; box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+    border: 1px solid transparent; cursor: pointer;
+    animation: toast-in .22s cubic-bezier(.2, .7, .3, 1);
+}
+/* Khi gỡ: gắn class .is-out để chạy hiệu ứng trượt ra rồi mới removeChild. */
+.toast.is-out { animation: toast-out .2s ease forwards; }
+.toast-ok   { background: #1f7a3f; }
+.toast-err  { background: #b3261e; }
+.toast-warn { background: #9a6700; }
+.toast-icon { flex: 0 0 auto; font-size: 15px; line-height: 1.45; }
+.toast-msg  { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+.toast-close { flex: 0 0 auto; opacity: .8; font-size: 16px; line-height: 1.2; }
+.toast-close:hover { opacity: 1; }
+@keyframes toast-in  { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(16px); } }
+@media (prefers-reduced-motion: reduce) {
+    .toast, .toast.is-out { animation: none; }
+}
 .admin-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 /* Kẻ ô cả hai chiều: bảng đã kéo hết bề ngang màn hình nên chỉ có vạch ngang thì
    mắt trượt cột, nhất là mấy cột hẹp (Nổi bật, Trạng thái) nằm giữa. */
@@ -1688,9 +1796,20 @@ td.admin-row-actions > :first-child { margin-left: 0; }
 .dropzone.has-image .dropzone-preview.is-wide { max-height: 380px; }
 .dropzone.has-image .dropzone-swap { display: block; color: var(--muted); font-size: 12px; }
 .dropzone.has-image .dropzone-clear { display: inline-block; position: absolute; top: 10px; right: 10px; z-index: 2; }
+/* Đối xứng với "Xoá ảnh" ở góc phải. z-index 2 để nổi trên ô file phủ kín khung
+   (z-index 1) — không có nó thì cú bấm rơi vào ô file và mở hộp chọn ảnh. */
+.dropzone-adjust { display: none; }
+.dropzone.has-image .dropzone-adjust { display: inline-block; position: absolute; top: 10px; left: 10px; z-index: 2; }
 
 .admin-form .dropzone-url { margin-top: 10px; }
 .upload-note:empty { display: none; }
+/* Ảnh bị từ chối / cảnh báo độ phân giải: cùng đỏ với .modal-error cho nhất quán.
+   Hai lớp (hoặc thuộc tính + lớp) nên thắng màu xám của .admin-hint. */
+.upload-note.is-error, [data-note-for].is-error { color: #b23b3b; font-weight: 600; }
+
+/* Hàng dưới danh sách ảnh của khe: nút "+ Thêm ảnh" và bộ đếm n/10 đứng cùng dòng */
+.slot-rows-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.admin-form .slot-rows-foot .btn-sm[disabled] { opacity: .5; cursor: not-allowed; }
 
 /* Nút file mặc định của trình duyệt (các dòng bộ sưu tập ảnh vẫn dùng) */
 .admin-form input[type="file"] { padding: 6px; background: #fff; cursor: pointer; }
@@ -1715,6 +1834,82 @@ td.admin-row-actions > :first-child { margin-left: 0; }
     padding: 14px 16px; margin-bottom: 18px;
 }
 .form-actions { display: flex; gap: 12px; margin-top: 24px; }
+
+/* ── Công tắc bật/tắt một nhóm ô (vd "Thêm chữ lên ảnh" ở form slide) ────── */
+/* Ô checkbox thật bị ẩn bằng opacity chứ không `display:none`: display:none loại
+   nó khỏi thứ tự tab, người dùng bàn phím sẽ không bấm được công tắc. */
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch-track {
+    position: relative; flex: none; width: 40px; height: 22px;
+    background: #d6d2cc; border-radius: 22px; transition: background .18s;
+}
+.switch-track::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+    background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(27, 25, 23, .3);
+    transition: transform .18s;
+}
+.switch input:checked + .switch-track { background: var(--accent); }
+.switch input:checked + .switch-track::after { transform: translateX(18px); }
+.switch input:focus-visible + .switch-track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch-label { font-size: 14px; font-weight: 600; }
+/* Nhãn đầu tiên bên trong nhóm cần khoảng thở với dòng ghi chú của công tắc */
+.toggle-fields > label:first-child { margin-top: 0; }
+
+/* ── Hộp "Điều chỉnh ảnh" (cắt/phóng như đổi ảnh bìa Facebook) ───────────── */
+/* Rộng hơn hộp thoại thường và đẩy lên cao hơn: khung 21:9 ở 800px đã cao ~343px,
+   giữ nguyên padding 12vh của .modal sẽ đẩy hàng nút ra ngoài màn hình thấp. */
+.modal-crop { padding: 5vh 20px 20px; }
+.modal-crop .modal-card { width: min(100%, 800px); }
+.modal-crop .modal-body { max-height: 76vh; overflow-y: auto; }
+.crop-help { margin: 0 0 10px; }
+.crop-frame {
+    position: relative; overflow: hidden;
+    width: 100%; background: #14120f; border-radius: 10px;
+    cursor: grab;
+    /* touch-action:none — không có nó thì trên màn cảm ứng thao tác kéo bị trình
+       duyệt nuốt thành cuộn trang, pointermove không bao giờ tới nơi. */
+    touch-action: none; user-select: none;
+}
+.crop-frame.is-drag { cursor: grabbing; }
+.crop-frame:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Kích thước thật của ảnh do JS đặt bằng px -> phải chặn mọi max-width kế thừa,
+   không thì phép tính scale trong admin.js lệch hoàn toàn. */
+.crop-img {
+    position: absolute; left: 50%; top: 50%;
+    max-width: none; max-height: none; transform-origin: center;
+}
+/* Dải giữa "luôn hiện trên điện thoại": màn dọc cắt bớt hai bên của ảnh ngang */
+.crop-safe {
+    position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
+    border-left: 1px dashed rgba(255, 255, 255, .8); border-right: 1px dashed rgba(255, 255, 255, .8);
+    pointer-events: none;
+}
+.crop-safe-tag {
+    position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+    white-space: nowrap; font-size: 10.5px; color: #fff;
+    background: rgba(0, 0, 0, .5); padding: 2px 8px; border-radius: 20px;
+}
+.crop-tools { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+/* Ghi đè khối .modal-body input (viền + padding của ô nhập chữ) cho thanh trượt */
+.modal-body input.crop-zoom {
+    flex: 1; width: auto; padding: 0; border: 0; background: none;
+    accent-color: var(--accent); cursor: pointer;
+}
+.modal-body input.crop-zoom:focus { box-shadow: none; }
+.crop-zoom-btn {
+    flex: none; width: 30px; height: 30px;
+    border: 1px solid var(--line); border-radius: 50%; background: #fff;
+    font-size: 17px; line-height: 1; color: var(--ink); cursor: pointer;
+    transition: border-color .15s, color .15s;
+}
+.crop-zoom-btn:hover { border-color: var(--accent); color: var(--accent-dark); }
+.crop-note { margin: 10px 0 0; }
+.crop-note.is-warn { color: #a06a1e; }
+@media (max-width: 560px) {
+    .modal-crop { padding: 3vh 10px 10px; }
+    .crop-safe-tag { display: none; }
+}
 @media (max-width: 560px) {
     .form-2col { grid-template-columns: 1fr; }
     .admin-table { display: block; overflow-x: auto; }

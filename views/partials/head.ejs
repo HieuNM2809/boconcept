@@ -6,6 +6,9 @@
     <title><%= (typeof pageTitle !== 'undefined' && pageTitle) ? pageTitle : (t.common.brand + ' — ' + t.common.tagline) %></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Gộp hai họ vào MỘT request css2 (không tách hai thẻ link): chỉ một vòng
+         DNS/TLS tới fonts.googleapis.com. Poppins chỉ nạp 2 nét vì nó chỉ dùng
+         cho đúng dòng tiêu đề hero. -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>">
 </head>

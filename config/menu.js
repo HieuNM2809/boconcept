@@ -8,9 +8,7 @@
  * trên mọi trang, "#why" ở /products/1 sẽ không nhảy đi đâu cả.
  */
 module.exports = [
+    {key: 'products', href: '/products'},
     {key: 'news', href: '/news'},
     {key: 'about', href: '/about'},
-    {key: 'partners', href: '/#partners'},
-    {key: 'support', href: '/#footer'},
-    {key: 'findStore', href: '/#footer'},
 ];

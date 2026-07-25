@@ -28,9 +28,13 @@ module.exports = {
         weight: 'Khối lượng (kg)',
         weightFrom: 'Từ',
         weightTo: 'Đến',
+        category: 'Loại sản phẩm',
+        categoryAll: 'Tất cả loại',
         apply: 'Lọc',
         clear: 'Xóa lọc',
     },
+    // Trang "Tất cả sản phẩm" (/products) — liệt kê toàn bộ sản phẩm, lọc theo loại
+    allTitle: 'Tất cả sản phẩm',
     catSearch: {
         label: 'Tìm loại sản phẩm',
         placeholder: 'Gõ tên loại sản phẩm...',

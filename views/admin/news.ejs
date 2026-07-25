@@ -6,13 +6,12 @@
         <h1>Tin tức</h1>
         <a class="btn btn-primary" href="/admin/news/new">+ Thêm bài viết</a>
     </div>
-    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
     <table class="admin-table">
         <thead>
-        <tr><th>#</th><th>Ảnh</th><th>Tiêu đề (VI)</th><th>Tiêu đề (EN)</th><th>Mô tả (VI)</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        <tr><th>STT</th><th>Ảnh</th><th>Tiêu đề tin tức</th><th>Tiêu đề tiếng anh</th><th>Nội dung bài viết</th><th>Thứ tự</th><th title="Bài có sao vàng mới lên trang chủ">Nổi bật</th><th>Trạng thái</th><th></th></tr>
         </thead>
         <tbody>
-        <% if (!items.length) { %><tr><td colspan="8" class="admin-empty">Chưa có bài viết nào.</td></tr><% } %>
+        <% if (!items.length) { %><tr><td colspan="9" class="admin-empty">Chưa có bài viết nào.</td></tr><% } %>
         <% items.forEach(function (n) { %>
             <tr>
                 <td><%= n.id %></td>
@@ -21,6 +20,7 @@
                 <td><%= n.title_en || '—' %></td>
                 <td class="admin-cell-clip"><%= n.excerpt_vi || '—' %></td>
                 <td><%= n.sort_order %></td>
+                <td class="admin-star"><% if (n.is_featured) { %><span class="star on" title="Nổi bật — có trên trang chủ">★</span><% } else { %><span class="star off" title="Không nổi bật">★</span><% } %></td>
                 <td><span class="badge-status <%= n.status ? 'on' : 'off' %>"><%= n.status ? 'Hiện' : 'Ẩn' %></span></td>
                 <td class="admin-row-actions">
                     <a class="btn-sm" href="/admin/news/<%= n.id %>/edit">Sửa</a>

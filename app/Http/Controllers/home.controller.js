@@ -83,14 +83,14 @@ async function index(req, res) {
             if (!childrenOf.has(c.parent_id)) childrenOf.set(c.parent_id, []);
             childrenOf.get(c.parent_id).push(c);
         });
-        // Danh mục "nổi bật" (đánh dấu ở /admin/categories) được GHIM lên đầu khối,
-        // các mục còn lại giữ nguyên phía sau — cố ý KHÔNG lọc bỏ, để khi chưa ai
-        // đánh dấu gì thì trang chủ trông y như cũ thay vì trống trơn.
-        // sort ổn định: trong cùng nhóm vẫn theo sort_order/id mà service đã xếp.
+        // CHỈ danh mục cấp 1 NỔI BẬT (is_featured, đánh dấu ở /admin/categories) hiện
+        // ở khối "Loại sản phẩm". Không đánh dấu mục nào -> mảng rỗng -> view ẩn cả
+        // section (như khối Công năng) thay vì để lại ô "chưa có dữ liệu".
+        // Thứ tự giữ nguyên sort_order/id mà service đã xếp. Con cấp 2 lấy hết (mọi
+        // danh mục con đang hiện của mục đó), không lọc theo nổi bật.
         const rootCats = allCats
-            .filter((c) => c.parent_id == null)
-            .map((c) => ({...c, children: childrenOf.get(c.id) || []}))
-            .sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+            .filter((c) => c.parent_id == null && c.is_featured)
+            .map((c) => ({...c, children: childrenOf.get(c.id) || []}));
 
         // Chữ hai khối "Loại sản phẩm" và "Tin tức" trước đây sửa được ở
         // /admin/content. Màn đó đã gỡ theo yêu cầu, chữ chuyển hẳn về

@@ -30,9 +30,15 @@
                         Thứ tự chuyển ảnh đúng bằng thứ tự các dòng dưới đây. Kéo thả chưa
                         hỗ trợ — muốn đổi thứ tự thì sửa lại đường dẫn giữa các dòng.
                         Xoá hết chữ trong ô đường dẫn là ảnh đó bị bỏ khi lưu.
+                        Mỗi khe tối đa <strong><%= maxImages %> ảnh</strong>; ảnh nên rộng
+                        từ 900×600 trở lên để không bị mờ khi phóng vào ô lớn.
                     </p>
 
-                    <div id="slotRows" class="gallery-rows">
+                    <%# data-max-rows / data-min-size là HỢP ĐỒNG với admin.js: trần số dòng
+                        và cỡ ảnh tối thiểu khai ở ĐÂY chứ không hard-code trong JS, vì cùng
+                        một admin.js còn chạy cho form logo đối tác / chứng nhận — ảnh ở đó
+                        nhỏ là chuyện bình thường, áp luật 400px vào là admin hết upload nổi. %>
+                    <div id="slotRows" class="gallery-rows" data-max-rows="<%= maxImages %>" data-min-size="400x400" data-good-size="900x600">
                         <% item.images.forEach(function (im, i) { %>
                             <%# 4 cột: số thứ tự · ảnh · cụm ô nhập · nút xoá. Số thứ tự do
                                 CSS counter sinh ra nên xoá dòng giữa là tự đánh số lại. %>
@@ -59,17 +65,23 @@
                         <% }) %>
                     </div>
 
-                    <button type="button" class="btn-sm" id="addSlotRow">+ Thêm ảnh</button>
+                    <div class="slot-rows-foot">
+                        <button type="button" class="btn-sm" id="addSlotRow">+ Thêm ảnh</button>
+                        <%# Bộ đếm luôn hiện (không chỉ khi chạm trần): admin cần thấy còn
+                            thêm được mấy ảnh TRƯỚC khi ngồi chọn file, chứ không phải lúc
+                            nút đã tắt. JS ghi nội dung, đây chỉ là chỗ đứng. %>
+                        <span class="admin-hint" id="slotRowsCount"></span>
+                    </div>
                     <p class="admin-hint" id="slotRowsWarn" hidden>
-                        Nhiều ảnh làm dữ liệu gửi lên rất nặng và có thể vượt giới hạn của máy chủ.
-                        Nên giữ dưới 8 ảnh mỗi khe.
+                        Đã đủ <strong><%= maxImages %> ảnh</strong> — mức tối đa của một khe.
+                        Muốn thêm ảnh khác thì xoá bớt một dòng. Gửi nhiều hơn sẽ bị máy chủ từ chối.
                     </p>
                 </section>
             <% } else { %>
                 <%# ── Khe TĨNH: đúng một ảnh ────────────────────────────────────
                     Cùng tên trường với khe slider nhưng ở dạng chuỗi đơn (slot_image,
                     không phải slot_image[]); collectImages san phẳng được cả hai kiểu. %>
-                <section class="form-card is-media">
+                <section class="form-card is-media" data-min-size="400x400" data-good-size="700x700">
                     <%- include('_image-field', {name: 'slot_image', label: 'Ảnh', value: item.images[0].image, required: true, previewClass: 'is-wide'}) %>
                 </section>
             <% } %>

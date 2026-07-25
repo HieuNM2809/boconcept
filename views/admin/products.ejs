@@ -3,10 +3,9 @@
 <%- include('_nav', {section: 'products'}) %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1>Sản phẩm</h1>
+        <h1>SẢN PHẨM</h1>
         <a class="btn btn-primary" href="/admin/products/new">+ Thêm sản phẩm</a>
     </div>
-    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
 
     <%# Form GET: bộ lọc nằm hết trong URL nên chia sẻ link, F5 và nút Back đều
         giữ nguyên kết quả. `page` KHÔNG có ô nhập — đổi bộ lọc là phải về trang
@@ -53,7 +52,7 @@
                 <label for="f_mat">Chất liệu</label>
                 <input type="text" id="f_mat" name="material" value="<%= filters.material %>" placeholder="Gỗ sồi, vải nỉ...">
             </div>
-            <div class="admin-filter-field">
+            <!-- <div class="admin-filter-field">
                 <label for="f_sort">Sắp xếp</label>
                 <select id="f_sort" name="sort">
                     <%# Đặt tên theo cột id vì đó là con số admin nhìn thấy ở cột đầu bảng;
@@ -64,7 +63,7 @@
                     <option value="price_desc" <%= filters.sort === 'price_desc' ? 'selected' : '' %>>Giá giảm dần</option>
                     <option value="priority" <%= filters.sort === 'priority' ? 'selected' : '' %>>Thứ tự ưu tiên</option>
                 </select>
-            </div>
+            </div> -->
             <div class="admin-filter-field">
                 <label for="f_per">Số dòng / trang</label>
                 <select id="f_per" name="per_page">

@@ -16,6 +16,7 @@ module.exports = {
         menu: 'Danh mục sản phẩm',
         prev: 'Ảnh trước',
         next: 'Ảnh tiếp theo',
+        backToTop: 'Lên đầu trang',
     },
     menu: {
         promo: 'Cần tư vấn thiết kế?',
@@ -24,6 +25,7 @@ module.exports = {
         back: 'Quay lại',
         viewAllIn: (name) => `Xem tất cả ${name}`,
         links: {
+            products: 'Tất cả sản phẩm',
             news: 'Tin tức',
             featured: 'Bộ sưu tập nổi bật',
             about: 'Về chúng tôi',

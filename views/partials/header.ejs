@@ -12,8 +12,15 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
     <!-- ── Hàng 1: thanh tiện ích ──────────────────────────────────────────── -->
     <div class="header-utility">
         <div class="container header-utility-inner">
-            <a class="find-store" href="#footer" aria-label="<%= t.common.findStore %>">
-                <span aria-hidden="true">📍</span>
+            <%# Ghim SVG nội tuyến, đơn sắc (fill="currentColor") — KHÔNG dùng emoji 📍
+                vì Windows vẽ nó nhiều màu và lệch baseline so với chữ.
+                aria-label giữ tên đầy đủ cho trình đọc màn hình: dưới 400px phần
+                chữ bị ẩn (.find-store-text), link chỉ còn mỗi icon. %>
+            <a class="find-store" href="/#footer" aria-label="<%= t.common.findStore %>">
+                <svg class="find-store-icon" viewBox="0 0 24 24" fill="currentColor"
+                     aria-hidden="true" focusable="false">
+                    <path d="M12 2c-3.87 0-7 3.13-7 7 0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
+                </svg>
                 <span class="find-store-text"><%= t.common.findStore %></span>
             </a>
             <%# Cờ hiện là ngôn ngữ SẼ chuyển sang (giữ đúng ngữ nghĩa của bản chữ trước đây).
@@ -37,8 +44,12 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
                     aria-label="<%= t.common.actions.menu %>"><span aria-hidden="true">☰</span></button>
 
             <nav class="nav-cats" aria-label="<%= t.common.actions.menu %>">
+                <%# Hai loại hiện thẳng trên thanh KHÔNG mở trang danh mục: chúng cuộn
+                    xuống khối "Loại sản phẩm" ở trang chủ và chọn sẵn đúng loại (main.js).
+                    href vẫn là "/#cat-<id>" tuyệt đối để ở trang khác trình duyệt về
+                    trang chủ trước, và để chuột giữa / mở tab mới vẫn có đích thật. %>
                 <% inlineCats.forEach(function (c) { %>
-                    <a href="/categories/<%= c.id %>"><%= pick(c, 'name') %></a>
+                    <a href="/#cat-<%= c.id %>" data-cat-jump="<%= c.id %>"><%= pick(c, 'name') %></a>
                 <% }) %>
                 <% if (navs.length > inlineCats.length) { %>
                     <button class="nav-more" type="button" data-nav-toggle
@@ -84,20 +95,12 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
             <a class="drawer-promo-cta" href="/#footer"><%= t.common.menu.promoCta %></a>
         </div>
 
+        <%# Chỉ hiện loại sản phẩm CẤP 1: mỗi danh mục là một link thẳng, không mở panel con. %>
         <nav class="drawer-group" aria-label="<%= t.common.actions.menu %>">
             <% navs.forEach(function (c) { %>
-                <% if ((c.children || []).length) { %>
-                    <button class="drawer-item drawer-item-lg" type="button"
-                            data-drawer-to="cat-<%= c.id %>"
-                            aria-expanded="false" aria-controls="sub-cat-<%= c.id %>">
-                        <span class="drawer-item-label"><%= pick(c, 'name') %></span>
-                        <span class="drawer-chev" aria-hidden="true">›</span>
-                    </button>
-                <% } else { %>
-                    <a class="drawer-item drawer-item-lg" href="/categories/<%= c.id %>">
-                        <span class="drawer-item-label"><%= pick(c, 'name') %></span>
-                    </a>
-                <% } %>
+                <a class="drawer-item drawer-item-lg" href="/categories/<%= c.id %>">
+                    <span class="drawer-item-label"><%= pick(c, 'name') %></span>
+                </a>
             <% }) %>
         </nav>
 
@@ -108,30 +111,5 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
                 </a>
             <% }) %>
         </nav>
-    </div>
-
-    <!-- ── Cột phải: mở kề bên khi chọn danh mục cấp 1 ─────────────────────── -->
-    <div class="drawer-sub" id="drawerSub" hidden>
-        <% navs.filter(function (c) { return (c.children || []).length; }).forEach(function (c) { %>
-            <div class="drawer-sub-level" id="sub-cat-<%= c.id %>" data-level="cat-<%= c.id %>" hidden>
-                <button class="drawer-back" type="button" data-drawer-back>
-                    <span class="drawer-chev" aria-hidden="true">‹</span>
-                    <span><%= t.common.menu.back %></span>
-                </button>
-
-                <h2 class="drawer-sub-title"><%= pick(c, 'name') %></h2>
-                <a class="drawer-sub-all" href="/categories/<%= c.id %>"><%= pick(c, 'name') %></a>
-
-                <nav class="drawer-sub-list" aria-label="<%= pick(c, 'name') %>">
-                    <% c.children.forEach(function (ch) { %>
-                        <a class="drawer-sub-item" href="/categories/<%= ch.id %>">
-                            <span class="drawer-sub-thumb"
-                                  style="background-image:url('<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/300/240') %>')"></span>
-                            <span class="drawer-sub-name"><%= pick(ch, 'name') %></span>
-                        </a>
-                    <% }) %>
-                </nav>
-            </div>
-        <% }) %>
     </div>
 </aside>

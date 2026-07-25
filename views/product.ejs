@@ -10,9 +10,6 @@
         </div>
     </section>
 <% } else { %>
-    <% const dv = (product.variants && product.variants.length) ? product.variants[0] : null; %>
-    <% const initSku = (dv && dv.sku) ? dv.sku : ('SP' + product.id); %>
-
     <div class="container pd">
         <!-- Breadcrumb -->
         <nav class="breadcrumb">
@@ -110,8 +107,7 @@
                                     mã nguồn trang, xem "View source" là đọc được — bỏ giá
                                     kiểu đó coi như không bỏ. %>
                                 <button class="variant <%= i === 0 ? 'active' : '' %>"
-                                        data-image="<%= v.image || '' %>"
-                                        data-sku="<%= v.sku || ('SP' + product.id) %>">
+                                        data-image="<%= v.image || '' %>">
                                     <% if (v.image) { %><img src="<%= v.image %>" alt="<%= v.name %>"><% } %>
                                     <span><%= v.name %></span>
                                 </button>
@@ -120,8 +116,22 @@
                     </div>
                 <% } %>
 
+                <%
+                /* Thông số kỹ thuật giờ nằm NGAY cột phải (chỗ dòng SKU cũ) thay vì
+                   trong tab — người xem thấy kích thước/trọng lượng mà không phải
+                   cuộn xuống. Chỉ in dòng có dữ liệu thật; không còn bảng mẫu
+                   trong file ngôn ngữ, sản phẩm chưa nhập thì đơn giản là không hiện. */
+                const specs = [
+                    {label: t.product.attrs.size, value: pick(product, 'dimensions')},
+                    {label: t.product.attrs.weight, value: product.weight != null ? Number(product.weight) + ' kg' : ''},
+                    {label: t.product.attrs.material, value: pick(product, 'material')},
+                    {label: t.product.attrs.color, value: pick(product, 'color')},
+                ].filter(function (s) { return s.value; });
+                %>
                 <div class="pd-meta">
-                    <div><span class="pd-meta-k"><%= t.product.sku %>:</span> <span id="pdSku"><%= initSku %></span></div>
+                    <% specs.forEach(function (s) { %>
+                        <div><span class="pd-meta-k"><%= s.label %>:</span> <%= s.value %></div>
+                    <% }) %>
                     <% if (breadcrumb.length) { %>
                         <div>
                             <span class="pd-meta-k"><%= t.product.categories %>:</span>
@@ -134,61 +144,32 @@
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <%# Bỏ tab "Câu hỏi thường gặp", giữ "Đóng gói & vận chuyển" %>
-            <div class="tab-nav">
-                <button class="tab-btn active" data-tab="additional"><%= t.product.tabs.additional %></button>
-                <button class="tab-btn" data-tab="packaging"><%= t.product.tabs.packaging %></button>
-            </div>
+        <%# ── Tabs ─────────────────────────────────────────────────────────────
+            Hai tab CHỈ hiện nội dung admin soạn ở trang quản trị (không còn bảng
+            thông số/ảnh minh hoạ/chữ mẫu dựng sẵn). Tab nào admin bỏ trống thì ẩn
+            luôn cả nút lẫn panel — tránh mở ra một khoảng trắng; trống cả hai thì
+            bỏ hẳn khối tabs. Tab đầu tiên CÒN nội dung là tab được mở sẵn. %>
+        <% const tabItems = [
+            {id: 'additional', label: t.product.tabs.additional, html: extraHtml},
+            {id: 'packaging', label: t.product.tabs.packaging, html: shippingHtml},
+        ].filter(function (x) { return x.html; }); %>
 
-            <div class="tab-panel active" id="tab-additional">
-                <div class="tab-2col">
-                    <div>
-                        <h3 class="tab-h"><%= t.product.specsTitle %></h3>
-                        <%
-                        /* Ưu tiên thông số THẬT từ DB; sản phẩm chưa nhập thì mới
-                           rơi về bảng mẫu trong file ngôn ngữ. */
-                        const realSpecs = [
-                            {label: t.product.attrs.size, value: pick(product, 'dimensions')},
-                            {label: t.product.attrs.weight, value: product.weight != null ? Number(product.weight) + ' kg' : ''},
-                            {label: t.product.attrs.material, value: pick(product, 'material')},
-                            {label: t.product.attrs.color, value: pick(product, 'color')},
-                        ].filter(function (s) { return s.value; });
-                        const specRows = realSpecs.length ? realSpecs : t.product.specs;
-                        %>
-                        <table class="spec-table">
-                            <% specRows.forEach(function (s) { %>
-                                <tr><th><%= s.label %></th><td><%= s.value %></td></tr>
-                            <% }) %>
-                        </table>
-                    </div>
-                    <div class="tab-img" style="background-image:url('<%= gallery[0] %>')"></div>
+        <% if (tabItems.length) { %>
+            <div class="tabs">
+                <div class="tab-nav">
+                    <% tabItems.forEach(function (x, i) { %>
+                        <button class="tab-btn <%= i === 0 ? 'active' : '' %>" data-tab="<%= x.id %>"><%= x.label %></button>
+                    <% }) %>
                 </div>
 
-                <%# Thông tin thêm do admin soạn. bodyHtml dựng từ richtext.helper
-                    (escape trước, sinh thẻ sau) nên in thô ở đây là an toàn. %>
-                <% if (extraHtml) { %>
-                    <div class="article-body tab-richtext"><%- extraHtml %></div>
-                <% } %>
+                <% tabItems.forEach(function (x, i) { %>
+                    <%# html dựng từ richtext.helper (escape trước, sinh thẻ sau) nên in thô là an toàn %>
+                    <div class="tab-panel <%= i === 0 ? 'active' : '' %>" id="tab-<%= x.id %>">
+                        <div class="article-body tab-richtext"><%- x.html %></div>
+                    </div>
+                <% }) %>
             </div>
-
-            <div class="tab-panel" id="tab-packaging">
-                <%# Nội dung vận chuyển admin nhập được ưu tiên; chưa nhập thì dùng chữ mẫu %>
-                <% if (shippingHtml) { %>
-                    <div class="article-body tab-richtext"><%- shippingHtml %></div>
-                <% } else { %>
-                    <p class="tab-desc"><%= t.product.packagingDesc %></p>
-                <% } %>
-                <table class="spec-table">
-                    <% t.product.packaging.forEach(function (s) { %>
-                        <tr><th><%= s.label %></th><td><%= s.value %></td></tr>
-                    <% }) %>
-                </table>
-                <a class="btn btn-outline pd-cta" href="#footer"><%= t.product.contact %> &rarr;</a>
-            </div>
-
-        </div>
+        <% } %>
 
         <%# Sản phẩm liên quan — ngẫu nhiên cùng danh mục (RAND() ở SQL) %>
         <% if (related.length) { %>

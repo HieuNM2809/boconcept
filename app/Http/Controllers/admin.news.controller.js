@@ -1,6 +1,7 @@
 const NewsService = require('../../Services/Api/news.service');
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 const flashText = (k) => ({created: 'Đã thêm bài viết.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
 
 async function index(req, res) {
@@ -24,17 +25,17 @@ async function form(req, res) {
 
 async function create(req, res) {
     try { await NewsService.create(req.body); res.redirect('/admin/news?msg=created'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/news', e); }
 }
 
 async function update(req, res) {
     try { await NewsService.update(parseInt(req.params.id, 10), req.body); res.redirect('/admin/news?msg=updated'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/news', e); }
 }
 
 async function destroy(req, res) {
     try { await NewsService.delete(parseInt(req.params.id, 10)); res.redirect('/admin/news?msg=deleted'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/news', e); }
 }
 
 module.exports = {index, form, create, update, destroy};

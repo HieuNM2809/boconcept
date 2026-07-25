@@ -5,30 +5,24 @@
     cột hẹp thì gõ rất bí — cho dãn hết màn hình như /admin/pages. %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1><%= item ? ('Sửa loại #' + item.id) : 'Thêm loại sản phẩm' %></h1>
+        <h1><%= item ? ('SỬA LOẠI SẢN PHẨM #' + item.id) : 'Thêm loại sản phẩm' %></h1>
         <a class="btn-sm" href="/admin/categories">← Quay lại</a>
     </div>
     <form class="admin-form" method="post" action="<%= action %>">
         <div class="form-2col">
-            <div><label>Tên (VI) *</label><input name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
-            <div><label>Tên (EN)</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
+            <div><label>Tên sản phẩm</label><input name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
+            <div><label>Tên tiếng anh</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
         </div>
-        <%- include('_image-field', {name: 'image', label: 'Ảnh loại sản phẩm', value: item ? (item.image || '') : ''}) %>
 
-        <h2 class="admin-subhead">Tiêu đề & mô tả (hiện ở đầu trang danh sách)</h2>
-        <p class="admin-hint">Để trống thì trang dùng luôn “Tên” ở trên làm tiêu đề.</p>
         <div class="form-2col">
-            <div><label>Tiêu đề (VI)</label><input name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>"></div>
-            <div><label>Tiêu đề (EN)</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+            <div><label>Tiêu đề sản phẩm</label><input name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>"></div>
+            <div><label>Tiêu đề tiếng anh</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
         </div>
 
-        <p class="admin-hint">
-            Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
-            <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
-        </p>
-        <label>Mô tả (VI)</label>
+     
+        <label>Mô tả sản phẩm</label>
         <%- include('_editor', {name: 'description_vi', rows: 5, value: item ? (item.description_vi || '') : '', tools: 'full'}) %>
-        <label>Mô tả (EN)</label>
+        <label>Mô tả tiếng anh</label>
         <%- include('_editor', {name: 'description_en', rows: 5, value: item ? (item.description_en || '') : '', tools: 'full'}) %>
 
         <div class="form-auto">

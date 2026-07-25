@@ -35,11 +35,11 @@ function applyApiMiddlewares(app) {
     app.use(traceIdMiddleware);
 
     // 1. Body parser
-    app.use(express.json({limit: process.env.BODY_LIMIT || '16mb'}));
+    app.use(express.json({limit: process.env.BODY_LIMIT || '25mb'}));
     // `limit` là BẮT BUỘC ở đây: body-parser mặc định chặn urlencoded ở 100KB
     // (KHÔNG kế thừa BODY_LIMIT như express.json ở trên), nên form admin có icon
     // base64 sẽ bị trả 413 dạng JSON thô thay vì báo lỗi trên form.
-    app.use(express.urlencoded({extended: true, limit: process.env.BODY_LIMIT || '16mb'}));
+    app.use(express.urlencoded({extended: true, limit: process.env.BODY_LIMIT || '25mb'}));
 
     // 2. Header bảo mật cơ bản (CSP nới cho trang render EJS: ảnh ngoài, google fonts, inline)
     app.use(helmet({

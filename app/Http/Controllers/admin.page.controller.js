@@ -1,11 +1,14 @@
 const PageService = require('../../Services/Api/page.service');
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 
 // Màn này chỉ quản đúng MỘT bản ghi: trang giới thiệu công ty. Slug đóng cứng ở
 // đây chứ không lấy từ URL — không có đường nào sửa sang bản ghi khác, và cũng
 // không còn thêm/xoá trang (xem routes/web.route.js).
 const SLUG = 'about';
 
-const flashText = (k) => ({updated: 'Đã cập nhật.', missing: 'Chưa có dữ liệu trang giới thiệu trong database.'}[k] || '');
+// Chỉ còn cảnh báo TRẠNG THÁI "chưa có dữ liệu" (hiện dạng banner cố định); các
+// thông báo sau thao tác (đã cập nhật / lỗi) giờ do toast lo qua ?msg / ?err.
+const flashText = (k) => ({missing: 'Chưa có dữ liệu trang giới thiệu trong database.'}[k] || '');
 
 async function form(req, res) {
     // Cố ý KHÔNG lọc status: trang đang ẩn vẫn phải mở ra sửa được, không thì
@@ -17,7 +20,7 @@ async function form(req, res) {
         section: 'pages',
         item,
         action: '/admin/pages',
-        flash: flashText(req.query.msg) || (item ? '' : flashText('missing')),
+        flash: item ? '' : flashText('missing'),
     });
 }
 
@@ -28,7 +31,7 @@ async function update(req, res) {
         await PageService.update(found.id, req.body);
         res.redirect('/admin/pages?msg=updated');
     } catch (e) {
-        res.status(e.status || 400).send('Lỗi: ' + e.message);
+        backWithError(req, res, '/admin/pages', e);
     }
 }
 

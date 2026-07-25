@@ -6,26 +6,29 @@
     LOGO — nên logo chiếm cột lớn bên trái, chữ và thiết lập dồn sang cột phải. %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1><%= item ? ('Sửa đối tác #' + item.id) : 'Thêm đối tác' %></h1>
+        <h1><%= item ? ('Sửa đối tác #' + item.id) : 'THÊM ĐỐI TÁC' %></h1>
         <a class="btn-sm" href="/admin/partners">← Quay lại</a>
     </div>
 
     <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
         <div class="form-main">
             <section class="form-card is-media">
+                <%# hideUrl: bỏ ô dán URL bên dưới khung upload theo yêu cầu — chỉ
+                    upload logo từ máy. Logo vẫn lưu bình thường (input thành hidden). %>
                 <%- include('_image-field', {
                     name: 'logo',
-                    label: 'Logo — để trống sẽ hiển thị bằng chữ',
+                    label: 'Logo đối tác',
                     value: item ? (item.logo || '') : '',
-                    previewClass: 'is-wide'
+                    previewClass: 'is-wide',
+                    hideUrl: true
                 }) %>
             </section>
         </div>
 
         <aside class="form-side">
             <section class="form-card">
-                <h2 class="admin-subhead">Thông tin</h2>
-                <label for="name">Tên đối tác *</label>
+                <h2 class="admin-subhead">THÔNG TIN</h2>
+                <label for="name">Tên đối tác</label>
                 <input id="name" name="name" required value="<%= item ? item.name : '' %>">
                 <label for="link">Link (khi bấm vào)</label>
                 <input id="link" name="link" value="<%= item ? (item.link || '') : '' %>" placeholder="https://...">

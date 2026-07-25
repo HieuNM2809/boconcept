@@ -200,56 +200,70 @@
         });
     }
 
-    // ── Categories: chọn loại cấp 1 -> đổi ảnh lớn + hàng danh mục con ─────────
-    // Bộ chọn, ảnh lớn và track cấp 2 đều mang data-cat trùng nhau nên chỉ cần
-    // gạt .is-active theo id là ba chỗ khớp nhau, không phải giữ state riêng.
-    document.querySelectorAll('.categories').forEach((sec) => {
-        const items = sec.querySelectorAll('.cat-picker-item');
-        if (!items.length) return;
+    // ── Khối loại: rê/focus thẻ CẤP 1 (hàng dưới) -> đổi ẢNH LỚN; rê vào ẢNH LỚN ->
+    // hàng dưới đổi từ cấp 1 sang track CẤP 2 của loại đang chọn.
+    // Thẻ cấp 1, ảnh lớn và track cấp 2 mang data-cat trùng nhau -> chỉ cần gạt
+    // .is-active theo id là cả ba chỗ khớp.
+    document.querySelectorAll('.cat-showcase').forEach((sec) => {
+        const items = sec.querySelectorAll('.cat-showcase-l1');
+        const body = sec.querySelector('.cat-showcase-body');
+        const media = sec.querySelector('.cat-showcase-media');
+        if (!items.length || !body || !media) return;
 
         const setActive = (id) => {
             sec.querySelectorAll('[data-cat]').forEach((el) => {
-                const on = el.dataset.cat === id;
-                el.classList.toggle('is-active', on);
-                if (el.matches('.cat-picker-item')) el.setAttribute('aria-selected', String(on));
+                el.classList.toggle('is-active', el.dataset.cat === id);
             });
         };
 
-        // Rê chuột ra ngoài khối rồi đứng yên 5s -> hàng ảnh cấp 2 tự thu lại
-        // (CSS .cat-subs-row.is-idle). Quay vào là bung ra ngay, loại đang chọn
-        // giữ nguyên nên không phải dò lại từ đầu.
-        const subsRow = sec.querySelector('.cat-subs-row');
-        const IDLE_MS = 5000;
-        let idleTimer;
-        const wake = () => {
-            clearTimeout(idleTimer);
-            if (subsRow) subsRow.classList.remove('is-idle');
-        };
-        const sleepLater = () => {
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => subsRow.classList.add('is-idle'), IDLE_MS);
-        };
-
-        // Chuột thật: rê tới đâu đổi tới đó. Màn cảm ứng không hover được nên
-        // click mới là lối vào duy nhất — gắn cả hai, chúng không loại trừ nhau.
         const hoverable = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-        items.forEach((btn) => {
-            if (hoverable) btn.addEventListener('mouseenter', () => setActive(btn.dataset.cat));
-            // wake() ở đây là cho BÀN PHÍM: tab tới nút mà hàng cấp 2 đang ẩn
-            // thì bấm xong chẳng thấy gì đổi.
-            btn.addEventListener('focus', () => { wake(); setActive(btn.dataset.cat); });
-            btn.addEventListener('click', () => { wake(); setActive(btn.dataset.cat); });
+
+        // Rê thẻ cấp 1 -> ảnh lớn đổi. Chạm (mobile) là <a> nên vào thẳng trang loại.
+        // focus() lo cho bàn phím.
+        items.forEach((it) => {
+            if (hoverable) it.addEventListener('mouseenter', () => setActive(it.dataset.cat));
+            it.addEventListener('focus', () => setActive(it.dataset.cat));
         });
 
-        // Chỉ hẹn giờ khi có chuột thật. Màn cảm ứng KHÔNG sinh mouseleave đáng
-        // tin: chạm xong hàng sẽ ẩn và không còn cách nào gọi lại ngoài chạm
-        // trúng nút cấp 1 — nên ở đó cứ để hiện thường trực.
-        if (hoverable && subsRow) {
-            sec.addEventListener('mouseenter', wake);
-            sec.addEventListener('mouseleave', sleepLater);
+        if (hoverable) {
+            // Rê VÀO ảnh lớn -> hiện cấp 2 (chỉ khi loại đang chọn thật sự có con).
+            // Giữ trạng thái subs khi chuột đi từ ảnh xuống hàng cấp 2 để còn bấm được;
+            // rời hẳn cả khối (body) mới trả về hàng cấp 1.
+            media.addEventListener('mouseenter', () => {
+                if (sec.querySelector('.cat-showcase-l2.is-active')) body.classList.add('is-showing-subs');
+            });
+            body.addEventListener('mouseleave', () => body.classList.remove('is-showing-subs'));
         }
-        // Loại cấp 1 đang chọn KHÔNG reset khi rời chuột — chỉ hàng cấp 2 ẩn đi.
     });
+
+    // ── Link loại sản phẩm trên header -> cuộn xuống khối "Loại sản phẩm" ──────
+    // Bấm "Ghế"/"Chậu" không mở trang danh mục nữa mà chạy xuống khối #categories
+    // và chọn sẵn loại đó. Tên loại là <a> nên KHÔNG dùng .click() (sẽ điều hướng
+    // đi mất) — dùng .focus() để kích handler focus đã gắn ở khối trên (setActive),
+    // khỏi nhân đôi logic. preventScroll để không giành cuộn với scrollIntoView dưới.
+    const jumpToCategory = (id, smooth) => {
+        const card = document.querySelector('.cat-showcase-l1[data-cat="' + id + '"]');
+        const sec = (card && card.closest('.categories')) || document.getElementById('categories');
+        if (!sec) return false; // trang không có khối này (vd trang chi tiết) -> để link chạy bình thường
+        if (card) card.focus({preventScroll: true});
+        sec.scrollIntoView({behavior: smooth ? 'smooth' : 'auto', block: 'start'});
+        return true;
+    };
+
+    // Uỷ quyền ở document: header là partial dùng chung, gắn trực tiếp thì mỗi trang
+    // phải tự nhớ gắn lại. Bỏ qua click có phím bổ trợ / chuột giữa để "mở tab mới"
+    // vẫn hoạt động như một link bình thường.
+    document.addEventListener('click', (e) => {
+        if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const link = e.target.closest('[data-cat-jump]');
+        if (link && jumpToCategory(link.dataset.catJump, true)) e.preventDefault();
+    });
+
+    // Vào từ trang khác: URL là "/#cat-<id>" nhưng KHÔNG có phần tử nào mang id đó
+    // nên trình duyệt đứng yên ở đầu trang — phải tự cuộn. Để 'auto' (nhảy thẳng):
+    // ảnh còn đang tải, cuộn mượt từ đỉnh trang sẽ vừa chạy vừa bị đẩy lệch.
+    const hashCat = /^#cat-(\d+)$/.exec(location.hash);
+    if (hashCat) jumpToCategory(hashCat[1], false);
 
     // ── Horizontal scroll (categories) ─────────────────────────────────────────
     document.querySelectorAll('[data-scroll]').forEach((btn) => {
@@ -311,8 +325,8 @@
 
     // ── Chi tiết sản phẩm: biến thể + tabs ────────────────────────────────────
     {
-        // Không còn tra #pdPrice: giá đã bỏ khỏi trang, biến thể chỉ đổi ảnh + mã SKU.
-        const skuEl = document.getElementById('pdSku');
+        // Không tra #pdPrice/#pdSku: giá đã bỏ khỏi trang và dòng SKU đã nhường chỗ
+        // cho thông số kỹ thuật — chọn biến thể giờ chỉ đổi ảnh.
         // Gallery mới là lưới tĩnh, không còn "ảnh chính" để hoán đổi như bản cũ.
         // Đổi ảnh ĐẦU TIÊN của lưới để vẫn phản hồi khi chọn biến thể.
         // `.is-lead` chứ không `.is-wide`: product.ejs gán lớp `is-lead` cho ảnh đầu.
@@ -323,7 +337,6 @@
             document.querySelectorAll('.variant').forEach((x) => x.classList.remove('active'));
             v.classList.add('active');
             if (firstImg && v.dataset.image) firstImg.src = v.dataset.image;
-            if (skuEl && v.dataset.sku) skuEl.textContent = v.dataset.sku;
         }));
     }
 
@@ -332,4 +345,52 @@
         document.querySelectorAll('.tab-btn').forEach((x) => x.classList.toggle('active', x === btn));
         document.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('active', p.id === 'tab-' + id));
     }));
+
+    // ── Nút tròn "lên đầu trang" (partials/footer.ejs -> có ở mọi trang khách) ─
+    const toTop = document.getElementById('toTop');
+    if (toTop) {
+        const THRESHOLD = 400;      // px đã cuộn thì nút mới đáng hiện
+        const FADE_MS = 250;        // phải >= transition trong CSS (.2s)
+        let shown = false;
+        let hideTimer = null;
+
+        const show = () => {
+            if (shown) return;
+            shown = true;
+            clearTimeout(hideTimer); // đang chờ ẩn mà cuộn xuống lại -> huỷ lệnh ẩn
+            toTop.hidden = false;
+            // Gỡ `hidden` và thêm `.is-in` trong CÙNG một khung hình thì trình duyệt
+            // gộp lại thành một trạng thái, không có gì để chuyển động -> nút bụp ra.
+            requestAnimationFrame(() => toTop.classList.add('is-in'));
+        };
+
+        const hide = () => {
+            if (!shown) return;
+            shown = false;
+            toTop.classList.remove('is-in');
+            // Chờ mờ xong mới `hidden`: đặt ngay thì display:none cắt ngang hiệu ứng.
+            hideTimer = setTimeout(() => { if (!shown) toTop.hidden = true; }, FADE_MS);
+        };
+
+        // Gom nhiều sự kiện scroll vào 1 khung hình — scroll bắn liên tục, đọc
+        // scrollY mỗi lần là ép trình duyệt tính lại bố cục giữa lúc đang cuộn.
+        let ticking = false;
+        const sync = () => {
+            ticking = false;
+            if (window.scrollY > THRESHOLD) show(); else hide();
+        };
+
+        window.addEventListener('scroll', () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(sync);
+        }, {passive: true});
+
+        toTop.addEventListener('click', () => {
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            window.scrollTo({top: 0, behavior: reduce ? 'auto' : 'smooth'});
+        });
+
+        sync(); // tải lại trang giữa chừng (trình duyệt khôi phục vị trí cuộn) vẫn có nút
+    }
 })();

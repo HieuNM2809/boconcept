@@ -3,13 +3,12 @@
 <%- include('_nav', {section: 'partners'}) %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1>Đối tác hợp tác</h1>
+        <h1>ĐỐI TÁC HỢP TÁC</h1>
         <a class="btn btn-primary" href="/admin/partners/new">+ Thêm đối tác</a>
     </div>
-    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
     <table class="admin-table">
         <thead>
-        <tr><th>#</th><th>Logo</th><th>Tên</th><th>Link</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        <tr><th>STT</th><th>Logo đối tác</th><th>Tên đối tác</th><th>Link</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
         </thead>
         <tbody>
         <% if (!items.length) { %><tr><td colspan="7" class="admin-empty">Chưa có đối tác.</td></tr><% } %>

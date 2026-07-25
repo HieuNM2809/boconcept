@@ -1,5 +1,6 @@
 const ProductService = require('../../Services/Api/product.service');
 const CategoryService = require('../../Services/Api/category.service');
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
 const flashText = (k) => ({created: 'Đã thêm sản phẩm.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
@@ -105,7 +106,7 @@ async function create(req, res) {
         if (!data.name_vi) throw Object.assign(new Error('Tên (VI) là bắt buộc'), {status: 400});
         await ProductService.create(data);
         res.redirect('/admin/products?msg=created');
-    } catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    } catch (e) { backWithError(req, res, '/admin/products', e); }
 }
 
 async function update(req, res) {
@@ -114,14 +115,14 @@ async function update(req, res) {
         if (!data.name_vi) throw Object.assign(new Error('Tên (VI) là bắt buộc'), {status: 400});
         await ProductService.update(parseInt(req.params.id, 10), data);
         res.redirect('/admin/products?msg=updated');
-    } catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    } catch (e) { backWithError(req, res, '/admin/products', e); }
 }
 
 async function destroy(req, res) {
     try {
         await ProductService.delete(parseInt(req.params.id, 10));
         res.redirect('/admin/products?msg=deleted');
-    } catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    } catch (e) { backWithError(req, res, '/admin/products', e); }
 }
 
 module.exports = {index, form, create, update, destroy};

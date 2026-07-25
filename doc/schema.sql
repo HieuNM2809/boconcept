@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `categories` (
     -- thành data URI base64 -> ảnh chỉ ~370 byte đã vượt VARCHAR(500).
     `image`      MEDIUMTEXT   NULL,
     `sort_order` INT          NOT NULL DEFAULT 0,
-    -- Ghim danh mục lên đầu khối "Loại sản phẩm" ở trang chủ
+    -- Cờ nổi bật: trang chủ CHỈ hiện loại cấp 1 có cờ này ở khối "Loại sản phẩm"
     `is_featured` TINYINT     NOT NULL DEFAULT 0,
     `status`     TINYINT      NOT NULL DEFAULT 1,
     `created_at` DATETIME     NULL,
@@ -212,11 +212,16 @@ CREATE TABLE IF NOT EXISTS `news` (
     `cta_en`     VARCHAR(255) NULL,
     `link`       VARCHAR(500) NULL,
     `sort_order` INT          NOT NULL DEFAULT 0,
+    -- Cờ quyết định bài có lên khối Tin tức ngoài TRANG CHỦ hay không (tick ở
+    -- /admin/news). `status` là chuyện khác: status=0 thì bài biến mất khỏi cả
+    -- trang /news lẫn trang chủ, còn is_featured=0 chỉ là không lên trang chủ.
+    `is_featured` TINYINT     NOT NULL DEFAULT 0,
     `status`     TINYINT      NOT NULL DEFAULT 1,
     `created_at` DATETIME     NULL,
     `updated_at` DATETIME     NULL,
     PRIMARY KEY (`id`),
-    KEY `idx_news_status` (`status`)
+    KEY `idx_news_status` (`status`),
+    KEY `idx_news_is_featured` (`is_featured`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ── Trang nội dung tĩnh: Giới thiệu công ty, ... (quản lý ở /admin/pages) ────
