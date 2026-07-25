@@ -22,6 +22,9 @@ const News = sequelize.define('News', {
     cta_en: {type: DataTypes.STRING(255), allowNull: true},
     link: {type: DataTypes.STRING(500), allowNull: true},
     sort_order: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
+    // Có lên khối Tin tức ngoài TRANG CHỦ hay không. Khác `status`: status=0 là
+    // ẩn khỏi mọi nơi (kể cả trang /news), is_featured=0 chỉ là không lên trang chủ.
+    is_featured: {type: DataTypes.TINYINT, allowNull: false, defaultValue: 0},
     status: {type: DataTypes.TINYINT, allowNull: false, defaultValue: 1},
 }, {
     tableName: 'news',
@@ -29,7 +32,10 @@ const News = sequelize.define('News', {
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
-    indexes: [{name: 'idx_news_status', fields: ['status']}],
+    indexes: [
+        {name: 'idx_news_status', fields: ['status']},
+        {name: 'idx_news_is_featured', fields: ['is_featured']},
+    ],
 });
 
 module.exports = News;

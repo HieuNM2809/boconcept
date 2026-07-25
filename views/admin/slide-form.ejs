@@ -7,7 +7,7 @@
     bên trái, chữ và thiết lập dồn sang cột phải. %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1><%= slide ? ('Sửa slide #' + slide.id) : 'Thêm slide' %></h1>
+        <h1><%= slide ? ('Sửa slide #' + slide.id) : 'THÊM SLIDE' %></h1>
         <a class="btn-sm" href="/admin/slides">← Quay lại</a>
     </div>
 
@@ -17,21 +17,34 @@
                 <%# previewClass is-wide: ảnh xem trước cao tới 380px thay vì 200px như
                     ảnh thumbnail sản phẩm — cột này rộng, mà slide phải nhìn được cả
                     bố cục chữ trên ảnh mới biết có bị che hay không. %>
-                <%- include('_image-field', {name: 'image', label: 'Ảnh slide', value: slide ? slide.image : '', required: true, previewClass: 'is-wide'}) %>
+                <%# crop 21/9: hero trên máy tính cao 74vh nên ở màn 1920×1080 ra
+                    khoảng 2.4:1 — cắt sẵn theo tỉ lệ này thì phần admin chọn trong
+                    hộp điều chỉnh gần đúng y phần hiện ra thật. %>
+                <%- include('_image-field', {
+                    name: 'image', label: 'Ảnh slide', value: slide ? slide.image : '',
+                    required: true, previewClass: 'is-wide', crop: '21/9',
+                    hint: 'PNG · JPG · WEBP — chọn xong sẽ mở khung cắt để bạn kéo/phóng chọn đúng phần muốn hiện. Ảnh gốc càng rộng (từ 2000px) càng nét.',
+                }) %>
             </section>
         </div>
 
         <aside class="form-side">
             <section class="form-card">
                 <h2 class="admin-subhead">Nội dung hiện trên ảnh</h2>
-                <label for="title_vi">Tiêu đề (VI)</label>
-                <input id="title_vi" name="title_vi" value="<%= slide ? (slide.title_vi || '') : '' %>">
-                <label for="title_en">Tiêu đề (EN)</label>
-                <input id="title_en" name="title_en" value="<%= slide ? (slide.title_en || '') : '' %>">
-                <label for="badge_vi">Badge (VI)</label>
-                <input id="badge_vi" name="badge_vi" value="<%= slide ? (slide.badge_vi || '') : '' %>">
-                <label for="badge_en">Badge (EN)</label>
-                <input id="badge_en" name="badge_en" value="<%= slide ? (slide.badge_en || '') : '' %>">
+
+                    <label for="title_vi">Tiêu đề lớn (VI)</label>
+                    <input id="title_vi" name="title_vi" placeholder="VD: Chế tác cho không gian ngoài trời"
+                           value="<%= slide ? (slide.title_vi || '') : '' %>">
+                    <label for="title_en">Tiêu đề lớn (EN)</label>
+                    <input id="title_en" name="title_en" placeholder="VD: Crafted for Outdoor Living"
+                           value="<%= slide ? (slide.title_en || '') : '' %>">
+                    <label for="badge_vi">Mô tả ngắn (VI)</label>
+                    <input id="badge_vi" name="badge_vi" placeholder="VD: Vẻ đẹp tự nhiên, thiết kế vượt thời gian"
+                           value="<%= slide ? (slide.badge_vi || '') : '' %>">
+                    <label for="badge_en">Mô tả ngắn (EN)</label>
+                    <input id="badge_en" name="badge_en" placeholder="VD: Natural beauty, timeless design"
+                           value="<%= slide ? (slide.badge_en || '') : '' %>">
+                </div>
             </section>
 
             <section class="form-card">

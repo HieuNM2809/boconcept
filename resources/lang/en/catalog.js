@@ -28,9 +28,13 @@ module.exports = {
         weight: 'Weight (kg)',
         weightFrom: 'From',
         weightTo: 'To',
+        category: 'Category',
+        categoryAll: 'All categories',
         apply: 'Filter',
         clear: 'Clear',
     },
+    // "All products" page (/products) — lists every product, filterable by category
+    allTitle: 'All products',
     catSearch: {
         label: 'Find a category',
         placeholder: 'Type a category name...',

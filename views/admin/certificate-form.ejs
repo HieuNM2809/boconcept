@@ -16,16 +16,18 @@
             <section class="form-card is-media">
                 <%# is-wide: ảnh xem trước cao tới 380px — bản scan chứng nhận nhỏ
                     200px thì không đọc nổi chữ để soát xem đúng bản chưa. %>
-                <%- include('_image-field', {name: 'image', label: 'Ảnh chứng nhận', value: item ? item.image : '', required: true, previewClass: 'is-wide'}) %>
+                <%# hideUrl: bỏ ô dán URL bên dưới khung upload theo yêu cầu — chỉ
+                    upload ảnh từ máy. Ảnh vẫn lưu bình thường (input chuyển thành hidden). %>
+                <%- include('_image-field', {name: 'image', label: 'Ảnh chứng nhận', value: item ? item.image : '', required: true, previewClass: 'is-wide', hideUrl: true}) %>
             </section>
         </div>
 
         <aside class="form-side">
             <section class="form-card">
                 <h2 class="admin-subhead">Tiêu đề</h2>
-                <label for="title_vi">Tiêu đề (VI)</label>
+                <label for="title_vi">Tiêu đề tiếng việt</label>
                 <input id="title_vi" name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>">
-                <label for="title_en">Tiêu đề (EN)</label>
+                <label for="title_en">Tiêu đề tiếng anh</label>
                 <input id="title_en" name="title_en" value="<%= item ? (item.title_en || '') : '' %>">
             </section>
 

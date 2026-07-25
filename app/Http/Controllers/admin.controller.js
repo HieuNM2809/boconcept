@@ -1,5 +1,6 @@
 const SlideService = require('../../Services/Api/slide.service');
 const {logger} = require('../../../config/log4js');
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
 
@@ -40,7 +41,7 @@ async function slideCreate(req, res) {
         await SlideService.create(req.body);
         res.redirect('/admin/slides?msg=created');
     } catch (err) {
-        res.status(err.status || 400).send(`Lỗi tạo slide: ${err.message}`);
+        backWithError(req, res, '/admin/slides', err);
     }
 }
 
@@ -50,7 +51,7 @@ async function slideUpdate(req, res) {
         await SlideService.update(parseInt(req.params.id, 10), req.body);
         res.redirect('/admin/slides?msg=updated');
     } catch (err) {
-        res.status(err.status || 400).send(`Lỗi cập nhật slide: ${err.message}`);
+        backWithError(req, res, '/admin/slides', err);
     }
 }
 
@@ -60,7 +61,7 @@ async function slideDelete(req, res) {
         await SlideService.delete(parseInt(req.params.id, 10));
         res.redirect('/admin/slides?msg=deleted');
     } catch (err) {
-        res.status(err.status || 400).send(`Lỗi xóa slide: ${err.message}`);
+        backWithError(req, res, '/admin/slides', err);
     }
 }
 

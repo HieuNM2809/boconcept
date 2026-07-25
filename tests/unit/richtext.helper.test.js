@@ -34,6 +34,45 @@ describe('richtext render — định dạng trong dòng', () => {
     });
 });
 
+describe('richtext render — ảnh tham chiếu', () => {
+    const uri = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD=';
+
+    test('![mô tả][nhãn] lấy địa chỉ từ dòng định nghĩa, và dòng đó KHÔNG hiện ra', () => {
+        const out = render(`Câu văn ![ảnh sản phẩm][anh-1] ở giữa.\n\n[anh-1]: ${uri}`);
+        expect(out).toBe(`<p>Câu văn <img src="${uri}" alt="ảnh sản phẩm" loading="lazy"> ở giữa.</p>`);
+        expect(out).not.toContain('[anh-1]:');
+    });
+
+    test('nhãn không phân biệt hoa thường', () => {
+        expect(render(`![a][Anh-1]\n[anh-1]: ${uri}`)).toContain(`src="${uri}"`);
+    });
+
+    test('nhãn không có định nghĩa -> chỉ còn mô tả, không in cú pháp thô', () => {
+        expect(render('![mô tả][thieu]')).toBe('<p>mô tả</p>');
+    });
+
+    test('định nghĩa trỏ tới nguồn nguy hiểm vẫn bị chặn như ảnh thường', () => {
+        expect(render('![x][a]\n[a]: javascript:alert(1)')).toBe('<p>x</p>');
+        expect(render('![x][a]\n[a]: data:image/svg+xml;base64,PHN2Zz4=')).toBe('<p>x</p>');
+    });
+
+    test('địa chỉ có dấu " không thoát được khỏi thuộc tính src', () => {
+        // Bóc định nghĩa TRƯỚC escapeHtml sẽ để lọt: src="https://x/" onerror="…"
+        const out = render('![x][a]\n[a]: https://x/"onerror="alert(1)');
+        expect(out).not.toContain('onerror="');
+        expect(out).toContain('&quot;onerror=&quot;');
+    });
+
+    test('dòng nội dung bình thường có ngoặc vuông KHÔNG bị nuốt', () => {
+        // Phần địa chỉ phải là MỘT từ tới hết dòng -> câu nhiều chữ không lọt
+        expect(render('[ghi chú]: xem thêm ở dưới')).toBe('<p>[ghi chú]: xem thêm ở dưới</p>');
+    });
+
+    test('ảnh nội tuyến kiểu cũ vẫn chạy — bài đã lưu trước đây không hỏng', () => {
+        expect(render(`![a](${uri})`)).toContain(`src="${uri}"`);
+    });
+});
+
 describe('richtext render — khối', () => {
     test('tiêu đề h1..h4', () => {
         expect(render('# A')).toBe('<h1>A</h1>');
@@ -96,6 +135,12 @@ describe('toPlainText', () => {
     test('bỏ ký hiệu định dạng, giữ chữ của link và mô tả ảnh', () => {
         expect(toPlainText('## Tiêu đề **đậm** [chữ](https://x.com) ![ảnh](https://x.com/a.png)'))
             .toBe('Tiêu đề đậm chữ ảnh');
+    });
+
+    test('bỏ hẳn dòng định nghĩa ảnh, giữ mô tả của ảnh tham chiếu', () => {
+        const out = toPlainText('Mở đầu ![ảnh bìa][anh-1] kết.\n[anh-1]: data:image/png;base64,iVBORw0KGgo=');
+        expect(out).toBe('Mở đầu ảnh bìa kết.');
+        expect(out).not.toContain('base64');
     });
 
     test('cắt theo độ dài', () => {

@@ -10,14 +10,17 @@
         </div>
     </section>
 <% } else { %>
-    <div class="container">
+    <%# container-wide + .article-wide: trải hết bề ngang màn hình theo yêu cầu.
+        .article thường bị giới hạn 760px cho dễ đọc — .article-wide gỡ mức đó,
+        nhưng CHỈ ở trang tin (page.ejs vẫn giữ cột hẹp mặc định). %>
+    <div class="container-wide">
         <nav class="breadcrumb">
             <a href="/"><%= t.news.home %></a>
             <span class="sep">/</span><a href="/news"><%= t.news.title %></a>
             <span class="sep">/</span><span class="crumb-current"><%= pick(post, 'title') %></span>
         </nav>
 
-        <article class="article">
+        <article class="article article-wide">
             <h1 class="article-title"><%= pick(post, 'title') %></h1>
 
             <p class="article-meta">

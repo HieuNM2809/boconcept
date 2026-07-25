@@ -1,0 +1,132 @@
+<%- include('partials/head') %>
+<body>
+<%- include('partials/header') %>
+
+<div class="container listing">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <a href="/"><%= t.catalog.home %></a>
+        <span class="sep">/</span>
+        <a href="/products"><%= t.catalog.allTitle %></a>
+    </nav>
+
+    <div class="listing-head">
+        <h1 class="listing-title"><%= t.catalog.allTitle %></h1>
+    </div>
+
+    <%# Bộ lọc: LOẠI · tên · kích thước · chất liệu · khối lượng. Cùng form-bar như
+        trang theo loại, chỉ THÊM ô chọn loại (ở trang theo loại không cần vì đã cố
+        định 1 loại). action=/products, method=get -> mọi bộ lọc nằm trên URL. %>
+    <form class="filter-bar filter-bar-wide" action="/products" method="get">
+        <input type="hidden" name="sort" value="<%= filters.sort %>">
+        <div class="filter-field">
+            <label for="f-cat"><%= t.catalog.filters.category %></label>
+            <select id="f-cat" name="category_id">
+                <option value=""><%= t.catalog.filters.categoryAll %></option>
+                <% catOptions.forEach(function (c) { %>
+                    <%# Loại con thụt lề bằng "— " theo depth để thấy được cấp bậc. %>
+                    <option value="<%= c.id %>" <%= String(filters.category_id) === String(c.id) ? 'selected' : '' %>><%= '— '.repeat(c.depth) + pick(c, 'name') %></option>
+                <% }) %>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="f-q"><%= t.catalog.filters.name %></label>
+            <input id="f-q" name="q" value="<%= filters.q || '' %>" placeholder="<%= t.catalog.filters.namePh %>">
+        </div>
+        <div class="filter-field">
+            <label for="f-size"><%= t.catalog.filters.size %></label>
+            <input id="f-size" name="dimensions" value="<%= filters.dimensions || '' %>" placeholder="<%= t.catalog.filters.sizePh %>">
+        </div>
+        <div class="filter-field">
+            <label for="f-mat"><%= t.catalog.filters.material %></label>
+            <input id="f-mat" name="material" value="<%= filters.material || '' %>" placeholder="<%= t.catalog.filters.materialPh %>">
+        </div>
+        <div class="filter-field">
+            <label><%= t.catalog.filters.weight %></label>
+            <div class="filter-range">
+                <input type="number" step="0.1" min="0" name="min_weight" value="<%= filters.min_weight || '' %>" aria-label="<%= t.catalog.filters.weightFrom %>" placeholder="<%= t.catalog.filters.weightFrom %>">
+                <span>–</span>
+                <input type="number" step="0.1" min="0" name="max_weight" value="<%= filters.max_weight || '' %>" aria-label="<%= t.catalog.filters.weightTo %>" placeholder="<%= t.catalog.filters.weightTo %>">
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button class="btn btn-primary" type="submit"><%= t.catalog.filters.apply %></button>
+            <a class="btn btn-outline" href="/products"><%= t.catalog.filters.clear %></a>
+        </div>
+    </form>
+
+    <!-- Thanh sắp xếp + số kết quả -->
+    <div class="toolbar">
+        <div class="sort-chips">
+            <span class="toolbar-label"><%= t.catalog.sortBy %></span>
+            <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+            <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+        </div>
+        <div class="toolbar-right">
+            <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
+        </div>
+    </div>
+
+    <!-- Lưới sản phẩm: 4 cột × 6 dòng (controller trả 24/trang) -->
+    <% if (products.length) { %>
+        <div class="product-grid listing-grid">
+            <% products.forEach(function (p) { %>
+                <a class="product-card" href="/products/<%= p.id %>">
+                    <div class="product-thumb" style="background-image:url('<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/400') %>')">
+                        <% if (p.is_featured) { %><span class="badge-hot">HOT</span><% } %>
+                    </div>
+                    <div class="product-info">
+                        <% if (p.category) { %><span class="product-cat"><%= pick(p.category, 'name') %></span><% } %>
+                        <h3 class="product-name"><%= pick(p, 'name') %></h3>
+
+                        <%# Chất liệu · màu — chỉ hiện khi admin có nhập %>
+                        <% const mat = pick(p, 'material'); const col = pick(p, 'color'); %>
+                        <% if (mat || col) { %>
+                            <p class="product-attr"><%= [mat, col].filter(Boolean).join(' · ') %></p>
+                        <% } %>
+
+                        <% if (pick(p, 'dimensions')) { %>
+                            <p class="product-dims">
+                                <span class="product-dims-label"><%= t.catalog.attrs.size %>:</span>
+                                <%= pick(p, 'dimensions') %>
+                            </p>
+                        <% } %>
+                        <% if (p.weight != null) { %>
+                            <p class="product-dims"><span class="product-dims-label"><%= t.catalog.attrs.weight %>:</span> <%= Number(p.weight) %> kg</p>
+                        <% } %>
+<%# Giá đã bỏ khỏi TOÀN BỘ trang khách xem theo yêu cầu. %>
+                    </div>
+                </a>
+            <% }) %>
+        </div>
+
+        <!-- Phân trang -->
+        <% if (meta.last_page > 1) { %>
+            <nav class="pagination">
+                <% if (meta.current_page > 1) { %>
+                    <a class="pg-arrow" href="<%= linkFor({page: meta.current_page - 1}) %>">&lsaquo;</a>
+                <% } else { %><span class="pg-arrow disabled">&lsaquo;</span><% } %>
+
+                <% pages.forEach(function (p) { %>
+                    <% if (p === '…') { %>
+                        <span class="pg-ellipsis">…</span>
+                    <% } else { %>
+                        <a class="pg-num <%= p === meta.current_page ? 'active' : '' %>" href="<%= linkFor({page: p}) %>"><%= p %></a>
+                    <% } %>
+                <% }) %>
+
+                <% if (meta.current_page < meta.last_page) { %>
+                    <a class="pg-arrow" href="<%= linkFor({page: meta.current_page + 1}) %>">&rsaquo;</a>
+                <% } else { %><span class="pg-arrow disabled">&rsaquo;</span><% } %>
+            </nav>
+        <% } %>
+    <% } else { %>
+        <p class="empty listing-empty"><%= t.catalog.empty %></p>
+    <% } %>
+</div>
+
+<%- include('partials/footer') %>
+<script src="/static/js/main.js?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>"></script>
+</body>
+</html>

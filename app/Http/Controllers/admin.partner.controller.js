@@ -1,6 +1,7 @@
 const PartnerService = require('../../Services/Api/partner.service');
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 const flashText = (k) => ({created: 'Đã thêm đối tác.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
 
 async function index(req, res) {
@@ -24,17 +25,17 @@ async function form(req, res) {
 
 async function create(req, res) {
     try { await PartnerService.create(req.body); res.redirect('/admin/partners?msg=created'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/partners', e); }
 }
 
 async function update(req, res) {
     try { await PartnerService.update(parseInt(req.params.id, 10), req.body); res.redirect('/admin/partners?msg=updated'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/partners', e); }
 }
 
 async function destroy(req, res) {
     try { await PartnerService.delete(parseInt(req.params.id, 10)); res.redirect('/admin/partners?msg=deleted'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/partners', e); }
 }
 
 module.exports = {index, form, create, update, destroy};

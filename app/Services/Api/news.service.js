@@ -2,9 +2,14 @@ const sequelize = require('../../../lib/database');
 const {News} = require('../../Models/index.model');
 
 class NewsService {
+    /**
+     * Khối Tin tức ngoài TRANG CHỦ. Chỉ lấy bài được tick "Nổi bật" ở /admin/news
+     * — không tick bài nào thì trả mảng rỗng và home.ejs tự ẩn cả khối (`if (news.length)`).
+     * Trang /news (getPaginated) vẫn hiện mọi bài status=1, không đụng tới cờ này.
+     */
     static async getActiveOrdered({limit = 4} = {}) {
         return News.findAll({
-            where: {status: 1},
+            where: {status: 1, is_featured: 1},
             order: [['sort_order', 'ASC'], ['id', 'ASC']],
             limit: Math.min(Math.max(parseInt(limit, 10) || 4, 1), 20),
         });
@@ -62,6 +67,9 @@ class NewsService {
             cta_en: str(d.cta_en),
             link: str(d.link),
             sort_order: parseInt(d.sort_order, 10) || 0,
+            // Mặc định 0 (ngược với status): thêm bài mới thì mặc nhiên KHÔNG
+            // đẩy lên trang chủ, admin phải chủ động chọn.
+            is_featured: String(d.is_featured) === '1' ? 1 : 0,
             status: String(d.status) === '0' ? 0 : 1,
         };
     }

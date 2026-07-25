@@ -1,5 +1,6 @@
 const GalleryService = require('../../Services/Api/gallery.service');
 const {logger} = require('../../../config/log4js');
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 
 const flashText = (k) => ({updated: 'Đã cập nhật.', notfound: 'Khe ảnh không tồn tại.'}[k] || '');
 
@@ -37,6 +38,7 @@ async function form(req, res) {
         item,
         label: SLOT_LABELS[slot],
         isSlider: GalleryService.isSliderSlot(slot),
+        maxImages: GalleryService.MAX_IMAGES_PER_SLOT,
         action: `/admin/gallery/${slot}`,
     });
 }
@@ -91,7 +93,7 @@ async function update(req, res) {
                 })),
             },
         });
-        res.status(e.status || 400).send('Lỗi: ' + e.message);
+        backWithError(req, res, '/admin/gallery', e);
     }
 }
 

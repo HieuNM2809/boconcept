@@ -23,6 +23,11 @@ const adminMenu = [
 %>
 <a class="admin-skip" href="#adminMain">Bỏ qua menu</a>
 
+<%# Ngăn xếp toast: admin.js đọc ?msg / ?err trên URL (do controller chuyển hướng
+    kèm) rồi chèn popup vào đây. aria-live=polite để trình đọc màn hình đọc lên
+    mà không cướp tiêu điểm. Có mặt trên MỌI trang admin vì _nav được include khắp nơi. %>
+<div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
+
 <aside class="admin-side">
     <a class="admin-brand" href="/admin">⚙️ Quản trị</a>
 

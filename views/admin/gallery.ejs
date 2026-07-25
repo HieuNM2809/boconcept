@@ -3,25 +3,12 @@
 <%- include('_nav', {section: 'gallery'}) %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1>Lưới ảnh trang chủ</h1>
+        <h1>LƯỚI ẢNH TRANG CHỦ</h1>
     </div>
-    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
-
-    <div class="admin-toggle-bar">
-        <div>
-            <strong>8 ô của lưới ảnh “Tư vấn phong cách”.</strong>
-            <span class="admin-hint">
-                Mỗi khe gắn cố định với một vị trí trên trang chủ — sửa ảnh của khe nào
-                thì đúng ô đó đổi. <strong>Khe 1, 2, 3</strong> là 3 ô lớn, chứa được
-                nhiều ảnh và tự chuyển 5 giây một lần. <strong>Khe 4–8</strong> là ô nhỏ,
-                mỗi khe một ảnh. Không thêm hay xoá khe được.
-            </span>
-        </div>
-    </div>
-
+    
     <table class="admin-table">
         <thead>
-        <tr><th>Vị trí</th><th>Ảnh</th><th>Số ảnh</th><th>Mô tả (VI)</th><th></th></tr>
+        <tr><th>Vị trí</th><th>Ảnh</th><th>Số ảnh</th><th>Mô tả</th><th></th></tr>
         </thead>
         <tbody>
         <% items.forEach(function (g) { %>

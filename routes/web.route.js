@@ -16,6 +16,7 @@ const adminPageController = require('../app/Http/Controllers/admin.page.controll
 const adminPreviewController = require('../app/Http/Controllers/admin.preview.controller');
 const adminAuth = require('../app/Http/Middleware/adminAuth.middleware');
 const navigation = require('../app/Http/Middleware/navigation.middleware');
+const mergeRichtextImages = require('../app/Http/Middleware/richtextImages.middleware');
 
 // Danh mục cho header (partial dùng chung) -> res.locals.navCategories.
 // Đặt ở đây (không phải app-level) nên không bao giờ chạm /api — router đó được
@@ -38,6 +39,10 @@ router.get('/', (req, res) => homeController.index(req, res));
 // Trang danh sách sản phẩm theo loại
 router.get('/categories/:id', (req, res) => catalogController.category(req, res));
 
+// Trang "Tất cả sản phẩm" — phải khai TRƯỚC /products/:id, nếu không "/products"
+// sẽ không có route riêng. (Express vẫn phân biệt được, nhưng để cạnh nhau cho rõ.)
+router.get('/products', (req, res) => catalogController.products(req, res));
+
 // Trang chi tiết sản phẩm
 router.get('/products/:id', (req, res) => catalogController.product(req, res));
 
@@ -55,6 +60,10 @@ router.get('/pages/:slug', (req, res) => pageController.bySlug(req, res));
 // ───── Admin (Basic Auth) — quản lý slideshow ────────────────────────────────
 const adminRouter = Router();
 // adminRouter.use(adminAuth);
+// Đặt ở CẤP ROUTER, không rắc vào từng route: mọi form admin đều có thể có ô
+// soạn thảo, và thêm route mới mà quên gắn thì lỗi biểu hiện là "lưu xong ảnh
+// trong bài biến mất" — rất khó lần ra.
+adminRouter.use(mergeRichtextImages);
 // Chặn id không hợp lệ (vd /admin/products/abc/edit) -> 404 thay vì 500
 adminRouter.param('id', (req, res, next, id) => {
     if (!/^[1-9][0-9]*$/.test(id)) return res.status(404).send('ID không hợp lệ.');

@@ -6,11 +6,25 @@
 <section class="hero">
     <div class="hero-track" id="heroTrack">
         <% heroSlides.forEach(function (s) { %>
-            <%# Slide giờ CHỈ còn ảnh: badge + tiêu đề từ DB đã bỏ theo yêu cầu.
-                Ô "Tiêu đề"/"Badge" ở /admin/slides vẫn lưu được nhưng không hiện ra
-                nữa — giữ cột lại phòng khi cần bật lại, và `alt` vẫn dùng tới. %>
-            <div class="hero-slide" role="img" aria-label="<%= pick(s, 'title') %>"
-                 style="background-image:url('<%= s.image %>')"></div>
+            <%# KHÔNG còn role="img"/aria-label như trước: role="img" biến thẻ thành
+                một nút lá với trình đọc màn hình, nuốt mất chữ bên trong — mà giờ
+                tiêu đề/mô tả là chữ thật, phải đọc được. Ảnh nền không mang thông
+                tin nào ngoài chữ đè lên nó nên để nguyên dạng trang trí. %>
+            <div class="hero-slide" style="background-image:url('<%= s.image %>')">
+                <%# Chữ nằm TRONG slide -> trượt cùng ảnh, mỗi slide một bộ chữ
+                    riêng (sửa ở /admin/slides). Khác hẳn .hero-brand phía dưới:
+                    dòng đó đứng ngoài track nên đứng yên và cố định trong code. %>
+                <% if (pick(s, 'title') || pick(s, 'badge')) { %>
+                    <div class="hero-copy">
+                        <% if (pick(s, 'title')) { %>
+                            <h2 class="hero-slide-title"><%= pick(s, 'title') %></h2>
+                        <% } %>
+                        <% if (pick(s, 'badge')) { %>
+                            <p class="hero-slide-sub"><%= pick(s, 'badge') %></p>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
         <% }) %>
     </div>
 
@@ -90,71 +104,76 @@
     </div>
 </section>
 
-<!-- ── Categories (spec 3.2 · Loại sản phẩm — TỪ DB) ───────────────────────── -->
-<section class="section categories" id="categories">
-    <div class="container">
-        <% if (categories.length) { %>
-            <div class="cat-layout">
+<!-- ── Categories (spec 3.2 · Loại sản phẩm nổi bật — TỪ DB) ────────────────── -->
+<%# Chỉ hiện khi có danh mục cấp 1 nổi bật (is_featured, đánh dấu ở /admin/categories).
+    Không mục nào nổi bật -> controller trả mảng rỗng -> cả section biến mất (như
+    khối Công năng), không để lại ô "chưa có dữ liệu". %>
+<% if (categories.length) { %>
+    <%# Khối "Loại sản phẩm nổi bật":
+        · Trên: 2 cột — trái (nền kem) chỉ TIÊU ĐỀ + MÔ TẢ; phải là ẢNH XEM TRƯỚC.
+        · Dưới: HÀNG LOẠI CẤP 1 nổi bật — rê vào loại nào thì ảnh lớn đổi sang loại đó.
+        · Rê chuột vào ẢNH LỚN -> hàng dưới đổi thành LOẠI CẤP 2 của loại đang hiện
+          (main.js gạt .is-showing-subs). Mọi thẻ đều là <a> nên chạm/bấm vào thẳng.
+        Giữ id/class "categories" cho link loại trên header cuộn xuống đúng chỗ. %>
+    <section class="section categories cat-showcase" id="categories">
+        <div class="container">
+            <div class="cat-showcase-body">
+                <div class="cat-showcase-grid">
+                    <div class="cat-showcase-panel">
+                        <h2 class="cat-showcase-title"><%= categoriesTitle %></h2>
+                        <% if (categoriesDesc) { %><p class="cat-showcase-sub"><%= categoriesDesc %></p><% } %>
+                    </div>
 
-                <%# Cột trái: chữ. Tiêu đề + mô tả lấy từ resources/lang, song ngữ.
-                    Cố ý không có nút CTA ở đây — theo yêu cầu đã bỏ nút cuối khối. %>
-                <div class="cat-intro">
-                    <h2 class="cat-intro-title"><%= categoriesTitle %></h2>
-                    <p class="cat-intro-desc"><%= categoriesDesc %></p>
-
-                    <%# Bộ chọn loại cấp 1 — thay cho 2 nút mũi tên cũ. Rê chuột (desktop)
-                        hoặc chạm (mobile) để đổi ảnh lớn bên phải + hàng cấp 2 bên dưới.
-                        Là <button> chứ không phải <a>: bấm vào đây chỉ đổi hiển thị,
-                        muốn vào trang danh mục thì bấm ảnh lớn hoặc ô cấp 2. %>
-                    <ul class="cat-picker" role="tablist">
+                    <%# Ảnh các loại xếp CHỒNG khít nhau; chỉ ảnh .is-active hiện (server
+                        gắn sẵn cho loại đầu -> không có JS vẫn thấy một ảnh, không trắng). %>
+                    <div class="cat-showcase-media">
                         <% categories.forEach(function (c, i) { %>
-                            <%# role="presentation" trên <li>: con trực tiếp của tablist
-                                bắt buộc phải là tab, <li> chen vào giữa sẽ phá cây ARIA %>
-                            <li role="presentation">
-                                <button type="button" role="tab" data-cat="<%= c.id %>"
-                                        class="cat-picker-item<%= i === 0 ? ' is-active' : '' %>"
-                                        aria-selected="<%= i === 0 ? 'true' : 'false' %>"><%= pick(c, 'name') %></button>
-                            </li>
+                            <a class="cat-showcase-photo<%= i === 0 ? ' is-active' : '' %>"
+                               data-cat="<%= c.id %>" href="/categories/<%= c.id %>"
+                               style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/900/1000') %>')"
+                               aria-label="<%= pick(c, 'name') %>">
+                                <span class="cat-showcase-photo-name"><%= pick(c, 'name') %></span>
+                            </a>
                         <% }) %>
-                    </ul>
+                    </div>
                 </div>
 
-                <%# Cột phải: các ảnh cấp 1 chồng lên nhau, chỉ .is-active hiện %>
-                <div class="cat-stage">
-                    <% categories.forEach(function (c, i) { %>
-                        <a class="cat-panel<%= i === 0 ? ' is-active' : '' %>" data-cat="<%= c.id %>"
-                           href="/categories/<%= c.id %>"
-                           style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/700/560') %>')">
-                            <span class="cat-label"><%= pick(c, 'name') %></span>
-                        </a>
-                    <% }) %>
+                <%# Hàng dưới: mặc định hiện LOẠI CẤP 1; khi .is-showing-subs (rê vào ảnh
+                    lớn) thì ẩn hàng cấp 1, hiện track cấp 2 của loại đang .is-active. %>
+                <div class="cat-showcase-below">
+                    <div class="cat-showcase-l1-row">
+                        <% categories.forEach(function (c, i) { %>
+                            <a class="cat-showcase-l1<%= i === 0 ? ' is-active' : '' %>"
+                               data-cat="<%= c.id %>" href="/categories/<%= c.id %>"
+                               style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/450/300') %>')">
+                                <span><%= pick(c, 'name') %></span>
+                            </a>
+                        <% }) %>
+                    </div>
+
+                    <%# Mỗi loại cấp 1 CÓ CON mới render một track; loại không con thì rê
+                        vào ảnh sẽ không bật subs (main.js kiểm tra trước). %>
+                    <div class="cat-showcase-l2-wrap">
+                        <% categories.forEach(function (c, i) { %>
+                            <% if (c.children && c.children.length) { %>
+                                <ul class="cat-showcase-l2<%= i === 0 ? ' is-active' : '' %>" data-cat="<%= c.id %>">
+                                    <% c.children.forEach(function (ch) { %>
+                                        <li>
+                                            <a href="/categories/<%= ch.id %>"
+                                               style="background-image:url('<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/450/300') %>')">
+                                                <span><%= pick(ch, 'name') %></span>
+                                            </a>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            <% } %>
+                        <% }) %>
+                    </div>
                 </div>
             </div>
-
-            <%# Hàng danh mục con cấp 2 — trải hết bề ngang container. Mỗi loại cấp 1
-                có track riêng đã render sẵn; loại không có con thì không render, hàng
-                tự rỗng khi loại đó đang được chọn. %>
-            <div class="cat-subs-row">
-                <% categories.forEach(function (c, i) { %>
-                    <% if (c.children.length) { %>
-                        <ul class="cat-subs-track<%= i === 0 ? ' is-active' : '' %>" data-cat="<%= c.id %>">
-                            <% c.children.forEach(function (ch) { %>
-                                <li>
-                                    <a href="/categories/<%= ch.id %>"
-                                       style="background-image:url('<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/450/600') %>')">
-                                        <span class="cat-sub-name"><%= pick(ch, 'name') %></span>
-                                    </a>
-                                </li>
-                            <% }) %>
-                        </ul>
-                    <% } %>
-                <% }) %>
-            </div>
-        <% } else { %>
-            <p class="empty"><%= t.common.empty %></p>
-        <% } %>
-    </div>
-</section>
+        </div>
+    </section>
+<% } %>
 
 <!-- ── Partners (spec 3.2 · Đối tác hợp tác) ───────────────────────────────── -->
 <%# ── Lưới ảnh "Style advice" — cả 8 ô lấy từ DB, sửa ở /admin/gallery.
@@ -200,7 +219,13 @@
                     <a class="news-cta" href="<%= newsCtaLink %>"><%= newsCta %> <span aria-hidden="true">&rarr;</span></a>
                 <% } %>
             </div>
+        </div>
 
+        <%# Lưới ảnh CỐ Ý nằm ngoài .container: phần chữ ở trên đọc tốt nhất khi
+            bó trong 1200px, còn hai ô ảnh phải kéo gần sát mép màn hình. Hai bề
+            rộng khác nhau -> phải là hai wrapper khác nhau, không thể dùng chung
+            một .container rồi kéo âm lề (kéo âm sẽ tràn ngang, sinh scrollbar). %>
+        <div class="container-wide">
             <div class="news-grid">
                 <% news.forEach(function (n) { %>
                     <article class="news-card">

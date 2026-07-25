@@ -1,5 +1,6 @@
 const CategoryService = require('../../Services/Api/category.service');
 const navigation = require('../Middleware/navigation.middleware');
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
 const flashText = (k) => ({created: 'Đã thêm loại sản phẩm.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
@@ -91,7 +92,7 @@ async function create(req, res) {
         await CategoryService.create(data);
         navigation.invalidate(); // menu header phải thấy ngay, không đợi hết TTL
         res.redirect('/admin/categories?msg=created');
-    } catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    } catch (e) { backWithError(req, res, '/admin/categories', e); }
 }
 
 async function update(req, res) {
@@ -101,7 +102,7 @@ async function update(req, res) {
         await CategoryService.update(parseInt(req.params.id, 10), data);
         navigation.invalidate();
         res.redirect('/admin/categories?msg=updated');
-    } catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    } catch (e) { backWithError(req, res, '/admin/categories', e); }
 }
 
 async function destroy(req, res) {
@@ -109,7 +110,7 @@ async function destroy(req, res) {
         await CategoryService.delete(parseInt(req.params.id, 10));
         navigation.invalidate();
         res.redirect('/admin/categories?msg=deleted');
-    } catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    } catch (e) { backWithError(req, res, '/admin/categories', e); }
 }
 
 module.exports = {index, form, create, update, destroy};

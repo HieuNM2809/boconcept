@@ -7,39 +7,38 @@
     dãn một cột cho hết màn hình: một ô "Slug" rộng 1900px còn khó dùng hơn. %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1><%= item ? ('Sửa sản phẩm #' + item.id) : 'Thêm sản phẩm' %></h1>
+        <h1><%= item ? ('SỬA SẢN PHẨM ' + item.id) : 'THÊM SẢN PHẨM' %></h1>
         <a class="btn-sm" href="/admin/products">← Quay lại</a>
     </div>
     <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
         <div class="form-main">
             <section class="form-card">
-                <h2 class="admin-subhead">Thông tin cơ bản</h2>
+                <h2 class="admin-subhead">THÔNG TIN SẢN PHẨM</h2>
                 <%# form-grid-auto: số cột tự co theo bề ngang (mỗi ô tối thiểu 240px).
                     Màn rộng xếp 3 ô một hàng, laptop 13" xuống 2, điện thoại còn 1 —
                     không phải viết media query cho từng mức. %>
                 <div class="form-grid-auto">
-                    <div><label for="name_vi">Tên (VI) *</label><input id="name_vi" name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
-                    <div><label for="name_en">Tên (EN)</label><input id="name_en" name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
+                    <div><label for="name_vi">Tên sản phẩm *</label><input id="name_vi" name="name_vi" required value="<%= item ? item.name_vi : '' %>"></div>
+                    <div><label for="name_en">Tên tiếng anh</label><input id="name_en" name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
                     <div><label for="slug">Slug</label><input id="slug" name="slug" value="<%= item ? (item.slug || '') : '' %>" placeholder="tu-dong-sinh-neu-de-trong"></div>
                 </div>
                 <%# VI và EN đặt CẠNH nhau chứ không trên–dưới: dịch nội dung là việc
                     đối chiếu hai bản, xếp dọc thì phải cuộn qua lại mới so được. %>
                 <div class="form-pair">
-                    <div><label for="description_vi">Mô tả (VI)</label><textarea id="description_vi" name="description_vi" rows="4"><%= item ? (item.description_vi || '') : '' %></textarea></div>
-                    <div><label for="description_en">Mô tả (EN)</label><textarea id="description_en" name="description_en" rows="4"><%= item ? (item.description_en || '') : '' %></textarea></div>
+                    <div><label for="description_vi">Mô tả sản phẩm</label><textarea id="description_vi" name="description_vi" rows="10"><%= item ? (item.description_vi || '') : '' %></textarea></div>
+                    <div><label for="description_en">Mô tả tiếng anh</label><textarea id="description_en" name="description_en" rows="10"><%= item ? (item.description_en || '') : '' %></textarea></div>
                 </div>
             </section>
 
             <section class="form-card">
-                <h2 class="admin-subhead">Thuộc tính</h2>
-                <p class="admin-hint">Dùng cho bộ lọc ở trang danh sách.</p>
+                <h2 class="admin-subhead">THUỘC TÍNH SẢN PHẨM</h2>
                 <div class="form-grid-auto">
-                    <div><label for="material_vi">Chất liệu (VI)</label><input id="material_vi" name="material_vi" value="<%= item ? (item.material_vi || '') : '' %>" placeholder="Gỗ sồi · Vải"></div>
-                    <div><label for="material_en">Chất liệu (EN)</label><input id="material_en" name="material_en" value="<%= item ? (item.material_en || '') : '' %>" placeholder="Oak · Fabric"></div>
-                    <div><label for="color_vi">Màu (VI)</label><input id="color_vi" name="color_vi" value="<%= item ? (item.color_vi || '') : '' %>" placeholder="Nâu cognac"></div>
-                    <div><label for="color_en">Màu (EN)</label><input id="color_en" name="color_en" value="<%= item ? (item.color_en || '') : '' %>" placeholder="Cognac brown"></div>
-                    <div><label for="dimensions_vi">Kích thước (VI)</label><input id="dimensions_vi" name="dimensions_vi" value="<%= item ? (item.dimensions_vi || '') : '' %>" placeholder="Ghế: 10x30x60"></div>
-                    <div><label for="dimensions_en">Kích thước (EN)</label><input id="dimensions_en" name="dimensions_en" value="<%= item ? (item.dimensions_en || '') : '' %>" placeholder="Chair: 10x30x60"></div>
+                    <div><label for="material_vi">Chất liệu sản phẩm</label><input id="material_vi" name="material_vi" value="<%= item ? (item.material_vi || '') : '' %>" placeholder="Gỗ sồi · Vải"></div>
+                    <div><label for="material_en">Chất liệu tiếng anh</label><input id="material_en" name="material_en" value="<%= item ? (item.material_en || '') : '' %>" placeholder="Oak · Fabric"></div>
+                    <div><label for="color_vi">Màu sản phẩm</label><input id="color_vi" name="color_vi" value="<%= item ? (item.color_vi || '') : '' %>" placeholder="Nâu cognac"></div>
+                    <div><label for="color_en">Màu tiếng anh</label><input id="color_en" name="color_en" value="<%= item ? (item.color_en || '') : '' %>" placeholder="Cognac brown"></div>
+                    <div><label for="dimensions_vi">Kích thước sản phẩm</label><input id="dimensions_vi" name="dimensions_vi" value="<%= item ? (item.dimensions_vi || '') : '' %>" placeholder="Ghế: 10x30x60"></div>
+                    <div><label for="dimensions_en">Kích thước tiếng anh</label><input id="dimensions_en" name="dimensions_en" value="<%= item ? (item.dimensions_en || '') : '' %>" placeholder="Chair: 10x30x60"></div>
                     <div><label for="weight">Khối lượng (kg)</label><input type="number" step="0.01" min="0" id="weight" name="weight" value="<%= item && item.weight != null ? Number(item.weight) : '' %>" placeholder="Để trống nếu không có"></div>
                 </div>
             </section>
@@ -66,11 +65,8 @@
             </section>
 
             <section class="form-card">
-                <h2 class="admin-subhead">Thông tin thêm</h2>
-                <p class="admin-hint">
-                    Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
-                    <code>- gạch đầu dòng</code>. Thẻ HTML gõ vào sẽ hiện dạng chữ, không chạy.
-                </p>
+                <h2 class="admin-subhead">THÔNG TIN THÊM</h2>
+          
                 <div class="form-pair">
                     <div>
                         <label for="extra_vi">Tiếng Việt</label>
@@ -88,11 +84,11 @@
                 <div class="form-pair">
                     <div>
                         <label for="shipping_vi">Tiếng Việt</label>
-                        <%- include('_editor', {name: 'shipping_vi', rows: 8, value: item ? (item.shipping_vi || '') : '', tools: ['b','i','ul']}) %>
+                        <%- include('_editor', {name: 'shipping_vi', rows: 8, value: item ? (item.shipping_vi || '') : '', tools: 'full'}) %>
                     </div>
                     <div>
                         <label for="shipping_en">English</label>
-                        <%- include('_editor', {name: 'shipping_en', rows: 8, value: item ? (item.shipping_en || '') : '', tools: ['b','i','ul']}) %>
+                        <%- include('_editor', {name: 'shipping_en', rows: 8, value: item ? (item.shipping_en || '') : '', tools: 'full'}) %>
                     </div>
                 </div>
             </section>
@@ -102,7 +98,9 @@
             phải cuộn xuống đáy trang dài sau mỗi lần sửa một ô. %>
         <aside class="form-side">
             <section class="form-card">
-                <%- include('_image-field', {name: 'thumbnail', label: 'Ảnh chính', value: item ? (item.thumbnail || '') : ''}) %>
+                <%# hideUrl: bỏ ô dán URL bên dưới khung upload theo yêu cầu — chỉ
+                    upload ảnh từ máy. Ảnh vẫn lưu bình thường (input thành hidden). %>
+                <%- include('_image-field', {name: 'thumbnail', label: 'Ảnh chính', value: item ? (item.thumbnail || '') : '', hideUrl: true}) %>
             </section>
 
             <section class="form-card">
@@ -114,7 +112,7 @@
                         <option value="<%= c.id %>" <%= (item && item.category_id === c.id) ? 'selected' : '' %>><%= c.name_vi %></option>
                     <% }) %>
                 </select>
-                <label for="price">Giá (₫)</label>
+                <label for="price">Giá (VNĐ)</label>
                 <input type="number" step="1000" min="0" id="price" name="price" value="<%= item ? Number(item.price || 0) : 0 %>">
                 <label for="status">Trạng thái</label>
                 <select id="status" name="status">

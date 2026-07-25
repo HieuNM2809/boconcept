@@ -22,6 +22,25 @@
  *     **đậm**   *nghiêng* hoặc _nghiêng_   ~~gạch ngang~~   `mã`   ^mũ^
  *     [chữ](https://…)           chỉ nhận http/https, đường dẫn nội bộ /… và neo #…
  *     ![mô tả](https://…)        ảnh — thêm cả data:image/… vì ảnh của web này lưu base64
+ *     ![mô tả][anh-1]            ảnh THAM CHIẾU, xem bên dưới
+ *
+ * ẢNH THAM CHIẾU — vì sao có:
+ * ảnh trong bài được mã hoá base64 (Railway xoá filesystem mỗi lần redeploy) nên
+ * một tấm JPEG 300KB thành chuỗi ~400 nghìn ký tự. Nhét thẳng vào giữa câu thì ô
+ * soạn thảo không còn đọc được: admin phải cuộn qua hàng chục màn hình chữ rác
+ * mới thấy đoạn văn kế tiếp. Nên tách làm hai phần:
+ *
+ *     Đoạn văn có ![ảnh sản phẩm][anh-1] ở giữa.
+ *
+ *     [anh-1]: data:image/jpeg;base64,/9j/4AAQ…
+ *
+ * Dòng `[nhãn]: địa chỉ` đứng RIÊNG một dòng là "định nghĩa": nó bị gỡ khỏi nội
+ * dung trước khi dựng, không bao giờ hiện ra trang. Ô soạn thảo (public/js/admin.js)
+ * còn giấu hẳn đám định nghĩa này khỏi tầm mắt admin và gửi kèm qua một trường
+ * ẩn — xem app/Http/Middleware/richtextImages.middleware.js.
+ *
+ * Hệ quả cần biết: một dòng nội dung mà đúng dạng `[x]: y` sẽ bị hiểu là định
+ * nghĩa và biến mất. Muốn giữ thì thêm chữ vào sau, hoặc bọc trong khối mã.
  */
 
 const ESCAPE_MAP = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
@@ -54,8 +73,31 @@ function safeImageSrc(raw) {
 // lại ở bước cuối. Ký tự NUL đã bị render() lọc sạch nên không ai giả được.
 const STASH_OPEN = '\u0000';
 
+/**
+ * Dòng định nghĩa ảnh tham chiếu: `[nhãn]: địa chỉ` đứng một mình.
+ * Nhãn giới hạn 64 ký tự và không chứa khoảng trắng -> một câu bình thường có
+ * dấu hai chấm (vd "[xem thêm]: bấm vào đây") không lọt vào đây vì phần địa chỉ
+ * `\S+$` bắt buộc là MỘT từ duy nhất tới hết dòng.
+ */
+const RE_IMG_DEF = /^\[([^\]\s]{1,64})\]:\s*(\S+)$/;
+
+/** Tách định nghĩa ảnh khỏi nội dung. Nhận MẢNG DÒNG ĐÃ ESCAPE, trả {defs, lines}. */
+function splitImageDefs(lines) {
+    const defs = Object.create(null);
+    const kept = [];
+    for (const line of lines) {
+        const m = line.trim().match(RE_IMG_DEF);
+        // Nhãn quy về chữ thường: admin gõ ![x][Anh-1] mà định nghĩa là [anh-1]
+        // thì vẫn ra ảnh, thay vì im lặng rơi về chữ.
+        if (m) defs[m[1].toLowerCase()] = m[2];
+        else kept.push(line);
+    }
+    return {defs, lines: kept};
+}
+
 // Định dạng trong dòng — chạy SAU khi đã escape nên chỉ thấy chuỗi vô hại.
-function inline(text) {
+function inline(text, defs) {
+    const refs = defs || Object.create(null);
     const stash = [];
     const keep = (html) => {
         stash.push(html);
@@ -65,6 +107,14 @@ function inline(text) {
     let s = String(text).replace(/`([^`\n]+)`/g, (m, code) => keep(`<code>${code}</code>`));
 
     s = s
+        // Ảnh THAM CHIẾU ![mô tả][nhãn] — đặt trước mọi luật khác vì nếu để sau,
+        // luật link [chữ](…) không khớp nhưng luật nghiêng *…* thì có thể đụng
+        // vào phần mô tả. Nhãn không có định nghĩa -> chỉ còn lại mô tả, giống
+        // cách link hỏng rơi về chữ, chứ không in ra cú pháp thô.
+        .replace(/!\[([^\]\n]*)\]\[([^\]\s\n]+)\]/g, (m, alt, id) => {
+            const safe = safeImageSrc(refs[id.toLowerCase()] || '');
+            return safe ? keep(`<img src="${safe}" alt="${alt}" loading="lazy">`) : alt;
+        })
         // Ảnh PHẢI xử lý trước link: ![x](y) chứa sẵn [x](y) bên trong.
         // Cho một lớp ngoặc lồng như link, nếu không "javascript:alert(1)" bị cắt
         // ở dấu ) đầu tiên -> ảnh bị loại nhưng còn sót lại một ")" ngoài chữ.
@@ -111,10 +161,17 @@ const splitRow = (t) => t.replace(/^\|/, '').replace(/\|$/, '').split('|').map((
 
 function render(src) {
     if (!src) return '';
-    const lines = escapeHtml(src)
+    const raw = escapeHtml(src)
         .replace(/\r\n/g, '\n')
         .replace(/\u0000/g, '') // dọn ký tự NUL để không giả được chỗ giữ tạm của inline()
         .split('\n');
+
+    // Tách định nghĩa ảnh SAU escapeHtml chứ không phải trước: địa chỉ ảnh đi
+    // thẳng vào thuộc tính src="…" của thẻ <img>, nên nó bắt buộc phải đã qua
+    // escape. Bóc từ chuỗi thô là mở đường cho một URL chứa dấu " thoát ra khỏi
+    // thuộc tính — safeHref cho mọi chuỗi mở đầu bằng https:// đi qua.
+    const {defs, lines} = splitImageDefs(raw);
+    const il = (t) => inline(t, defs);
 
     const out = [];
     let i = 0;
@@ -140,7 +197,7 @@ function render(src) {
         const h = t.match(RE_HEAD);
         if (h) {
             const level = h[1].length; // 1..4
-            out.push(`<h${level}>${inline(h[2].trim())}</h${level}>`);
+            out.push(`<h${level}>${il(h[2].trim())}</h${level}>`);
             i++;
             continue;
         }
@@ -148,7 +205,7 @@ function render(src) {
         if (RE_QUOTE.test(t)) {
             const body = [];
             while (i < lines.length && RE_QUOTE.test(lines[i].trim())) {
-                body.push(inline(lines[i].trim().replace(RE_QUOTE, '')));
+                body.push(il(lines[i].trim().replace(RE_QUOTE, '')));
                 i++;
             }
             out.push(`<blockquote>${body.join('<br>')}</blockquote>`);
@@ -158,11 +215,11 @@ function render(src) {
         // Bảng: chỉ nhận khi dòng NGAY SAU là dòng ngăn cách. Thiếu nó thì một
         // câu có dấu | ở hai đầu sẽ bị hiểu nhầm thành bảng một ô.
         if (RE_ROW.test(t) && i + 1 < lines.length && isTableSep(lines[i + 1].trim())) {
-            const head = splitRow(t).map((c) => `<th>${inline(c)}</th>`).join('');
+            const head = splitRow(t).map((c) => `<th>${il(c)}</th>`).join('');
             i += 2;
             const body = [];
             while (i < lines.length && RE_ROW.test(lines[i].trim())) {
-                body.push(`<tr>${splitRow(lines[i].trim()).map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`);
+                body.push(`<tr>${splitRow(lines[i].trim()).map((c) => `<td>${il(c)}</td>`).join('')}</tr>`);
                 i++;
             }
             out.push(`<table><thead><tr>${head}</tr></thead><tbody>${body.join('')}</tbody></table>`);
@@ -176,7 +233,7 @@ function render(src) {
             // Dừng khi gặp dòng không còn thuộc kiểu danh sách ĐANG gom -> gạch
             // đầu dòng nối ngay sau danh sách đánh số vẫn ra hai thẻ riêng.
             while (i < lines.length && re.test(lines[i].trim())) {
-                items.push(`<li>${inline(lines[i].trim().replace(re, ''))}</li>`);
+                items.push(`<li>${il(lines[i].trim().replace(re, ''))}</li>`);
                 i++;
             }
             const tag = ordered ? 'ol' : 'ul';
@@ -188,10 +245,10 @@ function render(src) {
         // Dòng ĐẦU luôn được ăn vô điều kiện — bắt buộc, không phải cho gọn: một
         // dòng "| a |" thiếu dòng ngăn cách sẽ rớt xuống tận đây mà startsBlock()
         // vẫn đúng, vòng while không chạy lần nào và `i` đứng yên -> lặp vô hạn.
-        const para = [inline(t)];
+        const para = [il(t)];
         i++;
         while (i < lines.length && lines[i].trim() && !startsBlock(lines[i].trim())) {
-            para.push(inline(lines[i].trim()));
+            para.push(il(lines[i].trim()));
             i++;
         }
         out.push(`<p>${para.join('<br>')}</p>`);
@@ -202,7 +259,8 @@ function render(src) {
 
 // Rút gọn thành chữ thuần (dùng cho meta description / trích đoạn tự động)
 function toPlainText(src, maxLen = 200) {
-    const flat = String(src || '')
+    const flat = splitImageDefs(String(src || '').replace(/\r\n/g, '\n').split('\n')).lines.join('\n')
+        .replace(/!\[([^\]\n]*)\]\[[^\]\s\n]+\]/g, '$1') // ảnh tham chiếu -> mô tả
         .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1') // ảnh -> chỉ giữ mô tả
         .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
         .replace(/[#*_>`~^|-]/g, '')

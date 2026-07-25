@@ -114,6 +114,89 @@ async function category(req, res) {
     }
 }
 
+// Làm phẳng cây danh mục thành danh sách [{id, name_vi, name_en, depth}] để đổ
+// vào <select>. Loại con thụt lề theo depth (thêm "— " ở view). Đệ quy theo
+// `children` mà CategoryService.getAll({tree:true}) dựng sẵn.
+function flattenCats(nodes, depth, out) {
+    for (const n of nodes) {
+        out.push({id: n.id, name_vi: n.name_vi, name_en: n.name_en, depth});
+        if (n.children && n.children.length) flattenCats(n.children, depth + 1, out);
+    }
+    return out;
+}
+
+// Trang "Tất cả sản phẩm" — GET /products
+// Giống trang theo loại nhưng KHÔNG khóa category_id: mặc định đổ toàn bộ sản phẩm,
+// admin/khách chọn loại trong bộ lọc thì mới thu hẹp. Lưới 4×6 -> 24 sản phẩm/trang.
+async function products(req, res) {
+    const t = res.locals.t;
+    try {
+        const uiSort = SORT_UI_TO_SERVICE[req.query.sort] ? req.query.sort : 'newest';
+        const str = (v) => String(v ?? '').trim();
+        const q = str(req.query.q);
+        const material = str(req.query.material);
+        const dimensions = str(req.query.dimensions);
+        const minW = str(req.query.min_weight);
+        const maxW = str(req.query.max_weight);
+        // category_id: chỉ nhận số nguyên dương, còn lại coi như "tất cả loại".
+        const catId = /^[1-9][0-9]*$/.test(str(req.query.category_id)) ? str(req.query.category_id) : '';
+
+        // Lưới CỐ ĐỊNH 4 cột × 6 dòng -> đúng 24 sản phẩm mỗi trang.
+        const PER_PAGE = 24;
+
+        // Danh sách loại cho ô <select> (cây -> phẳng, chỉ loại đang hiển thị).
+        const tree = toPlain(await CategoryService.getAll({tree: true, status: 1}));
+        const catOptions = flattenCats(tree, 0, []);
+
+        const result = await ProductService.getAll({
+            category_id: catId || null,
+            sort: SORT_UI_TO_SERVICE[uiSort],
+            per_page: PER_PAGE,
+            page: req.query.page || 1,
+            q: q || null,
+            material: material || null,
+            dimensions: dimensions || null,
+            min_weight: minW || null,
+            max_weight: maxW || null,
+            status: 1,
+        });
+
+        const {current_page, per_page, last_page} = result.meta;
+        const base = {
+            sort: uiSort,
+            q: q || undefined,
+            category_id: catId || undefined,
+            material: material || undefined,
+            dimensions: dimensions || undefined,
+            min_weight: minW || undefined,
+            max_weight: maxW || undefined,
+        };
+        const linkFor = (over = {}) => {
+            const merged = {...base, page: current_page, ...over};
+            const parts = Object.entries(merged)
+                .filter(([, v]) => v !== undefined && v !== null && v !== '')
+                .map(([k, v]) => `${k}=${encodeURIComponent(v)}`);
+            return `/products?${parts.join('&')}`;
+        };
+
+        res.render('products', {
+            pageTitle: `${t.catalog.allTitle} — ${res.locals.t.common.brand}`,
+            products: toPlain(result.data),
+            meta: result.meta,
+            pages: buildPageList(current_page, last_page),
+            catOptions,
+            filters: {
+                sort: uiSort, per_page, q, category_id: catId,
+                material, dimensions, min_weight: minW, max_weight: maxW,
+            },
+            linkFor,
+        });
+    } catch (err) {
+        logger.error('Products page error', {error: {message: err.message, stack: err.stack}});
+        res.status(500).send('Không tải được trang sản phẩm. Kiểm tra kết nối MySQL.');
+    }
+}
+
 // Trang chi tiết sản phẩm — GET /products/:id
 async function product(req, res) {
     const id = parseInt(req.params.id, 10);
@@ -231,4 +314,4 @@ async function search(req, res) {
     }
 }
 
-module.exports = {category, product, search};
+module.exports = {category, products, product, search};

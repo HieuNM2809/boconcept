@@ -3,10 +3,9 @@
 <%- include('_nav', {section: 'features'}) %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1>Khối Công năng</h1>
+        <h1>KHỐI CÔNG NĂNG</h1>
         <a class="btn btn-primary" href="/admin/features/new">+ Thêm mục</a>
     </div>
-    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
 
     <!-- Công tắc CẢ KHỐI: tắt thì dải biến mất khỏi trang chủ nhưng
          trạng thái ẩn/hiện của từng mục bên dưới vẫn giữ nguyên. -->
@@ -26,7 +25,7 @@
 
     <table class="admin-table">
         <thead>
-        <tr><th>#</th><th>Icon</th><th>Tiêu đề (VI)</th><th>Tiêu đề (EN)</th><th>Mô tả (VI)</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
+        <tr><th>STT</th><th>Icon</th><th>Tiêu đề công năng</th><th>Tiêu đề tiếng anh</th><th>Mô tả công năng</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
         </thead>
         <tbody>
         <% if (!items.length) { %><tr><td colspan="8" class="admin-empty">Chưa có mục công năng nào.</td></tr><% } %>

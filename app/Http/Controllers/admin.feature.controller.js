@@ -1,5 +1,6 @@
 const FeatureService = require('../../Services/Api/feature.service');
 const SettingService = require('../../Services/Api/setting.service');
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
 const flashText = (k) => ({
@@ -43,17 +44,17 @@ async function form(req, res) {
 
 async function create(req, res) {
     try { await FeatureService.create(req.body); res.redirect('/admin/features?msg=created'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/features', e); }
 }
 
 async function update(req, res) {
     try { await FeatureService.update(parseInt(req.params.id, 10), req.body); res.redirect('/admin/features?msg=updated'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/features', e); }
 }
 
 async function destroy(req, res) {
     try { await FeatureService.delete(parseInt(req.params.id, 10)); res.redirect('/admin/features?msg=deleted'); }
-    catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    catch (e) { backWithError(req, res, '/admin/features', e); }
 }
 
 // Công tắc bật/tắt CẢ KHỐI — độc lập với trạng thái ẩn/hiện của từng mục,
@@ -63,7 +64,7 @@ async function toggleBlock(req, res) {
         const on = String(req.body.enabled) === '1';
         await SettingService.setBool(SettingService.KEYS.FEATURES_BLOCK, on);
         res.redirect(`/admin/features?msg=${on ? 'shown' : 'hidden'}`);
-    } catch (e) { res.status(e.status || 400).send('Lỗi: ' + e.message); }
+    } catch (e) { backWithError(req, res, '/admin/features', e); }
 }
 
 module.exports = {index, form, create, update, destroy, toggleBlock};

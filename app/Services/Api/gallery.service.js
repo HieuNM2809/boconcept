@@ -11,6 +11,13 @@ const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8];
 // khe có nhiều dòng, khe tĩnh chỉ tình cờ có đúng một.
 const SLIDER_SLOTS = [1, 2, 3];
 
+// Trần số ảnh của MỘT khe slider. Không phải con số cho vui: ảnh nằm trong DB
+// dạng data URI base64 và cả khe được gửi lên trong MỘT thân POST duy nhất —
+// mỗi ảnh ~1MB thân, 10 ảnh đã sát BODY_LIMIT (DEPLOY.md đặt 1mb trên Railway,
+// mặc định 16mb). Quá trần thì admin ăn lỗi 413 trắng trang, không biết vì sao.
+// Trần cũng giữ cho ô trên trang chủ không quay vòng lâu tới mức vô nghĩa.
+const MAX_IMAGES_PER_SLOT = 10;
+
 // Ảnh dự phòng khi khe chưa có hàng trong DB (database mới tinh, hoặc admin chưa
 // chạy migration). Trang chủ vẫn phải ra đủ 8 ô chứ không được vỡ lưới.
 const SLOT_FALLBACK = {
@@ -105,6 +112,16 @@ class GalleryService {
         // cũng không nhét được nhiều ảnh vào ô không có slider.
         if (!GalleryService.isSliderSlot(s)) list = list.slice(0, 1);
 
+        // NÉM LỖI chứ không `slice(0, MAX)`: cắt âm thầm thì admin bấm Lưu, thấy
+        // báo "Đã cập nhật", rồi mấy ảnh cuối biến mất mà không hiểu vì sao —
+        // tưởng mất dữ liệu. Nói thẳng số ảnh thừa để họ tự xoá bớt.
+        if (list.length > MAX_IMAGES_PER_SLOT) {
+            throw Object.assign(
+                new Error(`Mỗi khe chỉ được tối đa ${MAX_IMAGES_PER_SLOT} ảnh (đang gửi ${list.length}). Hãy xoá bớt rồi lưu lại.`),
+                {status: 400}
+            );
+        }
+
         return sequelize.transaction(async (tx) => {
             await Gallery.destroy({where: {slot: s}, transaction: tx});
             return Gallery.bulkCreate(
@@ -126,5 +143,6 @@ class GalleryService {
 
 GalleryService.SLOTS = SLOTS;
 GalleryService.SLIDER_SLOTS = SLIDER_SLOTS;
+GalleryService.MAX_IMAGES_PER_SLOT = MAX_IMAGES_PER_SLOT;
 
 module.exports = GalleryService;

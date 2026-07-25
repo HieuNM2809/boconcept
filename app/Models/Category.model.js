@@ -40,8 +40,8 @@ const Category = sequelize.define('Category', {
         allowNull: false,
         defaultValue: 0,
     },
-    // Ghim ra ngoài giao diện: danh mục nổi bật được đẩy lên đầu khối
-    // "Loại sản phẩm" ở trang chủ (home.controller.js), không lọc bỏ các mục còn lại.
+    // Cờ nổi bật: trang chủ CHỈ hiện các danh mục cấp 1 (parent_id NULL) có cờ này
+    // ở khối "Loại sản phẩm" (home.controller.js). Không mục nào bật -> khối ẩn hẳn.
     is_featured: {
         type: DataTypes.TINYINT,
         allowNull: false,

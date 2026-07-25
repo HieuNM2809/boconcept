@@ -3,16 +3,22 @@
 SET NAMES utf8mb4;
 
 -- Danh mục
-INSERT INTO `categories` (`id`, `parent_id`, `name_vi`, `name_en`, `slug`, `image`, `sort_order`, `status`, `created_at`, `updated_at`)
+-- `is_featured` = 1 cho các loại cấp 1 (parent_id NULL): trang chủ CHỈ hiện loại
+-- cấp 1 nổi bật ở khối "Loại sản phẩm". Loại con (cấp 2) để 0 — chúng xổ ra khi rê
+-- chuột vào loại cha, không đứng riêng ngoài khối.
+INSERT INTO `categories` (`id`, `parent_id`, `name_vi`, `name_en`, `slug`, `image`, `sort_order`, `is_featured`, `status`, `created_at`, `updated_at`)
 VALUES
-    (1, NULL, 'Ghế Sofa',   'Sofas',        'sofa',        'https://picsum.photos/seed/cat-sofa/500/600',    1, 1, NOW(), NOW()),
-    (2, NULL, 'Bàn',        'Tables',       'ban',         'https://picsum.photos/seed/cat-table/500/600',   2, 1, NOW(), NOW()),
-    (5, NULL, 'Tủ & Kệ',    'Storage',      'tu-ke',       'https://picsum.photos/seed/cat-storage/500/600', 3, 1, NOW(), NOW()),
-    (6, NULL, 'Giường',     'Beds',         'giuong',      'https://picsum.photos/seed/cat-bed/500/600',     4, 1, NOW(), NOW()),
-    (7, 1, 'Đèn',        'Lighting',     'den',         'https://picsum.photos/seed/cat-light/500/600',   5, 1, NOW(), NOW()),
-    (3, 1,    'Sofa Góc',   'Corner Sofas', 'sofa-goc',    'https://picsum.photos/seed/cat-corner/500/600',  1, 1, NOW(), NOW()),
-    (4, 2,    'Bàn Trà',    'Coffee Tables','ban-tra',     'https://picsum.photos/seed/cat-coffee/500/600',  1, 1, NOW(), NOW())
-ON DUPLICATE KEY UPDATE `name_vi` = VALUES(`name_vi`), `image` = VALUES(`image`), `updated_at` = NOW();
+    (1, NULL, 'Ghế Sofa',   'Sofas',        'sofa',        'https://picsum.photos/seed/cat-sofa/500/600',    1, 1, 1, NOW(), NOW()),
+    (2, NULL, 'Bàn',        'Tables',       'ban',         'https://picsum.photos/seed/cat-table/500/600',   2, 1, 1, NOW(), NOW()),
+    (5, NULL, 'Tủ & Kệ',    'Storage',      'tu-ke',       'https://picsum.photos/seed/cat-storage/500/600', 3, 1, 1, NOW(), NOW()),
+    (6, NULL, 'Giường',     'Beds',         'giuong',      'https://picsum.photos/seed/cat-bed/500/600',     4, 1, 1, NOW(), NOW()),
+    (7, 1, 'Đèn',        'Lighting',     'den',         'https://picsum.photos/seed/cat-light/500/600',   5, 0, 1, NOW(), NOW()),
+    (3, 1,    'Sofa Góc',   'Corner Sofas', 'sofa-goc',    'https://picsum.photos/seed/cat-corner/500/600',  1, 0, 1, NOW(), NOW()),
+    (4, 2,    'Bàn Trà',    'Coffee Tables','ban-tra',     'https://picsum.photos/seed/cat-coffee/500/600',  1, 0, 1, NOW(), NOW())
+-- `is_featured` trong danh sách UPDATE để chạy lại seed đồng bộ cờ theo file
+-- (giống bảng products), không mắc kẹt ở giá trị cũ trong DB.
+ON DUPLICATE KEY UPDATE `name_vi` = VALUES(`name_vi`), `image` = VALUES(`image`),
+    `is_featured` = VALUES(`is_featured`), `updated_at` = NOW();
 
 -- Sản phẩm
 INSERT INTO `products` (`id`, `category_id`, `name_vi`, `name_en`, `slug`, `description_vi`, `description_en`, `price`, `thumbnail`, `is_featured`, `priority`, `status`, `created_at`, `updated_at`)
@@ -106,16 +112,20 @@ VALUES
 ON DUPLICATE KEY UPDATE `icon` = VALUES(`icon`), `title_vi` = VALUES(`title_vi`), `updated_at` = NOW();
 
 -- Tin tức trang chủ (2 bài, bố cục 2 cột)
-INSERT INTO `news` (`id`, `image`, `title_vi`, `title_en`, `excerpt_vi`, `excerpt_en`, `cta_vi`, `cta_en`, `link`, `sort_order`, `status`, `created_at`, `updated_at`)
+-- `is_featured` = 1 cho cả hai: trang chủ CHỈ lấy bài có cờ này, để 0 thì DB mới
+-- dựng xong sẽ không có khối Tin tức nào ngoài trang chủ.
+INSERT INTO `news` (`id`, `image`, `title_vi`, `title_en`, `excerpt_vi`, `excerpt_en`, `cta_vi`, `cta_en`, `link`, `sort_order`, `is_featured`, `status`, `created_at`, `updated_at`)
 VALUES
     (1, 'https://picsum.photos/seed/news-colour/900/675', 'Sắc màu của mùa', 'Colours of the season',
      'Mùa này mời gọi sắc màu vào ngôi nhà theo cách tinh tế và giàu biểu cảm. Tông màu đậm và sắc trung tính nhẹ kết hợp tạo nên không gian tươi mới, cân bằng và đậm dấu ấn cá nhân.',
      'This season invites colour into the home in a refined and expressive way. Rich tones and soft neutrals work together to create interiors that feel fresh, balanced and personal.',
-     'Khám phá sắc màu của mùa', 'Discover the colours of the season', NULL, 1, 1, NOW(), NOW()),
+     'Khám phá sắc màu của mùa', 'Discover the colours of the season', NULL, 1, 1, 1, NOW(), NOW()),
     (2, 'https://picsum.photos/seed/news-modern/900/675', 'Hiện đại ấm áp', 'Warm modernism',
      'Hiện đại ấm áp kết hợp sự mạch lạc của thiết kế đương đại với cảm giác dễ chịu của vật liệu tự nhiên. Đường nét gọn gàng gặp gỡ tông màu mộc, tạo nên không gian điềm tĩnh và tinh tế.',
      'Warm modernism blends the clarity of modern design with the comfort of natural materials and inviting textures. Clean lines meet earthy tones, creating interiors that feel calm and sophisticated.',
-     'Khám phá Hiện đại ấm áp', 'Explore Warm Modernism', NULL, 2, 1, NOW(), NOW())
+     'Khám phá Hiện đại ấm áp', 'Explore Warm Modernism', NULL, 2, 1, 1, NOW(), NOW())
+-- `is_featured` KHÔNG nằm trong danh sách UPDATE: chạy lại seed trên DB đang dùng
+-- thì không được bỏ tick nổi bật mà admin đã tự chỉnh.
 ON DUPLICATE KEY UPDATE `title_vi` = VALUES(`title_vi`), `image` = VALUES(`image`), `updated_at` = NOW();
 
 -- Cả 8 ô của lưới collage "Style advice", khoá theo `slot` (sửa ở /admin/gallery).

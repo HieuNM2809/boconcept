@@ -67,3 +67,15 @@ const mapSrc = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.06128
         </div>
     </div>
 </footer>
+
+<%# Nút cuộn lên đầu trang. Đặt NGOÀI <footer> vì nó là phần tử position:fixed
+    của cả trang, không thuộc nội dung chân trang — nằm trong footer thì mọi
+    transform/overflow đặt lên footer sau này đều có thể ghim nó lại.
+    `hidden` từ server: chưa cuộn thì chưa cần hiện, main.js gỡ khi cuộn đủ xa. %>
+<button type="button" class="to-top" id="toTop" hidden
+        aria-label="<%= t.common.actions.backToTop %>" title="<%= t.common.actions.backToTop %>">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+        <path d="M6 14l6-6 6 6" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+</button>

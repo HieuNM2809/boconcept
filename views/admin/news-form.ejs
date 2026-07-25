@@ -8,40 +8,35 @@
     thiết lập xuất bản dồn sang cột phải dính theo màn hình. %>
 <main class="admin-wrap">
     <div class="admin-head">
-        <h1><%= item ? ('Sửa bài viết #' + item.id) : 'Thêm bài viết' %></h1>
+        <h1><%= item ? ('SỬA BÀI VIẾT ' + item.id) : 'Thêm bài viết' %></h1>
         <a class="btn-sm" href="/admin/news">← Quay lại</a>
     </div>
 
     <form class="admin-form admin-form-wide" method="post" action="<%= action %>">
         <div class="form-main">
             <section class="form-card">
-                <h2 class="admin-subhead">Thông tin bài viết</h2>
-                <%# VI và EN đặt CẠNH nhau: dịch nội dung là việc đối chiếu hai bản,
-                    xếp dọc thì phải cuộn qua lại mới so được. %>
+                <h2 class="admin-subhead">THÔNG TIN BÀI VIẾT</h2>
+      
                 <div class="form-pair">
-                    <div><label for="title_vi">Tiêu đề (VI) *</label><input id="title_vi" name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
-                    <div><label for="title_en">Tiêu đề (EN)</label><input id="title_en" name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
-                    <div><label for="excerpt_vi">Mô tả (VI)</label><textarea id="excerpt_vi" name="excerpt_vi" rows="4" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
-                    <div><label for="excerpt_en">Mô tả (EN)</label><textarea id="excerpt_en" name="excerpt_en" rows="4" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
-                    <div><label for="cta_vi">Nhãn link (VI)</label><input id="cta_vi" name="cta_vi" value="<%= item ? (item.cta_vi || '') : '' %>" placeholder="Khám phá thêm"></div>
-                    <div><label for="cta_en">Nhãn link (EN)</label><input id="cta_en" name="cta_en" value="<%= item ? (item.cta_en || '') : '' %>" placeholder="Discover more"></div>
+                    <div><label for="title_vi">Tiêu đề bài viết </label><input id="title_vi" name="title_vi" required value="<%= item ? item.title_vi : '' %>"></div>
+                    <div><label for="title_en">Tiêu đề tiếng anh</label><input id="title_en" name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>
+                    <div><label for="excerpt_vi">Mô tả bài viết</label><textarea id="excerpt_vi" name="excerpt_vi" rows="12" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
+                    <div><label for="excerpt_en">Mô tả tiếng anh</label><textarea id="excerpt_en" name="excerpt_en" rows="12" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
+                    <div><label for="cta_vi">Nhãn link bài viết</label><input id="cta_vi" name="cta_vi" value="<%= item ? (item.cta_vi || '') : '' %>" placeholder="Khám phá thêm"></div>
+                    <div><label for="cta_en">Nhãn link tiếng anh</label><input id="cta_en" name="cta_en" value="<%= item ? (item.cta_en || '') : '' %>" placeholder="Discover more"></div>
                 </div>
             </section>
 
             <section class="form-card">
-                <h2 class="admin-subhead">Nội dung bài viết</h2>
-                <p class="admin-hint">
-                    Định dạng: <code>**đậm**</code> · <code>*nghiêng*</code> · <code>## Tiêu đề</code> ·
-                    <code>- gạch đầu dòng</code> · <code>[chữ](https://...)</code>. Dòng trống để ngăn đoạn.
-                    Thẻ HTML gõ vào sẽ hiện ra dạng chữ, không chạy — đây là chủ ý để chặn mã độc.
-                </p>
+                <h2 class="admin-subhead">NỘI DUNG BÀI VIẾT</h2>
+         
                 <div class="form-pair">
                     <div>
-                        <label for="body_vi">Tiếng Việt</label>
+                        <label for="body_vi">TIẾNG VIỆT</label>
                         <%- include('_editor', {name: 'body_vi', rows: 18, value: item ? (item.body_vi || '') : ''}) %>
                     </div>
                     <div>
-                        <label for="body_en">English</label>
+                        <label for="body_en">ENGLISH</label>
                         <%- include('_editor', {name: 'body_en', rows: 18, value: item ? (item.body_en || '') : ''}) %>
                     </div>
                 </div>
@@ -52,7 +47,9 @@
             xuống đáy sau mỗi lần sửa một ô. %>
         <aside class="form-side">
             <section class="form-card">
-                <%- include('_image-field', {name: 'image', label: 'Ảnh bài viết', value: item ? item.image : '', required: true}) %>
+                <%# hideUrl: bỏ ô dán URL bên dưới khung upload theo yêu cầu — chỉ
+                    upload ảnh từ máy. Ảnh vẫn lưu bình thường (input thành hidden). %>
+                <%- include('_image-field', {name: 'image', label: 'ẢNH BÀI VIẾT', value: item ? item.image : '', required: true, hideUrl: true}) %>
             </section>
 
             <section class="form-card">
@@ -71,6 +68,13 @@
 
                 <label for="sort_order">Thứ tự</label>
                 <input type="number" id="sort_order" name="sort_order" value="<%= item ? item.sort_order : 0 %>">
+
+                <%# Mặc định "Không" khi thêm mới: bài mới không tự nhảy lên trang chủ. %>
+                <label for="is_featured">Nổi bật (hiện ở trang chủ)</label>
+                <select id="is_featured" name="is_featured">
+                    <option value="0" <%= (!item || !item.is_featured) ? 'selected' : '' %>>Không</option>
+                    <option value="1" <%= (item && item.is_featured) ? 'selected' : '' %>>Có</option>
+                </select>
 
                 <label for="status">Trạng thái</label>
                 <select id="status" name="status">

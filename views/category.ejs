@@ -22,21 +22,21 @@
         </nav>
 
         <%
-        /* Dải "Nội thất thiết kế": chữ bên trái, băng ảnh loại sản phẩm cuộn ngang bên phải.
+        /* Dải "Nội thất thiết kế": chữ bên trái, băng ảnh cuộn ngang bên phải.
 
-           Lấy từ `navCategories` (navigation.middleware) chứ KHÔNG thêm biến mới ở
-           controller: middleware đó chạy cho mọi request và không bao giờ throw, nên
-           không phát sinh nguy cơ thiếu biến. Vẫn guard `typeof` cho chắc.
+           Băng ảnh chỉ hiện LOẠI CON của chính loại đang xem (`children` do
+           catalog.controller.js truyền sang, đã lọc status=1 và sắp theo sort_order).
+           Trước đây nó lấy `navCategories` = toàn bộ loại cấp 1, nên đứng ở "Bàn"
+           lại thấy "Ghế Sofa", "chau"… — những loại chẳng liên quan gì, nhìn như
+           danh sách ngẫu nhiên.
 
-           Bỏ chính loại đang xem ra khỏi dải — hiện lại đúng trang người ta đang
-           đứng thì vừa thừa vừa dễ tưởng bấm nhầm. */
-        const designCats = ((typeof navCategories !== 'undefined' && navCategories) || [])
-            .filter(function (c) { return c.id !== category.id; });
+           Loại KHÔNG có loại con thì băng ảnh biến mất (.is-solo) chứ không lấy loại
+           khác điền vào cho đầy. */
+        const designCats = (typeof children !== 'undefined' && children) || [];
         %>
         <%# Section KHÔNG còn bọc trong `if (designCats.length)`: nó giờ mang <h1> tên
-            loại sản phẩm, mà loại nào cũng phải có tên. Loại duy nhất (không còn
-            loại nào khác để xếp vào dải ảnh) mà ẩn cả section thì trang mất trắng
-            tiêu đề. Chỉ DẢI ẢNH mới nằm trong if. %>
+            loại sản phẩm, mà loại nào cũng phải có tên. Loại không có loại con mà ẩn
+            cả section thì trang mất trắng tiêu đề. Chỉ DẢI ẢNH mới nằm trong if. %>
         <section class="design-strip<%= designCats.length ? '' : ' is-solo' %>">
             <div class="design-intro">
                 <%# <h1> chứ không <h2>: tiêu đề lớn ở .cat-header đã bỏ theo yêu cầu,
@@ -124,8 +124,6 @@
                 <span class="toolbar-label"><%= t.catalog.sortBy %></span>
                 <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
                 <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
-                <a class="chip <%= filters.sort === 'price_asc' ? 'active' : '' %>" href="<%= linkFor({sort: 'price_asc', page: 1}) %>"><%= t.catalog.sort.price_asc %></a>
-                <a class="chip <%= filters.sort === 'price_desc' ? 'active' : '' %>" href="<%= linkFor({sort: 'price_desc', page: 1}) %>"><%= t.catalog.sort.price_desc %></a>
             </div>
             <div class="toolbar-right">
                 <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
