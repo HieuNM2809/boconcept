@@ -13,6 +13,7 @@ const adminFeatureController = require('../app/Http/Controllers/admin.feature.co
 const adminNewsController = require('../app/Http/Controllers/admin.news.controller');
 const adminGalleryController = require('../app/Http/Controllers/admin.gallery.controller');
 const adminPageController = require('../app/Http/Controllers/admin.page.controller');
+const adminSloganController = require('../app/Http/Controllers/admin.slogan.controller');
 const adminPreviewController = require('../app/Http/Controllers/admin.preview.controller');
 const adminAuth = require('../app/Http/Middleware/adminAuth.middleware');
 const navigation = require('../app/Http/Middleware/navigation.middleware');
@@ -113,6 +114,9 @@ adminRouter.get('/gallery/:slot/edit', (req, res) => adminGalleryController.form
 adminRouter.post('/gallery/:slot', (req, res) => adminGalleryController.update(req, res));
 
 // Nội dung trang chủ (settings key/value) — không theo contract crudRoutes.
+// Slogan đè lên slideshow: đúng 2 khoá VI/EN trong bảng `settings`, chỉ sửa.
+adminRouter.get('/slogan', (req, res) => adminSloganController.form(req, res));
+adminRouter.post('/slogan', (req, res) => adminSloganController.update(req, res));
 
 router.use('/admin', adminRouter);
 

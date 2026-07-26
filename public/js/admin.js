@@ -1171,10 +1171,21 @@ function openCropModal(src, ratioStr, onApply) {
 
 var IMG_MAX_PIXELS = 12000000;  // 12 megapixel — trần độ phân giải sau khi thu (nâng
                                 // từ 5MP để ảnh nét hơn; 12MP base64 vẫn < 16MB của MEDIUMTEXT)
-var IMG_TARGET_BYTES = 10 * 1024 * 1024; // 10MB: ảnh nhẹ hơn mức này được GIỮ NGUYÊN,
-                                // không nén lại -> nét tối đa. (10MB gốc ~13.3MB base64,
-                                // vẫn lọt cột MEDIUMTEXT 16MB và BODY_LIMIT.)
-var IMG_JPEG_QUALITY = 0.92;    // nâng từ 0.85 -> nén (khi buộc phải nén) ít mất nét hơn
+
+// TRẦN ĐỘ DÀI CHUỖI data URI ĐẦU RA — không phải ngưỡng "giữ nguyên file gốc"
+// như bản trước. Đây là điểm sửa cốt lõi: trước đây mọi ảnh dưới 10MB được nhúng
+// NGUYÊN XI, nên một ảnh PNG 9MB thành ~12MB base64. Form sản phẩm gửi lại TOÀN
+// BỘ ảnh cũ mỗi lần lưu (ô gallery[] chứa cả data URI), nên chỉ vài ảnh như vậy
+// là thân POST vượt BODY_LIMIT -> lỗi 413 "request entity too large".
+// 2MB/ảnh: 10 ảnh vẫn chỉ ~21MB thân POST, nằm dưới BODY_LIMIT mặc định 25mb.
+var IMG_TARGET_BYTES = 2 * 1024 * 1024;
+
+// Nấc chất lượng JPEG thử lần lượt cho tới khi lọt trần. Bắt đầu cao để ảnh nào
+// nhẹ sẵn thì không bị nén oan; chỉ ảnh nặng mới tụt xuống các nấc dưới.
+var IMG_QUALITY_STEPS = [0.92, 0.85, 0.78, 0.7, 0.62, 0.55];
+// Hết nấc chất lượng mà vẫn quá trần thì thu nhỏ kích thước rồi thử lại.
+var IMG_DOWNSCALE_STEP = 0.8;
+var IMG_MAX_ATTEMPTS = 8;
 // SVG KHÔNG đi qua canvas nên không được thu nhỏ -> đây là đường duy nhất một
 // file lớn có thể chui thẳng vào thân POST và ăn lỗi 413. SVG là chữ, file thật
 // hiếm khi quá 100KB; vượt ngưỡng này thì rasterise như ảnh thường.
@@ -1188,14 +1199,54 @@ function readAsDataURL(file, cb) {
 }
 
 /**
- * Thu ảnh về tối đa 5 megapixel rồi trả data URI.
+ * Kiểm tra ảnh trên canvas có điểm ảnh trong suốt nào không.
  *
- * Vì sao vẫn phải thu: ảnh gốc được nhúng thẳng vào MySQL dạng base64. Base64 phình
- * ~33%, mã hoá URL trong thân form phình thêm ~6%. Cột ảnh là MEDIUMTEXT (trần 16MB),
- * nên ảnh gốc phải ở dưới ~12MB thì base64 mới lọt. Trần hiện tại: 12MP / 10MB — ảnh
- * dưới ngưỡng này được giữ nguyên cho nét, chỉ ảnh vượt mới bị thu/nén.
- * LƯU Ý: form sản phẩm có nhiều ô ảnh — nếu upload nhiều ảnh ~10MB cùng lúc, tổng
- * thân POST có thể vượt BODY_LIMIT (mặc định 25mb); khi đó nâng BODY_LIMIT trong .env.
+ * Dùng để quyết định giữ PNG hay đổi sang JPEG. Quét kênh alpha của ảnh ĐÃ THU
+ * NHỎ nên chỉ một lượt qua mảng, đủ nhanh.
+ *
+ * Lỗi -> trả true (coi như CÓ trong suốt) là hướng an toàn: cùng lắm giữ PNG nặng
+ * hơn, còn đoán nhầm chiều kia thì logo nền trong suốt bị JPEG hoá nền đen.
+ */
+function hasTransparency(ctx, w, h) {
+    try {
+        var data = ctx.getImageData(0, 0, w, h).data;
+        for (var i = 3; i < data.length; i += 4) {
+            if (data[i] < 255) return true;
+        }
+        return false;
+    } catch (e) {
+        return true;
+    }
+}
+
+/**
+ * Mã hoá canvas sao cho chuỗi data URI KHÔNG vượt `budget`, hạ dần chất lượng.
+ *
+ * PNG không nhận tham số chất lượng (toDataURL bỏ qua) nên chỉ mã hoá một lần —
+ * muốn nhỏ hơn thì phải thu kích thước, việc đó do vòng ngoài lo.
+ */
+function encodeWithin(canvas, mime, budget) {
+    if (mime !== 'image/jpeg') return canvas.toDataURL(mime);
+    var out = '';
+    for (var i = 0; i < IMG_QUALITY_STEPS.length; i++) {
+        out = canvas.toDataURL(mime, IMG_QUALITY_STEPS[i]);
+        if (out.length <= budget) return out;
+    }
+    return out; // hết nấc — vòng ngoài sẽ thu nhỏ rồi gọi lại
+}
+
+/**
+ * Nén ảnh về data URI có độ dài ≤ IMG_TARGET_BYTES rồi trả về.
+ *
+ * Vì sao phải nén: ảnh được nhúng thẳng vào MySQL dạng base64 (không upload
+ * multipart — xem chú thích ở bindEncoders). Base64 phình ~33%, mã hoá URL trong
+ * thân form phình thêm ~6%. Form sản phẩm còn gửi lại TOÀN BỘ ảnh cũ mỗi lần lưu,
+ * nên dung lượng mỗi ảnh phải bị chặn cứng, không chỉ chặn độ phân giải.
+ *
+ * Cách làm: thu về ≤12MP, chọn định dạng (JPEG trừ khi ảnh thật sự có vùng trong
+ * suốt), rồi hạ chất lượng dần; vẫn quá trần thì thu nhỏ thêm 20% và lặp lại. Nhờ
+ * vậy đầu ra LUÔN dưới trần bất kể ảnh gốc nặng bao nhiêu — khác bản trước, vốn
+ * nhúng nguyên xi mọi ảnh dưới 10MB.
  */
 function shrinkImage(file, cb) {
     // SVG là vector: vẽ lên canvas sẽ rasterise thành ảnh bệt, mất hết độ nét.
@@ -1213,9 +1264,10 @@ function shrinkImage(file, cb) {
         var h = img.naturalHeight;
         var pixels = w * h;
 
-        // Đã nhỏ về cả pixel lẫn dung lượng -> giữ nguyên file gốc, không nén lại
-        // để khỏi làm giảm chất lượng logo/icon một cách vô ích.
-        if (pixels <= IMG_MAX_PIXELS && file.size <= IMG_TARGET_BYTES) {
+        // Ảnh đã nhẹ sẵn -> nhúng nguyên xi, không mã hoá lại để khỏi làm mờ
+        // logo/icon một cách vô ích. Ngưỡng tính NGƯỢC từ trần đầu ra: base64
+        // phình 4/3, nên file gốc phải dưới 3/4 trần thì chuỗi mới lọt.
+        if (pixels <= IMG_MAX_PIXELS && file.size * 4 / 3 <= IMG_TARGET_BYTES) {
             URL.revokeObjectURL(url);
             // Vẫn kèm w/h: đây CHÍNH LÀ nhánh mà ảnh nhỏ đi qua, mà luật "ảnh quá
             // nhỏ" ở bindEncoders lại đọc kích thước từ `info`. Trả rỗng ở đây là
@@ -1226,26 +1278,42 @@ function shrinkImage(file, cb) {
         }
 
         var ratio = pixels > IMG_MAX_PIXELS ? Math.sqrt(IMG_MAX_PIXELS / pixels) : 1;
-        var nw = Math.max(1, Math.round(w * ratio));
-        var nh = Math.max(1, Math.round(h * ratio));
-
         var canvas = document.createElement('canvas');
-        canvas.width = nw;
-        canvas.height = nh;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, nw, nh);
-        URL.revokeObjectURL(url);
+        var nw = w;
+        var nh = h;
+        var out = null;
 
-        // PNG giữ PNG: đổi sang JPEG sẽ biến nền trong suốt thành đen.
-        var mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-        var out;
-        try {
-            out = canvas.toDataURL(mime, IMG_JPEG_QUALITY);
-        } catch (e) {
-            // Canvas "nhiễm bẩn" hoặc hết bộ nhớ -> vẫn nhúng ảnh gốc, không chặn.
-            return readAsDataURL(file, cb);
+        for (var attempt = 0; attempt < IMG_MAX_ATTEMPTS; attempt++) {
+            nw = Math.max(1, Math.round(w * ratio));
+            nh = Math.max(1, Math.round(h * ratio));
+            canvas.width = nw;
+            canvas.height = nh;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, nw, nh);
+
+            try {
+                // Ảnh chụp/ảnh sản phẩm xuất ra PNG là thủ phạm chính của lỗi 413:
+                // PNG không mất dữ liệu nên nặng gấp nhiều lần JPEG cùng nội dung.
+                // Chỉ giữ PNG khi ảnh THẬT SỰ có vùng trong suốt.
+                var mime = hasTransparency(ctx, nw, nh) ? 'image/png' : 'image/jpeg';
+                out = encodeWithin(canvas, mime, IMG_TARGET_BYTES);
+            } catch (e) {
+                // Canvas "nhiễm bẩn" hoặc hết bộ nhớ -> vẫn nhúng ảnh gốc, không chặn.
+                URL.revokeObjectURL(url);
+                return readAsDataURL(file, cb);
+            }
+
+            if (out.length <= IMG_TARGET_BYTES) break;
+            ratio *= IMG_DOWNSCALE_STEP;
         }
-        cb(null, out, {w: nw, h: nh, from: w + '×' + h, to: nw + '×' + nh, resized: ratio < 1});
+
+        URL.revokeObjectURL(url);
+        cb(null, out, {
+            w: nw, h: nh,
+            from: w + '×' + h,
+            to: nw + '×' + nh,
+            resized: nw !== w || nh !== h,
+        });
     };
 
     // KHÔNG báo lỗi và KHÔNG chặn: đọc không được thì nhúng thẳng file gốc.

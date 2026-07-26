@@ -6,6 +6,7 @@ const cors = require('cors');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const {logger, traceIdMiddleware} = require('../../../config/log4js');
+const {backWithError} = require('../../Helpers/adminFlash.helper');
 require('express-async-errors');
 
 let globalErrorHandlersRegistered = false;
@@ -111,6 +112,17 @@ function applyErrorHandler(app) {
             },
             meta: {method: req.method, url: req.originalUrl},
         });
+
+        // Thân POST quá lớn từ một form admin -> quay lại form kèm toast tiếng
+        // Việt. Lỗi này do body-parser ném TRƯỚC khi vào route, nên controller
+        // không có cơ hội bắt và backWithError của nó không bao giờ chạy; không
+        // xử lý riêng ở đây thì admin nhận nguyên khối JSON "request entity too
+        // large" giữa trang trắng và không hiểu chuyện gì.
+        if (err && err.type === 'entity.too.large' && req.path.startsWith('/admin')) {
+            return backWithError(req, res, '/admin', new Error(
+                'Ảnh gửi lên quá lớn so với giới hạn máy chủ. Hãy xoá bớt ảnh hoặc '
+                + 'chọn ảnh nhẹ hơn rồi lưu lại.'));
+        }
 
         res.status(err.status || 500).json({
             status: 'error',

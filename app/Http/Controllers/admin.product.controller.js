@@ -1,6 +1,7 @@
 const ProductService = require('../../Services/Api/product.service');
 const CategoryService = require('../../Services/Api/category.service');
 const {backWithError} = require('../../Helpers/adminFlash.helper');
+const {parsePrice, MAX_PRICE} = require('../../Helpers/price.helper');
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
 const flashText = (k) => ({created: 'Đã thêm sản phẩm.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
@@ -18,7 +19,10 @@ function normalize(b = {}) {
         extra_en: str(b.extra_en),
         shipping_vi: str(b.shipping_vi),
         shipping_en: str(b.shipping_en),
-        price: parseFloat(b.price) || 0,
+        // parsePrice ném lỗi status 400 khi giá âm/quá trần/không phải số, thay vì
+        // `parseFloat(...) || 0` cũ vốn âm thầm lưu 0 ₫ khi gõ nhầm và để MySQL
+        // ném lỗi thô khi vượt trần cột.
+        price: parsePrice(b.price, {label: 'Giá'}),
         material_vi: str(b.material_vi),
         material_en: str(b.material_en),
         color_vi: str(b.color_vi),
@@ -96,6 +100,7 @@ async function form(req, res) {
     res.render('admin/product-form', {
         pageTitle: item ? 'Sửa sản phẩm' : 'Thêm sản phẩm',
         section: 'products', item, categories,
+        maxPrice: MAX_PRICE,
         action: item ? `/admin/products/${item.id}` : '/admin/products',
     });
 }

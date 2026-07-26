@@ -20,8 +20,17 @@
             <div><label>Đoạn giới thiệu</label><textarea name="excerpt_vi" rows="20" maxlength="800"><%= item ? (item.excerpt_vi || '') : '' %></textarea></div>
             <div><label>Đoạn giới thiệu tiếng anh</label><textarea name="excerpt_en" rows="20" maxlength="800"><%= item ? (item.excerpt_en || '') : '' %></textarea></div>
         </div>
-    
+
         <br>
+
+        <%# Ảnh này chỉ hiện ở trang /about (khối .article-hero), không ra trang chủ. %>
+        <%- include('_image-field', {
+            name: 'image',
+            label: 'Ảnh minh hoạ',
+            value: item ? (item.image || '') : '',
+            previewClass: 'is-wide',
+        }) %>
+
         <br>
 
         <h2 class="admin-subhead">Nội dung</h2>

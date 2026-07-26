@@ -68,7 +68,7 @@ DB_DIALECT=mysql
 JWT_SECRET=<chuỗi ngẫu nhiên dài, tự sinh>
 TOKEN_EXPIRES_IN=24h
 CORS_ORIGIN=*
-BODY_LIMIT=1mb
+BODY_LIMIT=25mb
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX=300
 ADMIN_USER=admin
@@ -87,6 +87,7 @@ ADMIN_PASS=<mật khẩu admin mạnh>
 | `DB_DIALECT` | `mysql` | Cố định (app dùng MySQL). |
 | `JWT_SECRET` | (ngẫu nhiên) | Tự sinh, xem Bước 4b. |
 | `TOKEN_EXPIRES_IN` | `24h` | Mặc định dự án. |
+| `BODY_LIMIT` | `25mb` | **Không hạ xuống `1mb`.** Ảnh admin nằm trong DB dạng base64 và được gửi lại NGUYÊN BỘ trong mỗi lần lưu form, nên thân POST tính bằng MB. Đặt 1mb là mọi thao tác lưu sản phẩm/bài viết có ảnh đều trả 413. |
 
 > **Vì sao phải đổi tên `MYSQLHOST` → `DB_HOST`?** Vì code đọc `process.env.DB_HOST`
 > (xem `config/mysql.js`), **không** đọc `MYSQLHOST`. Nên phải tạo biến `DB_*` trỏ tới đúng giá trị.

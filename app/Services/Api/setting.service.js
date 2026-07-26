@@ -3,6 +3,11 @@ const {Setting} = require('../../Models/index.model');
 // Khoá cấu hình đang dùng. Khai báo tập trung để không rải chuỗi ma thuật khắp code.
 const KEYS = {
     FEATURES_BLOCK: 'features_block_enabled',
+    // Slogan đứng yên đè lên slideshow (.hero-brand). Trước đây đóng cứng ở
+    // resources/lang/{vi,en}/home.js -> đổi một chữ cũng phải sửa code + deploy.
+    // Giờ sửa ở /admin/slogan; để TRỐNG là quay về đúng chữ trong resources/lang.
+    HERO_SLOGAN_VI: 'hero_slogan_vi',
+    HERO_SLOGAN_EN: 'hero_slogan_en',
 };
 
 class SettingService {

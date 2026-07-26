@@ -10,8 +10,9 @@ const SettingService = require('../../Services/Api/setting.service');
 const PageService = require('../../Services/Api/page.service');
 const {logger} = require('../../../config/log4js');
 
-// Dữ liệu KHÔNG dịch (ảnh/icon/tên thương hiệu) — phần chữ lấy từ resources/lang.
-// TODO: chuyển hero/partners/certs sang bảng DB (content module) khi cần admin sửa.
+// Dữ liệu KHÔNG dịch (ảnh/icon) — phần chữ lấy từ resources/lang.
+// Hero: ảnh + tiêu đề từng slide ở bảng `slides` (/admin/slides), slogan đứng yên
+// ở bảng `settings` (/admin/slogan). Chữ trong resources/lang chỉ còn là fallback.
 // Fallback khi DB chưa có slide nào (slide được quản lý ở /admin/slides)
 const FALLBACK_SLIDES = [
     {image: 'https://picsum.photos/seed/hero-danish/1600/720', title_vi: 'Ưu đãi cuối mùa: Đang diễn ra', title_en: 'End Season Sale: Now On', badge_vi: 'Thiết kế Đan Mạch', badge_en: 'Danish design'},
@@ -50,7 +51,7 @@ async function index(req, res) {
         };
 
         const [cats, slides, partnersRows, certRows, featureRows, featuresOn, showcaseRows,
-            newsRows, galleryRows, aboutPage] = await Promise.all([
+            newsRows, galleryRows, aboutPage, sloganRow] = await Promise.all([
             CategoryService.getAll({status: 1}),      // danh mục từ DB
             SlideService.getActiveOrdered(),          // slide hero từ DB (quản lý ở /admin/slides)
             PartnerService.getActiveOrdered(),        // đối tác từ DB (quản lý ở /admin/partners)
@@ -67,6 +68,12 @@ async function index(req, res) {
             // softFail vì bảng `pages` cũng là bảng mới — thiếu bảng thì rơi về chữ
             // trong resources/lang chứ không hạ nguyên trang chủ.
             PageService.getBySlug('about').catch(softFail('about page', null)),
+            // Slogan đứng yên trên slideshow: sửa ở /admin/slogan. Thiếu bảng
+            // `settings` hay chưa ai nhập -> {} -> rơi về t.home.hero.brand.
+            SettingService.getMany([
+                SettingService.KEYS.HERO_SLOGAN_VI,
+                SettingService.KEYS.HERO_SLOGAN_EN,
+            ]).catch(softFail('slogan', {})),
         ]);
 
         const heroSlides = slides.length ? toPlain(slides) : FALLBACK_SLIDES;
@@ -102,8 +109,17 @@ async function index(req, res) {
         const about = aboutPage && aboutPage.get ? aboutPage.get({plain: true}) : aboutPage;
         const pickAbout = (field, fallback) => (about && res.locals.pick(about, field)) || fallback;
 
+        // Slogan hero: hai khoá `settings` VI/EN đi qua `pick` như mọi cột song
+        // ngữ khác, nên trang nào ngôn ngữ nào tự lấy đúng ô của nó. Khoá để
+        // trống (admin xoá trắng) trả về null -> lùi về chữ trong resources/lang.
+        const heroBrand = res.locals.pick({
+            brand_vi: sloganRow[SettingService.KEYS.HERO_SLOGAN_VI],
+            brand_en: sloganRow[SettingService.KEYS.HERO_SLOGAN_EN],
+        }, 'brand') || home.hero.brand;
+
         res.render('home', {
             pageTitle: home.meta.title,
+            heroBrand,
             whyTitle: pickAbout('title', home.why.title),
             whyBody: pickAbout('excerpt', home.why.body),
             categories: rootCats,
