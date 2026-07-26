@@ -20,9 +20,10 @@ const ProductVariant = sequelize.define('ProductVariant', {
         type: DataTypes.STRING(100),
         allowNull: true,
     },
-    // Giá riêng của biến thể; null = dùng giá của product cha
+    // Giá riêng của biến thể; null = dùng giá của product cha.
+    // DECIMAL(15,2) cho khớp products.price — xem chú thích ở Product.model.js.
     price: {
-        type: DataTypes.DECIMAL(12, 2),
+        type: DataTypes.DECIMAL(15, 2),
         allowNull: true,
     },
     stock: {

@@ -31,8 +31,11 @@ const Product = sequelize.define('Product', {
         type: DataTypes.TEXT,
         allowNull: true,
     },
+    // DECIMAL(15,2): trần 9.999.999.999.999,99 ₫. Trước đây là (12,2) -> chỉ ~10 tỷ,
+    // nhập quá là MySQL ném "Out of range value for column 'price'". App còn chặn
+    // sớm hơn ở MAX_PRICE (app/Helpers/price.helper.js) để báo lỗi tiếng Việt.
     price: {
-        type: DataTypes.DECIMAL(12, 2),
+        type: DataTypes.DECIMAL(15, 2),
         allowNull: false,
         defaultValue: 0,
     },

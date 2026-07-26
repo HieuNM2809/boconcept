@@ -1,0 +1,42 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'slogan'}) %>
+
+<%# Chỉ có 2 ô chữ ngắn -> dùng admin-narrow (cột hẹp) như các form gọn khác;
+    trải hết màn hình thì hai input dài hoá ra khó ước lượng độ dài thật. %>
+<main class="admin-wrap admin-narrow">
+    <div class="admin-head">
+        <h1>SLOGAN SLIDESHOW</h1>
+        <a class="btn-sm" href="/" target="_blank" rel="noopener">Xem trang chủ ↗</a>
+    </div>
+    <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
+
+    <form class="admin-form" method="post" action="<%= action %>">
+        <p class="admin-hint">
+            Dòng chữ đứng yên phía trên ảnh slideshow ở trang chủ. Khác với tiêu đề
+            trong <a href="/admin/slides">Slideshow</a> — chữ đó trượt theo từng ảnh,
+            còn dòng này dùng chung cho cả slideshow.
+            <strong>Để trống là dùng lại chữ mặc định.</strong>
+        </p>
+
+        <label for="slogan_vi">Slogan (VI)</label>
+        <input id="slogan_vi" name="slogan_vi" maxlength="200"
+               placeholder="<%= defaultVi %>" value="<%= sloganVi %>">
+
+        <label for="slogan_en">Slogan (EN)</label>
+        <input id="slogan_en" name="slogan_en" maxlength="200"
+               placeholder="<%= defaultEn %>" value="<%= sloganEn %>">
+        <p class="admin-hint">
+            Chỉ nhập ô VI thì trang tiếng Anh dùng luôn chữ đó (giống mọi nội dung
+            song ngữ khác trên site). Xoá trắng cả hai ô là trở về chữ mặc định.
+        </p>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+        </div>
+    </form>
+</main>
+
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

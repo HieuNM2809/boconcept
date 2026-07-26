@@ -113,7 +113,11 @@
                     <% }) %>
                 </select>
                 <label for="price">Giá (VNĐ)</label>
-                <input type="number" step="1000" min="0" id="price" name="price" value="<%= item ? Number(item.price || 0) : 0 %>">
+                <%# `max` để trình duyệt chặn ngay tại chỗ; server vẫn kiểm lại
+                    bằng price.helper vì thuộc tính này sửa được qua devtools. %>
+                <input type="number" step="1000" min="0" max="<%= maxPrice %>"
+                       id="price" name="price" value="<%= item ? Number(item.price || 0) : 0 %>">
+                <span class="admin-hint">Tối đa <%= maxPrice.toLocaleString('vi-VN') %> ₫</span>
                 <label for="status">Trạng thái</label>
                 <select id="status" name="status">
                     <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>

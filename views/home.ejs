@@ -28,10 +28,12 @@
         <% }) %>
     </div>
 
-    <%# Tên thương hiệu nằm NGOÀI .hero-track, không phải trong từng slide:
-        chữ không đổi theo slide nên để trong track thì nó trượt ngang cùng ảnh
-        và phải lặp lại n lần. Đặt ngoài -> ảnh chạy phía dưới, chữ đứng yên. %>
-    <div class="hero-brand"><%= t.home.hero.brand %></div>
+    <%# Slogan nằm NGOÀI .hero-track, không phải trong từng slide: chữ không đổi
+        theo slide nên để trong track thì nó trượt ngang cùng ảnh và phải lặp lại
+        n lần. Đặt ngoài -> ảnh chạy phía dưới, chữ đứng yên.
+        Chữ sửa ở /admin/slogan; controller đã lo lùi về t.home.hero.brand khi
+        chưa ai nhập. %>
+    <div class="hero-brand"><%= heroBrand %></div>
     <button class="hero-arrow prev" data-dir="-1" aria-label="prev">&lsaquo;</button>
     <button class="hero-arrow next" data-dir="1" aria-label="next">&rsaquo;</button>
     <div class="hero-dots" id="heroDots">

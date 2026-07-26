@@ -14,6 +14,11 @@
             <div><label>Tên tiếng anh</label><input name="name_en" value="<%= item ? (item.name_en || '') : '' %>"></div>
         </div>
 
+        <%# BẮT BUỘC phải có ô này: normalize() ở admin.category.controller.js LUÔN
+            đọc b.image, nên form thiếu ô -> mỗi lần lưu là ghi image = NULL, sửa
+            cái tên thôi cũng làm bay mất ảnh của loại đó (đã từng xảy ra). %>
+        <%- include('_image-field', {name: 'image', label: 'Ảnh loại sản phẩm', value: item ? (item.image || '') : ''}) %>
+
         <div class="form-2col">
             <div><label>Tiêu đề sản phẩm</label><input name="title_vi" value="<%= item ? (item.title_vi || '') : '' %>"></div>
             <div><label>Tiêu đề tiếng anh</label><input name="title_en" value="<%= item ? (item.title_en || '') : '' %>"></div>

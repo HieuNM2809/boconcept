@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS `products` (
     `slug`           VARCHAR(255)  NULL,
     `description_vi` TEXT          NULL,
     `description_en` TEXT          NULL,
-    `price`          DECIMAL(12,2) NOT NULL DEFAULT 0,
+    `price`          DECIMAL(15,2) NOT NULL DEFAULT 0,
     -- Thuộc tính lọc ở trang danh sách (/categories/:id)
     `material_vi`    VARCHAR(255)  NULL,
     `material_en`    VARCHAR(255)  NULL,
@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `product_variants` (
     `product_id` INT UNSIGNED  NOT NULL,
     `name`       VARCHAR(255)  NOT NULL,
     `sku`        VARCHAR(100)  NULL,
-    `price`      DECIMAL(12,2) NULL,
+    `price`      DECIMAL(15,2) NULL,
     `stock`      INT           NOT NULL DEFAULT 0,
     `image`      VARCHAR(500)  NULL,
     `status`     TINYINT       NOT NULL DEFAULT 1,

@@ -1,6 +1,7 @@
 const {Op} = require('sequelize');
 const sequelize = require('../../../lib/database');
 const {Product, Category, ProductVariant, ProductImage} = require('../../Models/index.model');
+const {parsePrice} = require('../../Helpers/price.helper');
 
 const SORT_MAP = {
     newest: [['id', 'DESC']],
@@ -164,7 +165,10 @@ class ProductService {
                 extra_en: data.extra_en ?? null,
                 shipping_vi: data.shipping_vi ?? null,
                 shipping_en: data.shipping_en ?? null,
-                price: data.price ?? 0,
+                // Chốt chặn cuối trước khi chạm DB: controller admin và validation
+                // API đều đã lọc giá, nhưng service là cổng CHUNG của mọi đường
+                // ghi nên kiểm lại ở đây thì không lối nào lọt xuống MySQL.
+                price: parsePrice(data.price),
                 material_vi: data.material_vi ?? null,
                 material_en: data.material_en ?? null,
                 color_vi: data.color_vi ?? null,
@@ -186,7 +190,8 @@ class ProductService {
                         product_id: product.id,
                         name: v.name,
                         sku: v.sku ?? null,
-                        price: v.price ?? null,
+                        // null = biến thể dùng giá của sản phẩm cha
+                        price: parsePrice(v.price, {optional: true, label: 'Giá biến thể'}),
                         stock: v.stock ?? 0,
                         image: v.image ?? null,
                         status: v.status ?? 1,
@@ -233,8 +238,11 @@ class ProductService {
     static async update(id, data) {
         const item = await Product.findByPk(id);
         if (!item) throw Object.assign(new Error('Product not found'), {status: 404});
+        // Chỉ đụng tới `price` khi payload có gửi — API cho phép sửa từng phần,
+        // thêm `price: 0` vào đây là mọi lần sửa tên đều xoá trắng giá.
+        const patch = data.price === undefined ? data : {...data, price: parsePrice(data.price)};
         await sequelize.transaction(async (t) => {
-            await item.update(data, {transaction: t});
+            await item.update(patch, {transaction: t});
             await ProductService._syncImages(item.id, data.gallery, t);
         });
         return ProductService.getById(id);

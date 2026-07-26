@@ -1,5 +1,13 @@
 const {body, query, param, validationResult} = require('express-validator');
 const BaseController = require('../Controllers/BaseController');
+const {MAX_PRICE} = require('../../Helpers/price.helper');
+
+// Dùng chung cho create/update: thiếu `max` là giá vượt trần cột DECIMAL lọt
+// xuống MySQL và bật lỗi "Out of range value for column 'price'" dạng 500.
+const priceRule = (field) => field
+    .optional({nullable: true})
+    .isFloat({min: 0, max: MAX_PRICE})
+    .withMessage(`price phải là số từ 0 đến ${MAX_PRICE}`);
 
 const listProduct = [
     query('page').optional().isInt({min: 1}).withMessage('page phải là số nguyên >= 1'),
@@ -31,13 +39,14 @@ const createProduct = [
     body('description_vi').optional().isString(),
     body('description_en').optional().isString(),
     body('category_id').optional({nullable: true}).isInt({gt: 0}).withMessage('category_id phải là số nguyên > 0'),
-    body('price').optional().isFloat({min: 0}).withMessage('price phải là số >= 0'),
+    priceRule(body('price')),
     body('thumbnail').optional().isString(),
     body('is_featured').optional().isInt({min: 0, max: 1}),
     body('priority').optional().isInt(),
     body('status').optional().isInt({min: 0, max: 1}),
     body('variants').optional().isArray().withMessage('variants phải là mảng'),
     body('variants.*.name').optional().isString().notEmpty().withMessage('variant.name không được để trống'),
+    priceRule(body('variants.*.price')),
     body('images').optional().isArray().withMessage('images phải là mảng'),
 ];
 
@@ -49,7 +58,7 @@ const updateProduct = [
     body('description_vi').optional().isString(),
     body('description_en').optional().isString(),
     body('category_id').optional({nullable: true}).isInt({gt: 0}),
-    body('price').optional().isFloat({min: 0}),
+    priceRule(body('price')),
     body('thumbnail').optional().isString(),
     body('is_featured').optional().isInt({min: 0, max: 1}),
     body('priority').optional().isInt(),
