@@ -60,7 +60,6 @@
         // cho phần TRƯỚC nó thôi, khỏi nới thừa một ô rồi lại ghi đè.
         const teaserAt = hidden.length ? shown.length - 1 : -1;
         const shownSpans = mosaic(Math.max(0, (teaserAt < 0 ? shown.length : teaserAt) - 1));
-        const hiddenSpans = mosaic(hidden.length);
         %>
         <div class="pd-top">
             <div class="pd-gallery" id="pdGallery">
@@ -82,10 +81,10 @@
                         <span aria-hidden="true">⌄</span> <%= t.product.showMore %>
                     </button>
                     <%# Ảnh còn lại render sẵn nhưng ẩn — bấm là hiện ngay, không phải tải thêm.
-                        Tính khảm riêng cho nhóm này, bắt đầu lại chu kỳ: ô teaser phía trên
-                        đã chiếm trọn một hàng nên nối tiếp nhịp cũ không còn ý nghĩa. %>
-                    <% hidden.forEach(function (src, k) { %>
-                        <figure class="pdg-cell pdg-extra <%= hiddenSpans[k] %>" hidden>
+                        Không xếp khảm nhóm này: mọi ảnh xổ ra đều tràn bề ngang (s6),
+                        không còn ô nhỏ 1/3 - 1/2 hàng. %>
+                    <% hidden.forEach(function (src) { %>
+                        <figure class="pdg-cell pdg-extra s6" hidden>
                             <img src="<%= src %>" alt="<%= pick(product, 'name') %>" loading="lazy">
                         </figure>
                     <% }) %>
@@ -98,31 +97,17 @@
                 <%# Dòng giá đã bỏ theo yêu cầu (bỏ giá trên toàn bộ trang khách xem). %>
                 <p class="pd-desc"><%= pick(product, 'description') || t.product.noDescription %></p>
 
-                <% if (product.variants && product.variants.length) { %>
-                    <div class="pd-variants">
-                        <span class="pd-variant-label"><%= t.product.variantLabel %>:</span>
-                        <div class="variant-list">
-                            <% product.variants.forEach(function (v, i) { %>
-                                <%# `data-price` đã bỏ: để lại thì giá vẫn nằm nguyên trong
-                                    mã nguồn trang, xem "View source" là đọc được — bỏ giá
-                                    kiểu đó coi như không bỏ. %>
-                                <button class="variant <%= i === 0 ? 'active' : '' %>"
-                                        data-image="<%= v.image || '' %>">
-                                    <% if (v.image) { %><img src="<%= v.image %>" alt="<%= v.name %>"><% } %>
-                                    <span><%= v.name %></span>
-                                </button>
-                            <% }) %>
-                        </div>
-                    </div>
-                <% } %>
-
+<%# Khối "Phân loại" (product_variants) đã BỎ khỏi trang chi tiết theo yêu cầu —
+    việc chọn giờ do khối "Màu sắc" bên dưới đảm nhiệm. Dữ liệu biến thể VẪN CÒN
+    trong DB và vẫn nạp ở getById: form admin còn hiện "Biến thể hiện có: ..." và
+    /api/products vẫn trả về. Đây chỉ là thôi vẽ ra trang khách. %>
                 <%# Màu sắc: ô vuông màu bấm chọn được, KHÔNG hiện chữ (yêu cầu của
                     khách). Tên màu chỉ nằm trong title/aria-label — người mù màu và
                     người dùng trình đọc màn hình không còn cách nào khác để biết ô
                     đó là màu gì, mà thuộc tính này không vẽ chữ lên trang. %>
                 <% if (product.colors && product.colors.length) { %>
                     <div class="pd-colors">
-                        <span class="pd-variant-label"><%= t.product.attrs.color %>:</span>
+                        <span class="pd-field-label"><%= t.product.attrs.color %>:</span>
                         <div class="pd-color-list">
                             <% product.colors.forEach(function (c, i) {
                                 /* image_index trỏ theo VỊ TRÍ trong gallery. Ảnh có thể

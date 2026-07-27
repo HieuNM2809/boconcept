@@ -333,11 +333,8 @@
         // Selector cũ không khớp phần tử nào nên chọn biến thể KHÔNG hề đổi ảnh.
         const firstImg = document.querySelector('.pdg-cell.is-lead img');
 
-        document.querySelectorAll('.variant').forEach((v) => v.addEventListener('click', () => {
-            document.querySelectorAll('.variant').forEach((x) => x.classList.remove('active'));
-            v.classList.add('active');
-            if (firstImg && v.dataset.image) firstImg.src = v.dataset.image;
-        }));
+        // Trình xử lý cho `.variant` đã gỡ cùng khối "Phân loại" — không còn phần
+        // tử nào mang lớp đó nữa, giữ lại chỉ là mã chết đi tìm thứ không tồn tại.
 
         // Ô vuông màu: cùng cơ chế đổi ảnh như biến thể. Màu không gắn ảnh
         // (`data-image` rỗng) chỉ đổi trạng thái chọn, KHÔNG xoá trắng ảnh đang xem.
