@@ -1313,6 +1313,24 @@ body.modal-open { overflow: hidden; }
 }
 .gallery-row input[type="text"] { width: 100%; }
 .admin-form .gallery-row input { margin: 0; }
+
+/* ── Dòng màu sản phẩm (/admin/products, mục "Màu sắc") ──────────────────────
+   Phải khai lại lưới: .gallery-row chỉ có 4 cột (ảnh · chọn file · đường dẫn ·
+   nút xoá) mà dòng màu có 5 ô, ô thứ 5 sẽ bị đẩy xuống một dòng ngầm. */
+.gallery-row.color-row { grid-template-columns: 52px 1fr 1fr 150px auto; }
+
+/* Ô chọn màu phải HIỆN CHÍNH MÀU ĐANG CHỌN ngay bên ngoài — không phải mở bảng
+   chọn mới biết đang là màu gì.
+   Quy tắc chung `.admin-form input` (width:100%; padding:10px 12px) áp cả lên
+   đây: ô bị kéo dài hết dòng, và phần padding vẽ bằng nền trắng bọc quanh vệt
+   màu nên nhìn ra một ô trắng. Ba selector ::swatch bên dưới là cách duy nhất
+   gỡ viền mặc định của trình duyệt để màu tràn kín ô. */
+.admin-form .color-row input[type="color"] {
+    width: 52px; height: 40px; padding: 2px; cursor: pointer; background: #fff;
+}
+.admin-form .color-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.admin-form .color-row input[type="color"]::-webkit-color-swatch { border: none; border-radius: 5px; }
+.admin-form .color-row input[type="color"]::-moz-color-swatch { border: none; border-radius: 5px; }
 /* Dòng ảnh của khe slider (/admin/gallery). Bốn cột: số thứ tự · ảnh · cụm ô
    nhập · nút xoá. Form khe ảnh nay chiếm hết bề ngang màn hình (admin-form-wide)
    nên cụm ô nhập DÀN NGANG 2×2 thay vì xếp dọc như hồi còn bó trong 720px. */
