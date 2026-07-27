@@ -35,8 +35,10 @@
                 <div class="form-grid-auto">
                     <div><label for="material_vi">Chất liệu sản phẩm</label><input id="material_vi" name="material_vi" value="<%= item ? (item.material_vi || '') : '' %>" placeholder="Gỗ sồi · Vải"></div>
                     <div><label for="material_en">Chất liệu tiếng anh</label><input id="material_en" name="material_en" value="<%= item ? (item.material_en || '') : '' %>" placeholder="Oak · Fabric"></div>
-                    <div><label for="color_vi">Màu sản phẩm</label><input id="color_vi" name="color_vi" value="<%= item ? (item.color_vi || '') : '' %>" placeholder="Nâu cognac"></div>
-                    <div><label for="color_en">Màu tiếng anh</label><input id="color_en" name="color_en" value="<%= item ? (item.color_en || '') : '' %>" placeholder="Cognac brown"></div>
+<%# Hai ô "Màu sản phẩm"/"Màu tiếng anh" đã chuyển thành mục "Màu sắc" bên dưới
+    (ô chọn màu thật, khách bấm được). Bỏ ở đây để admin không phải nhập màu ở
+    hai chỗ rồi lệch nhau. Cột color_vi/color_en trong DB GIỮ NGUYÊN — normalize()
+    cũng đã thôi đọc chúng, nên lưu sản phẩm không ghi đè dữ liệu cũ. %>
                     <div><label for="dimensions_vi">Kích thước sản phẩm</label><input id="dimensions_vi" name="dimensions_vi" value="<%= item ? (item.dimensions_vi || '') : '' %>" placeholder="Ghế: 10x30x60"></div>
                     <div><label for="dimensions_en">Kích thước tiếng anh</label><input id="dimensions_en" name="dimensions_en" value="<%= item ? (item.dimensions_en || '') : '' %>" placeholder="Chair: 10x30x60"></div>
                     <div><label for="weight">Khối lượng (kg)</label><input type="number" step="0.01" min="0" id="weight" name="weight" value="<%= item && item.weight != null ? Number(item.weight) : '' %>" placeholder="Để trống nếu không có"></div>
@@ -62,6 +64,42 @@
                     <% }) %>
                 </div>
                 <button type="button" class="btn-sm" id="addGalleryRow">+ Thêm ảnh</button>
+            </section>
+
+            <section class="form-card">
+                <h2 class="admin-subhead">Màu sắc</h2>
+                <p class="admin-hint">
+                    Hiện ở trang chi tiết thành các ô vuông màu cho khách bấm chọn — <strong>không hiện chữ</strong>.
+                    Tên màu chỉ dùng làm chú thích khi rê chuột và cho trình đọc màn hình của người khiếm thị.
+                    Cột “Ảnh” chọn một ảnh trong Bộ sưu tập ở trên: bấm màu nào thì ảnh chính đổi sang ảnh đó.
+                    Ảnh vừa thêm phải bấm Lưu một lần rồi mới chọn được ở đây.
+                </p>
+                <%# Ô ẩn này LUÔN được gửi kèm form. Nó là thứ phân biệt "admin đã xoá
+                    hết màu" với "payload API không đụng tới màu": thiếu nó thì xoá dòng
+                    màu CUỐI CÙNG sẽ không có tác dụng, vì controller không thấy field
+                    nào tên color_hex và hiểu nhầm là giữ nguyên. %>
+                <input type="hidden" name="has_colors" value="1">
+                <%# data-image-options: sẵn danh sách <option> để JS dựng dòng mới không
+                    phải dò lại DOM của dòng cũ (sản phẩm chưa có màu nào thì không có
+                    dòng nào để dò). %>
+                <div id="colorRows" class="gallery-rows"
+                     data-image-options="<%= (item && item.images ? item.images : []).map(function (img, gi) { return '<option value="' + gi + '">Ảnh ' + (gi + 1) + '</option>'; }).join('') %>">
+                    <% (item && item.colors ? item.colors : []).forEach(function (c) { %>
+                        <div class="gallery-row color-row">
+                            <input type="color" name="color_hex[]" value="<%= c.hex %>" title="Chọn màu">
+                            <input type="text" name="color_name_vi[]" value="<%= c.name_vi || '' %>" placeholder="Tên màu (VD: Nâu óc chó)">
+                            <input type="text" name="color_name_en[]" value="<%= c.name_en || '' %>" placeholder="Tên tiếng anh">
+                            <select name="color_image[]">
+                                <option value="">— không đổi ảnh —</option>
+                                <% (item && item.images ? item.images : []).forEach(function (img, gi) { %>
+                                    <option value="<%= gi %>" <%= String(c.image_index) === String(gi) ? 'selected' : '' %>>Ảnh <%= gi + 1 %></option>
+                                <% }) %>
+                            </select>
+                            <button type="button" class="btn-sm danger" data-remove-row>Xóa</button>
+                        </div>
+                    <% }) %>
+                </div>
+                <button type="button" class="btn-sm" id="addColorRow">+ Thêm màu</button>
             </section>
 
             <section class="form-card">
