@@ -882,7 +882,15 @@ body.drawer-open { overflow: hidden; }
 
 /* ===== Listing / Category page ===== */
 .listing { padding: 28px 0 72px; }
-.breadcrumb { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+.breadcrumb {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    font-size: 13px; color: var(--muted);
+    background: var(--soft); border-bottom: 1px solid var(--line);
+    padding: 11px 20px; margin-bottom: 28px;
+    /* tràn ra sát mép container */
+    margin-left: calc(-1 * 20px); margin-right: calc(-1 * 20px);
+    padding-left: 20px; padding-right: 20px;
+}
 .breadcrumb a:hover { color: var(--accent-dark); }
 .breadcrumb .sep { color: #cfc7bb; }
 
