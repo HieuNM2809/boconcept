@@ -464,7 +464,7 @@ body.drawer-open { overflow: hidden; }
     flex: 1 0 calc((100% - 3 * var(--showcase-gap)) / 4);
     scroll-snap-align: start; position: relative; min-width: 0;
 }
-.showcase-media { position: relative; overflow: hidden; aspect-ratio: 3 / 4; background: var(--soft); }
+.showcase-media { position: relative; overflow: hidden; aspect-ratio: 3 / 4; background: var(--soft); border-radius: var(--radius); }
 .showcase-media img {
     width: 100%; height: 100%; object-fit: cover; display: block;
     transition: transform .55s cubic-bezier(.2, .6, .2, 1);
@@ -500,11 +500,136 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Why us ===== */
-/* Dải giới thiệu: tiêu đề + 1 đoạn văn căn giữa, không ảnh/không list. */
-.why { background: var(--soft); }
-.why-intro { max-width: 960px; text-align: center; }
-.why-intro .section-title { margin: 0 0 20px; }
-.why-body { color: var(--muted); font-size: 15px; line-height: 1.9; margin: 0; }
+/* Dải giới thiệu: split 2 cột — text trái, hình phải. */
+.why { background: var(--white); padding: 0; }
+.why + .why { margin-top: 32px; }
+.why--alt { background: var(--soft); }
+.why--alt .why-media-subs { background: var(--soft); }
+.why-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 480px;
+    position: relative;
+}
+.why-copy {
+    padding: clamp(40px, 5vw, 80px) clamp(28px, 4vw, 72px);
+    display: flex; flex-direction: column; justify-content: center;
+}
+.why-title {
+    font-family: var(--serif);
+    font-size: clamp(24px, 3vw, 40px);
+    font-weight: 700; line-height: 1.15;
+    margin: 0 0 20px;
+}
+.why-body { color: var(--muted); font-size: 14px; line-height: 1.85; margin: 0 0 24px; }
+.why-features {
+    list-style: none; margin: 0 0 28px; padding: 0;
+    display: flex; flex-direction: column; gap: 10px;
+}
+.why-features li {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; color: var(--ink);
+}
+.why-features li::before {
+    content: "";
+    flex-shrink: 0;
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    background: radial-gradient(circle, var(--ink) 0 4px, transparent 4px);
+    display: inline-block;
+}
+.why-cta {
+    display: inline-block;
+    background: var(--ink); color: #fff;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 15px 28px;
+    width: fit-content;
+    transition: background .2s;
+}
+.why-cta:hover { background: #444; }
+.why-media {
+    position: relative; overflow: hidden;
+    background: var(--soft);
+    min-height: 520px;
+    border-radius: 12px;
+}
+.why-media::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,.08) 0%, rgba(0,0,0,.35) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+.why-media img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    position: absolute; inset: 0;
+    transition: transform .6s cubic-bezier(.25,.8,.25,1);
+}
+.why-split:has(.why-media:hover) .why-media img { transform: scale(1.07); }
+.why-media-label {
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: var(--serif);
+    font-size: clamp(28px, 3.5vw, 52px);
+    font-weight: 600; color: #fff;
+    text-shadow: 0 2px 18px rgba(0,0,0,.4);
+    pointer-events: none;
+    white-space: nowrap;
+    transition: opacity .35s ease, transform .35s ease;
+    z-index: 2;
+}
+.why-split:has(.why-media:hover) .why-media-label {
+    opacity: 0; transform: translate(-50%, -60%);
+}
+/* Danh mục con hiện khi hover — grid tile giống screenshot */
+.why-media-subs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0;
+    background: var(--white);
+    padding: 20px 24px 16px;
+    max-height: 0; overflow: hidden;
+    opacity: 0;
+    transition: max-height .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;
+}
+.why:has(.why-media:hover) .why-media-subs,
+.why-media-subs:hover {
+    max-height: 600px;
+    opacity: 1;
+}
+.why-sub-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0; padding: 0 10px 8px;
+    width: 220px;
+    color: var(--ink); text-decoration: none;
+    transition: opacity .2s;
+}
+.why-sub-item:hover { opacity: .75; }
+.why-sub-item .why-sub-thumb {
+    width: 100%; aspect-ratio: 3/4;
+    overflow: hidden; background: var(--soft);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+}
+.why-sub-item .why-sub-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform .45s ease;
+}
+.why-sub-item:hover .why-sub-thumb img { transform: scale(1.05); }
+.why-sub-item span {
+    font-size: 12px; font-weight: 400;
+    text-align: center; color: var(--ink);
+    letter-spacing: .02em;
+}
+@media (max-width: 768px) {
+    .why-split { grid-template-columns: 1fr; }
+    .why-media { min-height: 300px; order: -1; }
+    .why-media-subs { grid-template-columns: repeat(2, 1fr); }
+}
 
 /* ===== Lưới ảnh "Style advice" (collage) ===== */
 .gallery-head { text-align: center; max-width: 720px; margin: 0 auto 40px; }
@@ -512,7 +637,7 @@ body.drawer-open { overflow: hidden; }
 .gallery-sub { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
 
 /* Lưới 12 cột, hàng cao theo vw để cả cụm giữ đúng tỉ lệ khi co giãn màn hình */
-.collage { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 1.9vw; gap: 8px; }
+.collage { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 1.9vw; gap: 8px; max-width: 1100px; margin: 0 auto; }
 .gallery-grid-section > .collage { width: 100%; gap: 12px; padding: 0 24px; }
 .collage-cell { position: relative; margin: 0; overflow: hidden; background: var(--soft); }
 
@@ -564,7 +689,7 @@ body.drawer-open { overflow: hidden; }
 .news-card { min-width: 0; }
 /* 3/2 chứ không phải 4/3: ô đã kéo rộng ra gần mép màn hình, giữ 4/3 thì mỗi
    ảnh cao hơn 600px trên laptop — đẩy tiêu đề rơi khỏi màn hình. */
-.news-card-media { display: block; overflow: hidden; background: var(--soft); aspect-ratio: 3 / 2; }
+.news-card-media { display: block; overflow: hidden; background: var(--soft); aspect-ratio: 3 / 2; border-radius: var(--radius); }
 .news-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .55s cubic-bezier(.2, .6, .2, 1); }
 .news-card-media:hover img { transform: scale(1.05); }
 .news-card-title { margin: 18px 0 8px; font-size: 19px; font-weight: 700; line-height: 1.3; }
@@ -735,7 +860,7 @@ body.drawer-open { overflow: hidden; }
 /* ===== Category tile grid (cấp 2 + hover → cấp 3) ===== */
 .csc-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 20px 16px;
 }
 .csc-item {
@@ -745,6 +870,7 @@ body.drawer-open { overflow: hidden; }
     display: block;
     overflow: hidden;
     aspect-ratio: 3/4;
+    border-radius: var(--radius);
     background: var(--soft);
 }
 .csc-thumb img {

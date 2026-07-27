@@ -90,14 +90,17 @@ async function index(req, res) {
             if (!childrenOf.has(c.parent_id)) childrenOf.set(c.parent_id, []);
             childrenOf.get(c.parent_id).push(c);
         });
-        // CHỈ danh mục cấp 1 NỔI BẬT (is_featured, đánh dấu ở /admin/categories) hiện
-        // ở khối "Loại sản phẩm". Không đánh dấu mục nào -> mảng rỗng -> view ẩn cả
-        // section (như khối Công năng) thay vì để lại ô "chưa có dữ liệu".
-        // Thứ tự giữ nguyên sort_order/id mà service đã xếp. Con cấp 2 lấy hết (mọi
-        // danh mục con đang hiện của mục đó), không lọc theo nổi bật.
+        // Tất cả danh mục cấp 1 (parent_id = null) hiện ở lưới tile trang chủ.
+        // Không lọc is_featured: mọi danh mục gốc đang hiện (status=1) đều lên lưới.
+        // Thứ tự theo sort_order/id mà service đã xếp. Con cấp 2 gắn kèm để hover xổ ra.
         const rootCats = allCats
-            .filter((c) => c.parent_id == null && c.is_featured)
+            .filter((c) => c.parent_id == null)
             .map((c) => ({...c, children: childrenOf.get(c.id) || []}));
+
+        // Danh mục cấp 2 hiển thị dạng lưới tile, mỗi tile hover xổ ra cấp 3.
+        const allLevel2 = rootCats.flatMap((c) =>
+            c.children.map((ch) => ({...ch, children: childrenOf.get(ch.id) || []}))
+        );
 
         // Tiêu đề & mô tả khối "Loại sản phẩm": lấy từ title_vi/description_vi của danh mục
         // nổi bật đầu tiên (sửa ở /admin/categories/<id>/edit). Lang file chỉ là fallback
@@ -123,7 +126,12 @@ async function index(req, res) {
             heroBrand,
             whyTitle: pickAbout('title', home.why.title),
             whyBody: pickAbout('excerpt', home.why.body),
+            whyImage: (about && about.image) || (rootCats[0] && rootCats[0].image) || null,
+            whyImageLabel: home.why.imageLabel,
+            whyFeatures: home.why.features || [],
+            whyCta: home.why.cta,
             categories: rootCats,
+            allLevel2,
             categoriesTitle: pickCat('title', home.categories.title),
             categoriesDesc: pickCat('description', home.categories.sub),
             news: toPlain(newsRows),
