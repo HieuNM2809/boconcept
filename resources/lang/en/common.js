@@ -2,9 +2,9 @@
 module.exports = {
     // Brand name is NOT translated — identical in vi/en. Single source of truth:
     // header, footer, <title> and controller pageTitles all read from here.
-    brand: 'Huong Sơn entertaimain',
-    brandMain: 'Huong Sơn',   // bold part
-    brandSub: 'entertaimain', // regular part
+    brand: 'HUONG SON INTERNATIONAL',
+    brandMain: 'HUONG SON',        // bold part
+    brandSub: 'INTERNATIONAL',     // regular part
     tagline: 'Timeless Italian furniture design.',
     findStore: 'Find store',
     actions: {

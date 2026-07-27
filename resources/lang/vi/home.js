@@ -1,10 +1,10 @@
 // Chuỗi UI riêng cho trang chủ
 module.exports = {
-    meta: {title: 'Huong Sơn entertaimain — Nội thất thiết kế Ý'},
+    meta: {title: 'HUONG SON INTERNATIONAL — Nội thất thiết kế Ý'},
     // Slideshow giờ chỉ còn ảnh + MỘT dòng tên thương hiệu đứng yên phía trên.
     // Badge/tiêu đề theo từng slide đã bỏ, nên mảng chuỗi mẫu cũ ở đây cũng bỏ luôn.
     // Tên thương hiệu KHÔNG dịch — hai file vi/en cố ý để y hệt nhau.
-    hero: {brand: 'HƯƠNG SƠN ENTERTAIMAIN'},
+    hero: {brand: 'HUONG SON INTERNATIONAL'},
     // Dải giới thiệu doanh nghiệp — tiêu đề + 1 đoạn văn, căn giữa.
     // CHỈ LÀ FALLBACK: chữ thật lấy từ trang hệ thống `about` trong DB
     // (title_* + excerpt_*, sửa ở /admin/pages). Hai chuỗi dưới chỉ hiện khi

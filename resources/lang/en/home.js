@@ -1,8 +1,8 @@
 // Homepage-specific UI strings
 module.exports = {
-    meta: {title: 'Huong Sơn entertaimain — Italian furniture design'},
+    meta: {title: 'HUONG SON INTERNATIONAL — Italian furniture design'},
     // Brand name is NOT translated — kept identical to vi/home.js on purpose.
-    hero: {brand: 'HƯƠNG SƠN ENTERTAIMAIN'},
+    hero: {brand: 'HUONG SON INTERNATIONAL'},
     // Company intro strip — heading + a single centered paragraph.
     // FALLBACK ONLY: the live copy comes from the `about` system page in the DB
     // (title_* + excerpt_*, edited at /admin/pages). These two strings show only
