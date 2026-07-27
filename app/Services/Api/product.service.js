@@ -219,20 +219,65 @@ class ProductService {
     }
 
     /**
-     * Ghi lại TOÀN BỘ bộ sưu tập ảnh của sản phẩm theo danh sách url gửi lên.
-     * Xoá sạch rồi chèn lại thay vì so từng dòng: form gửi lên đúng trạng thái
-     * cuối cùng mà admin thấy, nên đồng bộ một chiều là đủ và không sinh trường
-     * hợp "sửa nửa vời" khi admin vừa xoá vừa đổi thứ tự trong một lần lưu.
+     * Đồng bộ bộ sưu tập ảnh của sản phẩm về đúng danh sách url gửi lên, CHỈ ghi
+     * phần thật sự thay đổi.
+     *
+     * VÌ SAO KHÔNG "XOÁ SẠCH RỒI CHÈN LẠI" NHƯ TRƯỚC: ảnh nằm ngay trong DB dạng
+     * data URI base64 (~2MB/tấm, xem doc/schema.sql). Form admin gửi lại TOÀN BỘ
+     * gallery mỗi lần lưu, nên xoá-hết-chèn-lại biến một thao tác sửa cái tên
+     * thành vài chục MB ghi vào bảng VÀ vào binary log. Binlog mặc định giữ 30
+     * ngày -> volume MySQL đầy -> MySQL trả lỗi 1114 "The table 'X' is full" cho
+     * MỌI lệnh ghi, ở mọi bảng, kể cả DELETE. Đó là sự cố production đã gặp.
+     *
+     * So khớp theo url: ảnh còn nguyên thì không sinh lệnh ghi nào; đổi thứ tự
+     * chỉ cập nhật `sort_order` (vài byte) chứ không chép lại chuỗi base64.
+     *
+     * Khớp theo hàng đợi từng url chứ không phải Map url->1 dòng: gallery cho
+     * phép cùng một ảnh xuất hiện nhiều lần, gộp lại là âm thầm nuốt mất bản sao.
      */
     static async _syncImages(productId, urls, t) {
         if (!Array.isArray(urls)) return; // không gửi field -> giữ nguyên ảnh cũ
         const clean = urls.map((u) => String(u || '').trim()).filter(Boolean);
-        await ProductImage.destroy({where: {product_id: productId}, transaction: t});
-        if (!clean.length) return;
-        await ProductImage.bulkCreate(
-            clean.map((url, i) => ({product_id: productId, url, sort_order: i})),
-            {transaction: t},
-        );
+
+        const current = await ProductImage.findAll({
+            where: {product_id: productId},
+            transaction: t,
+        });
+
+        const pool = new Map(); // url -> các dòng cũ chưa được nhận
+        for (const row of current) {
+            if (!pool.has(row.url)) pool.set(row.url, []);
+            pool.get(row.url).push(row);
+        }
+
+        const keep = [];   // dòng cũ dùng lại, kèm vị trí mới
+        const insert = []; // url chưa có dòng nào
+        clean.forEach((url, i) => {
+            const queue = pool.get(url);
+            if (queue && queue.length) keep.push({row: queue.shift(), sortOrder: i});
+            else insert.push({product_id: productId, url, sort_order: i});
+        });
+
+        // Còn sót lại trong pool = admin đã bỏ ảnh đó khỏi danh sách.
+        const removeIds = [];
+        for (const queue of pool.values()) {
+            for (const row of queue) removeIds.push(row.id);
+        }
+
+        // Xoá trước khi chèn: giữ số dòng trong bảng không phình lên giữa chừng.
+        if (removeIds.length) {
+            await ProductImage.destroy({where: {id: removeIds}, transaction: t});
+        }
+        for (const {row, sortOrder} of keep) {
+            if (row.sort_order === sortOrder) continue; // đúng chỗ rồi -> không ghi
+            await ProductImage.update(
+                {sort_order: sortOrder},
+                {where: {id: row.id}, transaction: t},
+            );
+        }
+        if (insert.length) {
+            await ProductImage.bulkCreate(insert, {transaction: t});
+        }
     }
 
     static async update(id, data) {
