@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `product_variants` (
     `sku`        VARCHAR(100)  NULL,
     `price`      DECIMAL(15,2) NULL,
     `stock`      INT           NOT NULL DEFAULT 0,
-    `image`      VARCHAR(500)  NULL,
+    `image`      MEDIUMTEXT    NULL,
     `status`     TINYINT       NOT NULL DEFAULT 1,
     `created_at` DATETIME      NULL,
     `updated_at` DATETIME      NULL,
@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS `product_variants` (
 CREATE TABLE IF NOT EXISTS `product_images` (
     `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `product_id` INT UNSIGNED NOT NULL,
-    `url`        VARCHAR(500) NOT NULL,
+    `url`        MEDIUMTEXT   NOT NULL,
     `sort_order` INT          NOT NULL DEFAULT 0,
     `created_at` DATETIME     NULL,
     `updated_at` DATETIME     NULL,
@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS `slides` (
 CREATE TABLE IF NOT EXISTS `partners` (
     `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `name`       VARCHAR(255) NOT NULL,
-    `logo`       VARCHAR(500) NULL,
+    `logo`       MEDIUMTEXT NULL,
     `link`       VARCHAR(500) NULL,
     `sort_order` INT          NOT NULL DEFAULT 0,
     `status`     TINYINT      NOT NULL DEFAULT 1,
@@ -290,5 +290,7 @@ ON DUPLICATE KEY UPDATE `updated_at` = NOW();
 
 -- ── Migrations: mở rộng cột trên DB đã tồn tại ────────────────────────────────
 -- Chạy khi áp schema.sql lên DB cũ (volume không bị xóa).
-ALTER TABLE `slides`       MODIFY `image` MEDIUMTEXT NOT NULL;
-ALTER TABLE `certificates` MODIFY `image` MEDIUMTEXT NOT NULL;
+ALTER TABLE `slides`            MODIFY `image` MEDIUMTEXT NOT NULL;
+ALTER TABLE `certificates`      MODIFY `image` MEDIUMTEXT NOT NULL;
+ALTER TABLE `product_variants`  MODIFY `image` MEDIUMTEXT NULL;
+ALTER TABLE `product_images`    MODIFY `url`   MEDIUMTEXT NOT NULL;
