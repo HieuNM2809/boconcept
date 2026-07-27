@@ -879,7 +879,7 @@ function buildCropModal() {
                      'aria-label="Khung cắt ảnh. Dùng phím mũi tên để dời ảnh, phím + và − để phóng to thu nhỏ.">' +
                     '<img class="crop-img" alt="" draggable="false">' +
                     '<span class="crop-safe" aria-hidden="true">' +
-                        '<span class="crop-safe-tag">Vùng luôn hiện trên điện thoại</span>' +
+                        '<span class="crop-safe-tag"></span>' +
                     '</span>' +
                 '</div>' +
                 '<div class="crop-tools">' +
