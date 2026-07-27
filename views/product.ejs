@@ -116,16 +116,48 @@
                     </div>
                 <% } %>
 
+                <%# Màu sắc: ô vuông màu bấm chọn được, KHÔNG hiện chữ (yêu cầu của
+                    khách). Tên màu chỉ nằm trong title/aria-label — người mù màu và
+                    người dùng trình đọc màn hình không còn cách nào khác để biết ô
+                    đó là màu gì, mà thuộc tính này không vẽ chữ lên trang. %>
+                <% if (product.colors && product.colors.length) { %>
+                    <div class="pd-colors">
+                        <span class="pd-variant-label"><%= t.product.attrs.color %>:</span>
+                        <div class="pd-color-list">
+                            <% product.colors.forEach(function (c, i) {
+                                /* image_index trỏ theo VỊ TRÍ trong gallery. Ảnh có thể
+                                   đã bị xoá sau khi gán màu, nên phải kiểm tra tồn tại
+                                   thay vì tin vào chỉ số. */
+                                var imgs = product.images || [];
+                                var target = (c.image_index != null && imgs[c.image_index])
+                                    ? imgs[c.image_index].url : '';
+                                var label = pick(c, 'name') || c.hex;
+                            %>
+                                <button type="button"
+                                        class="pd-color <%= i === 0 ? 'active' : '' %>"
+                                        style="--sw: <%= c.hex %>"
+                                        data-image="<%= target %>"
+                                        title="<%= label %>"
+                                        aria-label="<%= label %>"
+                                        aria-pressed="<%= i === 0 ? 'true' : 'false' %>"></button>
+                            <% }) %>
+                        </div>
+                    </div>
+                <% } %>
+
                 <%
                 /* Thông số kỹ thuật giờ nằm NGAY cột phải (chỗ dòng SKU cũ) thay vì
                    trong tab — người xem thấy kích thước/trọng lượng mà không phải
                    cuộn xuống. Chỉ in dòng có dữ liệu thật; không còn bảng mẫu
-                   trong file ngôn ngữ, sản phẩm chưa nhập thì đơn giản là không hiện. */
+                   trong file ngôn ngữ, sản phẩm chưa nhập thì đơn giản là không hiện.
+
+                   Dòng "Màu sắc" đã BỎ khỏi bảng này: màu giờ hiện thành ô vuông ở
+                   trên. Cột color_vi/color_en vẫn còn trong DB và vẫn ra ở /api/products,
+                   chỉ là không vẽ ra trang khách nữa. */
                 const specs = [
                     {label: t.product.attrs.size, value: pick(product, 'dimensions')},
                     {label: t.product.attrs.weight, value: product.weight != null ? Number(product.weight) + ' kg' : ''},
                     {label: t.product.attrs.material, value: pick(product, 'material')},
-                    {label: t.product.attrs.color, value: pick(product, 'color')},
                 ].filter(function (s) { return s.value; });
                 %>
                 <div class="pd-meta">

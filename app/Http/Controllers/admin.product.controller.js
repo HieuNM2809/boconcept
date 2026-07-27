@@ -6,6 +6,36 @@ const {parsePrice, MAX_PRICE} = require('../../Helpers/price.helper');
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
 const flashText = (k) => ({created: 'Đã thêm sản phẩm.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
 
+/**
+ * Gộp 4 mảng song song của mục "Màu sắc" thành danh sách object cho service.
+ *
+ * Form gửi color_hex[] / color_name_vi[] / color_name_en[] / color_image[] — cùng
+ * kiểu mảng song song như alt_vi[]/alt_en[] của lưới ảnh trang chủ.
+ *
+ * Ô ẩn `has_colors` là thứ phân biệt hai tình huống mà nếu lẫn nhau thì admin
+ * không bao giờ xoá được màu cuối cùng:
+ *   - không có `has_colors` -> payload không đến từ form sản phẩm (vd. API sửa
+ *     từng phần) -> trả undefined = service giữ nguyên màu cũ.
+ *   - có `has_colors` mà không có dòng nào -> admin đã xoá hết -> trả [] = xoá thật.
+ */
+function readColors(b = {}) {
+    if (b.has_colors == null) return undefined;
+
+    // qs cho ra CHUỖI khi chỉ có một dòng, phải bọc lại — cùng cái bẫy với gallery[].
+    const arr = (v) => (v == null ? [] : (Array.isArray(v) ? v : [v]));
+    const hex = arr(b.color_hex);
+    const nameVi = arr(b.color_name_vi);
+    const nameEn = arr(b.color_name_en);
+    const image = arr(b.color_image);
+
+    return hex.map((h, i) => ({
+        hex: h,
+        name_vi: nameVi[i],
+        name_en: nameEn[i],
+        image_index: image[i],
+    }));
+}
+
 function normalize(b = {}) {
     const str = (v) => (v == null || String(v).trim() === '' ? null : String(v).trim());
     return {
@@ -25,8 +55,10 @@ function normalize(b = {}) {
         price: parsePrice(b.price, {label: 'Giá'}),
         material_vi: str(b.material_vi),
         material_en: str(b.material_en),
-        color_vi: str(b.color_vi),
-        color_en: str(b.color_en),
+        // color_vi/color_en CỐ Ý không có ở đây. Form không còn hai ô đó (màu giờ
+        // là mục "Màu sắc" với ô chọn màu thật). Nếu vẫn đọc thì mỗi lần lưu sẽ
+        // nhận được null và GHI ĐÈ dữ liệu màu cũ trong DB — cột vẫn phải giữ
+        // nguyên vì /api/products còn trả về.
         dimensions_vi: str(b.dimensions_vi),
         dimensions_en: str(b.dimensions_en),
         // Ô trống -> null chứ không 0: 0kg là một giá trị hợp lệ nhưng vô nghĩa,
@@ -43,6 +75,7 @@ function normalize(b = {}) {
         gallery: b.gallery == null
             ? undefined
             : (Array.isArray(b.gallery) ? b.gallery : [b.gallery]),
+        colors: readColors(b),
     };
 }
 

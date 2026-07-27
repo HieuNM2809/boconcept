@@ -1123,6 +1123,25 @@ body.drawer-open { overflow: hidden; }
 .variant img { width: 26px; height: 26px; border-radius: 6px; object-fit: cover; }
 .variant:hover { border-color: var(--accent); }
 .variant.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); color: var(--accent-dark); }
+
+/* Ô vuông màu — chỉ màu, không chữ (yêu cầu của khách). */
+.pd-colors { margin-bottom: 22px; }
+.pd-color-list { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Viền trong mờ: màu trắng/kem mà nền cũng trắng thì ô biến mất hoàn toàn nếu
+   chỉ tô nền. Viền này nằm ĐÈ LÊN màu nên không làm lệch màu người xem thấy. */
+.pd-color {
+    width: 34px; height: 34px; padding: 0; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--sw, #fff);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08);
+    transition: .2s;
+}
+.pd-color:hover { transform: scale(1.08); }
+/* Dấu chọn nằm NGOÀI ô (outline + offset) chứ không phải viền trong: viền trong
+   sẽ bị chính màu nền nuốt mất khi màu tối. */
+.pd-color.active { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pd-color:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 .pd-meta { border-top: 1px solid var(--line); padding-top: 18px; font-size: 14px; color: var(--muted); display: grid; gap: 8px; }
 .pd-meta-k { color: var(--ink); font-weight: 600; }
 .pd-cat:hover { color: var(--accent-dark); }
