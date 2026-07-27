@@ -338,6 +338,19 @@
             v.classList.add('active');
             if (firstImg && v.dataset.image) firstImg.src = v.dataset.image;
         }));
+
+        // Ô vuông màu: cùng cơ chế đổi ảnh như biến thể. Màu không gắn ảnh
+        // (`data-image` rỗng) chỉ đổi trạng thái chọn, KHÔNG xoá trắng ảnh đang xem.
+        const colors = document.querySelectorAll('.pd-color');
+        colors.forEach((c) => c.addEventListener('click', () => {
+            colors.forEach((x) => {
+                x.classList.remove('active');
+                x.setAttribute('aria-pressed', 'false');
+            });
+            c.classList.add('active');
+            c.setAttribute('aria-pressed', 'true');
+            if (firstImg && c.dataset.image) firstImg.src = c.dataset.image;
+        }));
     }
 
     document.querySelectorAll('.tab-btn').forEach((btn) => btn.addEventListener('click', () => {

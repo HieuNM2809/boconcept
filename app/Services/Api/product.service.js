@@ -1,6 +1,6 @@
 const {Op} = require('sequelize');
 const sequelize = require('../../../lib/database');
-const {Product, Category, ProductVariant, ProductImage} = require('../../Models/index.model');
+const {Product, Category, ProductVariant, ProductImage, ProductColor} = require('../../Models/index.model');
 const {parsePrice} = require('../../Helpers/price.helper');
 
 const SORT_MAP = {
@@ -130,6 +130,7 @@ class ProductService {
                 {model: Category, as: 'category', attributes: ['id', 'name_vi', 'name_en', 'slug']},
                 {model: ProductVariant, as: 'variants'},
                 {model: ProductImage, as: 'images', separate: true, order: [['sort_order', 'ASC']]},
+                {model: ProductColor, as: 'colors', separate: true, order: [['sort_order', 'ASC']]},
             ],
         });
     }
@@ -183,6 +184,9 @@ class ProductService {
             }, {transaction: t});
 
             await ProductService._syncImages(product.id, data.gallery, t);
+            // Sau _syncImages: `image_index` của màu trỏ theo VỊ TRÍ trong gallery
+            // vừa ghi, nên gallery phải ở trạng thái cuối cùng trước đã.
+            await ProductService._syncColors(product.id, data.colors, t);
 
             if (Array.isArray(data.variants) && data.variants.length) {
                 await ProductVariant.bulkCreate(
@@ -280,6 +284,60 @@ class ProductService {
         }
     }
 
+    /**
+     * Ghi lại danh sách màu cho khách chọn ở trang chi tiết.
+     *
+     * XOÁ HẾT RỒI CHÈN LẠI — cố ý khác `_syncImages`. Ở đó mỗi dòng là chuỗi
+     * base64 ~2MB nên ghi lại một dòng không đổi là lãng phí thấy rõ; ở đây một
+     * dòng chỉ vài chục byte và không có gì tham chiếu tới id của màu, nên so
+     * từng dòng chỉ đổi lấy code phức tạp hơn mà không được gì.
+     *
+     * @param {Array<{hex, name_vi, name_en, image_index}>} colors
+     */
+    static async _syncColors(productId, colors, t) {
+        if (!Array.isArray(colors)) return; // không gửi field -> giữ nguyên màu cũ
+
+        // CHUẨN HOÁ VÀ KIỂM TRA TRƯỚC, ghi sau. Nếu để lẫn vào giữa vòng ghi thì
+        // một mã màu hỏng ở cuối danh sách sẽ xảy ra SAU khi destroy đã chạy —
+        // màu cũ mất sạch rồi mới báo lỗi.
+        const rows = [];
+        for (const c of colors) {
+            const raw = String((c && c.hex) || '').trim();
+            if (!raw) continue; // hàng trống (admin bấm "Thêm màu" rồi bỏ đó) -> bỏ qua
+
+            if (!/^#[0-9a-f]{6}$/i.test(raw)) {
+                throw Object.assign(
+                    new Error(`Mã màu không hợp lệ: ${raw}. Cần dạng #RRGGBB.`),
+                    {status: 400},
+                );
+            }
+
+            const text = (v) => {
+                const s = String(v ?? '').trim();
+                return s || null; // chuỗi rỗng -> null, để DB không đầy ô ''
+            };
+
+            // Vị trí ảnh trong gallery. Chuỗi số vẫn nhận (form gửi lên là chuỗi),
+            // còn lại về null. Vượt quá số ảnh thực tế thì view tự bỏ qua.
+            const idx = Number(c.image_index);
+            const validIdx = c.image_index !== '' && c.image_index !== null &&
+                c.image_index !== undefined && Number.isInteger(idx) && idx >= 0;
+
+            rows.push({
+                product_id: productId,
+                hex: raw.toLowerCase(),
+                name_vi: text(c.name_vi),
+                name_en: text(c.name_en),
+                image_index: validIdx ? idx : null,
+                sort_order: rows.length,
+            });
+        }
+
+        await ProductColor.destroy({where: {product_id: productId}, transaction: t});
+        if (!rows.length) return;
+        await ProductColor.bulkCreate(rows, {transaction: t});
+    }
+
     static async update(id, data) {
         const item = await Product.findByPk(id);
         if (!item) throw Object.assign(new Error('Product not found'), {status: 404});
@@ -289,6 +347,7 @@ class ProductService {
         await sequelize.transaction(async (t) => {
             await item.update(patch, {transaction: t});
             await ProductService._syncImages(item.id, data.gallery, t);
+            await ProductService._syncColors(item.id, data.colors, t);
         });
         return ProductService.getById(id);
     }
