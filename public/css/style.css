@@ -1385,7 +1385,7 @@ body.modal-open { overflow: hidden; }
     .pagination { flex-wrap: wrap; }
     /* Cụm trái (~260px) vs ô tìm kiếm (~200px) lệch nhau -> logo hết canh giữa.
        Dồn hết danh mục vào panel ☰, chỉ giữ nút ☰. */
-    .nav-cats { display: none; }
+    /* .nav-cats vẫn hiện trên tablet/điện thoại */
     .header-search { width: 240px; }
     .partner-row { grid-template-columns: repeat(4, 1fr); }
     .features { padding: 34px 0; }
@@ -1411,16 +1411,32 @@ body.modal-open { overflow: hidden; }
     .collage { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 30vw; gap: 8px; }
     .collage-cell { grid-column: auto !important; grid-row: auto !important; }
     .collage-cell.is-big { grid-column: 1 / -1 !important; }
-    /* Ray hai bên CỐ ĐỊNH 44px (không phải 1fr) — đó mới là thứ đảm bảo logo
-       nằm chính giữa khi bề rộng hẹp. */
+    /* Hàng 1: ☰ | logo (giữa) | search icon
+       Hàng 2: nav-cats full width
+       Hàng 3: search input full width */
     .header-main-inner {
         grid-template-columns: 44px 1fr 44px;
-        gap: 8px 12px; min-height: 60px; padding-bottom: 10px;
+        grid-template-rows: auto auto auto;
+        gap: 0 8px; min-height: 56px; padding-bottom: 0;
+        align-items: center;
     }
-    /* Ô tìm kiếm xuống hàng riêng, full-width — thuần CSS, không cần JS toggle. */
-    .header-right { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; }
+    /* nav-cats xuống hàng 2, chiếm trọn bề ngang */
+    .header-left { display: contents; }
+    .nav-toggle { grid-column: 1; grid-row: 1; width: 44px; height: 44px; }
+    .nav-cats {
+        grid-column: 1 / -1; grid-row: 2;
+        padding: 6px 0 8px;
+        border-top: 1px solid var(--line);
+        overflow-x: auto; scrollbar-width: none;
+        gap: 0;
+    }
+    .nav-cats::-webkit-scrollbar { display: none; }
+    .nav-cats a, .nav-more {
+        padding: 6px 14px; font-size: 14px; white-space: nowrap;
+    }
+    /* search input hàng 3 */
+    .header-right { grid-column: 1 / -1; grid-row: 3; justify-self: stretch; padding: 6px 0 8px; }
     .header-search { width: 100%; }
-    .nav-toggle { width: 44px; height: 44px; }
     .hero-slide { height: 60vh; min-height: 400px; }
     .product-grid { grid-template-columns: repeat(2, 1fr); }
     .cat-grid { grid-template-columns: repeat(2, 1fr); }
