@@ -330,7 +330,7 @@ body.drawer-open { overflow: hidden; }
 .hero-brand {
     position: absolute; top: var(--hero-brand-top); left: 0; right: 0; z-index: 3;
     text-align: center; color: #fff;
-    font-family: var(--display);
+    font-family: var(--sans);
     font-size: clamp(16px, 2vw, 26px); font-weight: 700; letter-spacing: .02em;
     /* Ảnh nền do admin tự upload, không đoán trước được sáng hay tối:
        bóng đổ là lớp bảo hiểm để chữ trắng còn đọc được trên ảnh sáng. */
