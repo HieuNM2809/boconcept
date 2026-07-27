@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS `product_images` (
 -- ── Slideshow (hero trang chủ, quản lý ở /admin/slides) ───────────────────────
 CREATE TABLE IF NOT EXISTS `slides` (
     `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `image`      VARCHAR(500) NOT NULL,
+    `image`      MEDIUMTEXT   NOT NULL,
     `title_vi`   VARCHAR(255) NULL,
     `title_en`   VARCHAR(255) NULL,
     `badge_vi`   VARCHAR(255) NULL,
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS `partners` (
 -- ── Giấy chứng nhận công ty (quản lý ở /admin/certificates) ───────────────────
 CREATE TABLE IF NOT EXISTS `certificates` (
     `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `image`      VARCHAR(500) NOT NULL,
+    `image`      MEDIUMTEXT   NOT NULL,
     `title_vi`   VARCHAR(255) NULL,
     `title_en`   VARCHAR(255) NULL,
     `sort_order` INT          NOT NULL DEFAULT 0,
@@ -287,3 +287,8 @@ CREATE TABLE IF NOT EXISTS `settings` (
 INSERT INTO `api_clients` (`service_name`, `client_id`, `client_secret`, `is_active`, `created_at`, `updated_at`)
 VALUES ('demo', 'demo-client', 'demo-secret', 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE `updated_at` = NOW();
+
+-- ── Migrations: mở rộng cột trên DB đã tồn tại ────────────────────────────────
+-- Chạy khi áp schema.sql lên DB cũ (volume không bị xóa).
+ALTER TABLE `slides`       MODIFY `image` MEDIUMTEXT NOT NULL;
+ALTER TABLE `certificates` MODIFY `image` MEDIUMTEXT NOT NULL;
