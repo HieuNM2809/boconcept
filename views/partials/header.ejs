@@ -95,12 +95,20 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
             <a class="drawer-promo-cta" href="/#footer"><%= t.common.menu.promoCta %></a>
         </div>
 
-        <%# Chỉ hiện loại sản phẩm CẤP 1: mỗi danh mục là một link thẳng, không mở panel con. %>
+        <%# Loại CÓ children -> button mở cột phải; loại KHÔNG có children -> link thẳng. %>
         <nav class="drawer-group" aria-label="<%= t.common.actions.menu %>">
             <% navs.forEach(function (c) { %>
-                <a class="drawer-item drawer-item-lg" href="/categories/<%= c.id %>">
-                    <span class="drawer-item-label"><%= pick(c, 'name') %></span>
-                </a>
+                <% if (c.children && c.children.length) { %>
+                    <button class="drawer-item drawer-item-lg" type="button"
+                            data-drawer-to="<%= c.id %>" aria-expanded="false">
+                        <span class="drawer-item-label"><%= pick(c, 'name') %></span>
+                        <span class="drawer-chev" aria-hidden="true">›</span>
+                    </button>
+                <% } else { %>
+                    <a class="drawer-item drawer-item-lg" href="/categories/<%= c.id %>">
+                        <span class="drawer-item-label"><%= pick(c, 'name') %></span>
+                    </a>
+                <% } %>
             <% }) %>
         </nav>
 
@@ -112,4 +120,33 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
             <% }) %>
         </nav>
     </div>
+
+    <!-- ── Cột phải: danh mục con (mở khi bấm mũi tên ở cột trái) ─────────── -->
+    <div class="drawer-sub" id="drawerSub" hidden>
+        <button class="drawer-back" type="button" data-drawer-back>
+            ‹ <%= t.common.menu.back %>
+        </button>
+        <% navs.forEach(function (c) { %>
+            <% if (c.children && c.children.length) { %>
+                <div class="drawer-sub-level" data-level="<%= c.id %>" hidden>
+                    <p class="drawer-sub-title"><%= pick(c, 'name') %></p>
+                    <a class="drawer-sub-all" href="/categories/<%= c.id %>">
+                        <%= t.common.menu.viewAllIn(pick(c, 'name')) %>
+                    </a>
+                    <ul class="drawer-sub-list">
+                        <% c.children.forEach(function (ch) { %>
+                            <li>
+                                <a class="drawer-sub-item" href="/categories/<%= ch.id %>">
+                                    <span class="drawer-sub-thumb"
+                                          style="background-image:url('<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/168/136') %>')"></span>
+                                    <span class="drawer-sub-name"><%= pick(ch, 'name') %></span>
+                                </a>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } %>
+        <% }) %>
+    </div>
+
 </aside>
