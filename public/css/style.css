@@ -513,7 +513,7 @@ body.drawer-open { overflow: hidden; }
 
 /* Lưới 12 cột, hàng cao theo vw để cả cụm giữ đúng tỉ lệ khi co giãn màn hình */
 .collage { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 1.9vw; gap: 8px; }
-.gallery-grid-section > .collage { width: 100%; gap: 0; }
+.gallery-grid-section > .collage { width: 100%; gap: 12px; }
 .collage-cell { position: relative; margin: 0; overflow: hidden; background: var(--soft); }
 
 /* Mọi ảnh trong một ô đều absolute và chồng khít lên nhau. Đây là lý do slider
@@ -730,6 +730,82 @@ body.drawer-open { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
     .cat-showcase-photo, .cat-showcase-l1, .cat-showcase-l2 a { transition-duration: .01ms; }
+}
+
+/* ===== Category tile grid (cấp 2 + hover → cấp 3) ===== */
+.csc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px 16px;
+}
+.csc-item {
+    position: relative;
+}
+.csc-thumb {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    background: var(--soft);
+}
+.csc-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform .45s ease;
+}
+.csc-item:hover .csc-thumb img { transform: scale(1.06); }
+.csc-name {
+    text-align: center;
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: var(--ink);
+    letter-spacing: .02em;
+}
+/* Overlay dropdown hiện khi hover */
+.csc-dropdown {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: blur(3px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 20px 16px;
+    opacity: 0; visibility: hidden;
+    transition: opacity .22s ease, visibility .22s ease;
+    z-index: 10;
+}
+.csc-item:hover .csc-dropdown { opacity: 1; visibility: visible; }
+.csc-dropdown-title {
+    font-family: var(--serif);
+    font-size: 17px; font-weight: 600;
+    margin: 0 0 10px;
+    color: var(--ink);
+    text-align: center;
+}
+.csc-dropdown ul {
+    list-style: none; margin: 0; padding: 0;
+    text-align: center; width: 100%;
+}
+.csc-dropdown li { margin: 3px 0; }
+.csc-dropdown li a {
+    font-size: 13px; color: var(--muted);
+    transition: color .18s;
+    display: block; padding: 2px 0;
+}
+.csc-dropdown li a:hover { color: var(--ink); }
+.csc-dropdown-all {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink);
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 1px;
+}
+@media (max-width: 768px) {
+    .csc-grid { grid-template-columns: repeat(3, 1fr); gap: 14px 10px; }
+}
+@media (max-width: 480px) {
+    .csc-grid { grid-template-columns: repeat(2, 1fr); gap: 12px 8px; }
 }
 
 /* ===== Partners ===== */
