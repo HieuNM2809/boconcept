@@ -1242,13 +1242,10 @@ body.drawer-open { overflow: hidden; }
 .pd-info.is-sticky { position: sticky; top: 24px; align-self: start; }
 .pd-name { font-family: var(--serif); font-size: clamp(28px, 4vw, 44px); font-weight: 600; margin: 0 0 12px; }
 .pd-desc { color: var(--muted); line-height: 1.8; margin-bottom: 24px; }
-.pd-variants { margin-bottom: 22px; }
-.pd-variant-label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
-.variant-list { display: flex; flex-wrap: wrap; gap: 10px; }
-.variant { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; font-size: 14px; transition: .2s; }
-.variant img { width: 26px; height: 26px; border-radius: 6px; object-fit: cover; }
-.variant:hover { border-color: var(--accent); }
-.variant.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); color: var(--accent-dark); }
+/* Nhãn nhỏ phía trên một nhóm lựa chọn ở cột phải trang chi tiết (hiện chỉ còn
+   "Màu sắc:"). Tên cũ là .pd-variant-label, đổi khi khối "Phân loại" bị bỏ —
+   để nguyên thì lớp mang tên "variant" lại đi gắn cho khối màu, gây hiểu nhầm. */
+.pd-field-label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
 
 /* Ô vuông màu — chỉ màu, không chữ (yêu cầu của khách). */
 .pd-colors { margin-bottom: 22px; }
@@ -1751,7 +1748,6 @@ body.modal-open { overflow: hidden; }
        tính chỗ đứng từ chính hai biến này, đặt `top` thẳng thì chúng đứng im. */
     :root { --hero-brand-top: 45px; --hero-brand-gap: 38px; }
     .partner-logo { padding: 12px 14px; }
-    .variant span { font-size: 13px; }
 }
 
 /* ==========================================================================
