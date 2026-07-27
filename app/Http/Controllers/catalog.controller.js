@@ -64,8 +64,12 @@ async function category(req, res) {
         // người dùng đổi per_page (đổi là vỡ bố cục 4×3 theo spec).
         const PER_PAGE = 12;
 
+        // Gom ID danh mục hiện tại + tất cả con để lấy đủ sản phẩm cấp con
+        const childIds = children.map((c) => c.id);
+        const allCatIds = childIds.length ? [current.id, ...childIds] : current.id;
+
         const result = await ProductService.getAll({
-            category_id: current.id,
+            category_id: allCatIds,
             sort: SORT_UI_TO_SERVICE[uiSort],
             per_page: PER_PAGE,
             page: req.query.page || 1,

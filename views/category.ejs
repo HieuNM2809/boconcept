@@ -10,8 +10,9 @@
         </div>
     </section>
 <% } else { %>
-    <div class="container listing">
+    <div class="listing">
 
+    <div class="container">
         <!-- Breadcrumb -->
         <nav class="breadcrumb">
             <a href="/"><%= t.catalog.home %></a>
@@ -118,6 +119,9 @@
         <%# Ô "Tìm loại sản phẩm" đã bỏ cùng với dải chip: nó chỉ lọc đúng các chip đó,
             giữ lại thì gõ gì cũng ra "không tìm thấy". %>
 
+    </div><%# /container (breadcrumb → filter) %>
+
+    <div class="container-wide">
         <!-- Thanh sắp xếp + số kết quả -->
         <div class="toolbar">
             <div class="sort-chips">
@@ -189,7 +193,8 @@
         <% } else { %>
             <p class="empty listing-empty"><%= t.catalog.empty %></p>
         <% } %>
-    </div>
+    </div><%# /container-wide (toolbar + grid + pagination) %>
+    </div><%# /listing %>
 <% } %>
 
 <%- include('partials/footer') %>

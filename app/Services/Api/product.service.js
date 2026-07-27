@@ -40,7 +40,11 @@ class ProductService {
 
         const where = {};
         if (status !== undefined && status !== '' && status !== null) where.status = parseInt(status, 10);
-        if (category_id) where.category_id = parseInt(category_id, 10);
+        if (category_id) {
+            where.category_id = Array.isArray(category_id)
+                ? {[Op.in]: category_id.map(Number)}
+                : parseInt(category_id, 10);
+        }
         if (is_featured !== null && is_featured !== undefined && is_featured !== '') {
             where.is_featured = parseInt(is_featured, 10);
         }
