@@ -99,11 +99,12 @@ async function index(req, res) {
             .filter((c) => c.parent_id == null && c.is_featured)
             .map((c) => ({...c, children: childrenOf.get(c.id) || []}));
 
-        // Chữ hai khối "Loại sản phẩm" và "Tin tức" trước đây sửa được ở
-        // /admin/content. Màn đó đã gỡ theo yêu cầu, chữ chuyển hẳn về
-        // resources/lang/{vi,en}/home.js — muốn đổi thì sửa thẳng ở đó.
+        // Tiêu đề & mô tả khối "Loại sản phẩm": lấy từ title_vi/description_vi của danh mục
+        // nổi bật đầu tiên (sửa ở /admin/categories/<id>/edit). Lang file chỉ là fallback
+        // khi chưa có danh mục nổi bật hoặc ô để trống.
+        const pickCat = (field, fallback) => (rootCats.length && res.locals.pick(rootCats[0], field)) || fallback;
 
-        // Khối giới thiệu doanh nghiệp thì NGƯỢC LẠI: lấy từ DB (trang `about`),
+        // Khối giới thiệu doanh nghiệp: lấy từ DB (trang `about`),
         // chữ trong resources/lang chỉ còn là lưới an toàn cho lúc chưa có bản ghi,
         // trang bị ẩn (status=0), hoặc cột để trống.
         const about = aboutPage && aboutPage.get ? aboutPage.get({plain: true}) : aboutPage;
@@ -123,8 +124,8 @@ async function index(req, res) {
             whyTitle: pickAbout('title', home.why.title),
             whyBody: pickAbout('excerpt', home.why.body),
             categories: rootCats,
-            categoriesTitle: home.categories.title,
-            categoriesDesc: home.categories.sub,
+            categoriesTitle: pickCat('title', home.categories.title),
+            categoriesDesc: pickCat('description', home.categories.sub),
             news: toPlain(newsRows),
             newsTitle: home.news.title,
             newsDesc: home.news.sub,

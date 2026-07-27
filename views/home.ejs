@@ -188,25 +188,25 @@
             <h2 class="gallery-title"><%= t.home.gallery.title %></h2>
             <p class="gallery-sub"><%= t.home.gallery.sub %></p>
         </div>
+    </div>
 
-        <%# Lớp vị trí lấy theo g.slot chứ KHÔNG theo chỉ số vòng lặp: thiếu một
-            khe là cả mosaic xô lệch sang ô của khe khác.
-            `is-big` chỉ đánh dấu vai trò bố cục (ô lớn, mobile chiếm full-width),
-            không mang hiệu ứng — trùng đúng tập khe slider nên dùng chung cờ. %>
-        <div class="collage" id="collage">
-            <% gallery.forEach(function (g) { %>
-                <figure class="collage-cell collage-slot-<%= g.slot %><%= g.isSlider ? ' is-big' : '' %>">
-                    <% g.images.forEach(function (im, i) { %>
-                        <%# .is-active do SERVER đóng lên ảnh đầu, không phải JS —
-                            nhờ vậy không có JS thì ô vẫn hiện ảnh chứ không trắng. %>
-                        <img class="collage-img<%= i === 0 ? ' is-active' : '' %>"
-                             src="<%= im.image %>" alt="<%= pick(im, 'alt') %>"
-                             <%= i === 0 ? '' : 'aria-hidden="true"' %>
-                             loading="<%= i === 0 ? 'eager' : 'lazy' %>">
-                    <% }) %>
-                </figure>
-            <% }) %>
-        </div>
+    <%# Lớp vị trí lấy theo g.slot chứ KHÔNG theo chỉ số vòng lặp: thiếu một
+        khe là cả mosaic xô lệch sang ô của khe khác.
+        `is-big` chỉ đánh dấu vai trò bố cục (ô lớn, mobile chiếm full-width),
+        không mang hiệu ứng — trùng đúng tập khe slider nên dùng chung cờ. %>
+    <div class="collage" id="collage">
+        <% gallery.forEach(function (g) { %>
+            <figure class="collage-cell collage-slot-<%= g.slot %><%= g.isSlider ? ' is-big' : '' %>">
+                <% g.images.forEach(function (im, i) { %>
+                    <%# .is-active do SERVER đóng lên ảnh đầu, không phải JS —
+                        nhờ vậy không có JS thì ô vẫn hiện ảnh chứ không trắng. %>
+                    <img class="collage-img<%= i === 0 ? ' is-active' : '' %>"
+                         src="<%= im.image %>" alt="<%= pick(im, 'alt') %>"
+                         <%= i === 0 ? '' : 'aria-hidden="true"' %>
+                         loading="<%= i === 0 ? 'eager' : 'lazy' %>">
+                <% }) %>
+            </figure>
+        <% }) %>
     </div>
 </section>
 
