@@ -1286,7 +1286,8 @@ body.drawer-open { overflow: hidden; }
 .pd-color:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .pd-meta { border-top: 1px solid var(--line); padding-top: 18px; font-size: 14px; color: var(--muted); display: grid; gap: 8px; }
-.pd-meta-k { color: var(--ink); font-weight: 600; }
+.pd-meta > div { display: flex; gap: 4px; align-items: flex-start; }
+.pd-meta-k { color: var(--ink); font-weight: 600; white-space: nowrap; flex-shrink: 0; }
 .pd-meta-v { white-space: pre-line; }
 .pd-cat:hover { color: var(--accent-dark); }
 .pd-cta { margin-top: 24px; }
