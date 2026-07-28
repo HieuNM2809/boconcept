@@ -420,7 +420,7 @@ body.drawer-open { overflow: hidden; }
    Vẫn absolute nên hiện ra không đẩy icon/tiêu đề đi đâu. */
 .feature-desc {
     position: absolute; left: 24px; right: 24px; top: calc(50% + 34px); margin: 0;
-    color: var(--muted); font-size: 14px; line-height: 1.6;
+    color: var(--muted); font-size: 14px; line-height: 1.6; white-space: pre-line;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     transition: opacity .25s ease, transform .25s ease;
 }
@@ -716,7 +716,7 @@ body.drawer-open { overflow: hidden; }
 .news-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .55s cubic-bezier(.2, .6, .2, 1); }
 .news-card-media:hover img { transform: scale(1.05); }
 .news-card-title { margin: 18px 0 8px; font-size: 19px; font-weight: 700; line-height: 1.3; }
-.news-card-desc { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+.news-card-desc { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.75; white-space: pre-line; }
 .news-card-cta {
     display: inline-block; margin-top: 12px; font-size: 13px; color: var(--muted);
     border-bottom: 1px solid transparent; transition: .2s;
@@ -790,7 +790,7 @@ body.drawer-open { overflow: hidden; }
 /* Lưới 4 cột cố định — controller trả đúng 12 sản phẩm nên ra 4×3 */
 .cat-grid { grid-template-columns: repeat(4, 1fr); }
 .product-attr { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
-.product-dims { margin: 3px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.product-dims { margin: 3px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; white-space: pre-line; }
 .product-dims-label { font-weight: 600; }
 
 /* ===== Categories — trên: 2 cột (chữ · ảnh) · dưới: hàng loại cấp 1 / cấp 2 ===== */
@@ -1265,7 +1265,7 @@ body.drawer-open { overflow: hidden; }
 .pd-info.is-sticky { position: sticky; top: 140px; align-self: start; max-height: calc(100vh - 164px); overflow-y: auto; scrollbar-width: none; }
 .pd-info.is-sticky::-webkit-scrollbar { display: none; }
 .pd-name { font-family: var(--serif); font-size: clamp(28px, 4vw, 44px); font-weight: 600; margin: 0 0 12px; }
-.pd-desc { color: var(--muted); line-height: 1.8; margin-bottom: 24px; }
+.pd-desc { color: var(--muted); line-height: 1.8; margin-bottom: 24px; white-space: pre-line; }
 /* Nhãn nhỏ phía trên một nhóm lựa chọn ở cột phải trang chi tiết (hiện chỉ còn
    "Màu sắc:"). Tên cũ là .pd-variant-label, đổi khi khối "Phân loại" bị bỏ —
    để nguyên thì lớp mang tên "variant" lại đi gắn cho khối màu, gây hiểu nhầm. */
@@ -1318,7 +1318,7 @@ body.drawer-open { overflow: hidden; }
 .article-title { font-size: clamp(28px, 3.6vw, 44px); font-weight: 700; line-height: 1.18; letter-spacing: -.02em; margin: 0 0 14px; }
 .article-meta { margin: 0 0 22px; font-size: 13.5px; color: var(--muted); }
 .article-meta .sep { margin: 0 8px; }
-.article-lead { margin: 0 0 26px; font-size: 17px; line-height: 1.7; color: var(--ink); font-weight: 500; }
+.article-lead { margin: 0 0 26px; font-size: 17px; line-height: 1.7; color: var(--ink); font-weight: 500; white-space: pre-line; }
 .article-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; margin: 0 0 30px; }
 .article-layout.article-layout-noimg { grid-template-columns: 1fr; }
 .article-hero { position: sticky; top: 90px; margin: 0; border-radius: var(--radius); overflow: hidden; cursor: zoom-in; width: 100%; height: 420px; }
