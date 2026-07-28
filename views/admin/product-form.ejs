@@ -24,7 +24,7 @@
                 </div>
                 <%# VI và EN đặt CẠNH nhau chứ không trên–dưới: dịch nội dung là việc
                     đối chiếu hai bản, xếp dọc thì phải cuộn qua lại mới so được. %>
-                <div class="form-pair">
+                <div class="form-pair" style="display:none">
                     <div><label for="description_vi">Mô tả sản phẩm</label><textarea id="description_vi" name="description_vi" rows="10"><%= item ? (item.description_vi || '') : '' %></textarea></div>
                     <div><label for="description_en">Mô tả tiếng anh</label><textarea id="description_en" name="description_en" rows="10"><%= item ? (item.description_en || '') : '' %></textarea></div>
                 </div>
