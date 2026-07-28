@@ -549,10 +549,13 @@ body.drawer-open { overflow: hidden; }
 }
 .why-cta:hover { background: #444; }
 .why-media {
+    display: block;
     position: relative; overflow: hidden;
     background: var(--soft);
     min-height: 520px;
     border-radius: 12px;
+    text-decoration: none; color: inherit;
+    cursor: pointer;
 }
 .why-media::after {
     content: "";
@@ -1646,6 +1649,10 @@ body.modal-open { overflow: hidden; }
     .news-grid, .news-grid-3 { grid-template-columns: 1fr; gap: 34px; }
     .article-layout { grid-template-columns: 1fr; gap: 20px; }
     .article-hero { position: static; }
+    /* Chứng nhận: chuyển sang scroll ngang kiểu showcase trên mobile */
+    .cert-row { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; justify-content: flex-start; padding-bottom: 12px; }
+    .cert-row::-webkit-scrollbar { display: none; }
+    .cert-card { flex: 0 0 72%; width: auto; max-width: none; scroll-snap-align: start; }
     /* Bỏ bố cục so le: 12 cột co lại thì ô 2-3 cột hẹp tới mức không nhìn được ảnh.
        Chuyển sang lưới 2 cột đều, ô lớn chiếm trọn hàng. */
     .collage { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 30vw; gap: 8px; }
@@ -1722,7 +1729,7 @@ body.modal-open { overflow: hidden; }
     .hero-arrow.prev { left: 10px; }
     .hero-arrow.next { right: 10px; }
     .partner-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .cert-card { width: 100%; max-width: 300px; }
+    .cert-card { flex: 0 0 80%; }
     .footer-grid { grid-template-columns: 1fr; gap: 26px; }
     .subcat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .listing-title { font-size: 24px; }

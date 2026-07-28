@@ -107,11 +107,11 @@
             <% var catDesc = pick(cat, 'description'); %>
             <% if (catDesc) { %><p class="why-body"><%= catDesc %></p><% } %>
         </div>
-        <div class="why-media">
+        <a class="why-media" href="/categories/<%= cat.id %>">
             <img src="<%= cat.image || ('https://picsum.photos/seed/cat' + cat.id + '/900/700') %>"
                  alt="<%= pick(cat, 'name') %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>">
             <span class="why-media-label"><%= pick(cat, 'name') %></span>
-        </div>
+        </a>
     </div>
     <% if (cat.children && cat.children.length) { %>
         <div class="why-media-subs">
