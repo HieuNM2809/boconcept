@@ -147,7 +147,7 @@
                 %>
                 <div class="pd-meta">
                     <% specs.forEach(function (s) { %>
-                        <div><span class="pd-meta-k"><%= s.label %>:</span> <%= s.value %></div>
+                        <div><span class="pd-meta-k"><%= s.label %>:</span> <span class="pd-meta-v"><%= s.value %></span></div>
                     <% }) %>
                     <% if (breadcrumb.length) { %>
                         <div>

@@ -1286,6 +1286,7 @@ body.drawer-open { overflow: hidden; }
 
 .pd-meta { border-top: 1px solid var(--line); padding-top: 18px; font-size: 14px; color: var(--muted); display: grid; gap: 8px; }
 .pd-meta-k { color: var(--ink); font-weight: 600; }
+.pd-meta-v { white-space: pre-line; }
 .pd-cat:hover { color: var(--accent-dark); }
 .pd-cta { margin-top: 24px; }
 .tabs { margin-top: 64px; }
