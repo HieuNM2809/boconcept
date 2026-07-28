@@ -504,7 +504,9 @@ body.drawer-open { overflow: hidden; }
 .why { background: var(--white); padding: 0; }
 .why + .why { margin-top: 32px; }
 /*.why--alt { background: var(--soft); }*/
-.why--alt .why-media-subs { background: var(--soft); }
+.why--alt .why-media-subs {
+    /*background: var(--soft); */
+}
 .why-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -648,6 +650,8 @@ body.drawer-open { overflow: hidden; }
     .why-split { grid-template-columns: 1fr; }
     .why-media { min-height: 300px; order: -1; }
     .why-sub-item { flex: 0 0 160px; }
+    .why-subs-wrap { visibility: visible; }
+    .why-media-subs { max-height: 600px; opacity: 1; overflow-x: auto; }
 }
 
 /* ===== Lưới ảnh "Style advice" (collage) ===== */
