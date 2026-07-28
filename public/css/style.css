@@ -588,26 +588,41 @@ body.drawer-open { overflow: hidden; }
     opacity: 0; transform: translate(-50%, -60%);
 }
 /* Danh mục con hiện khi hover — grid tile giống screenshot */
+.why-subs-wrap { position: relative; width: 70%; margin-inline: auto; visibility: hidden; }
+.why:has(.why-media:hover) .why-subs-wrap,
+.why-subs-wrap:hover { visibility: visible; }
 .why-media-subs {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-wrap: nowrap;
     gap: 0;
     background: var(--white);
-    padding: 20px 24px 16px;
-    max-height: 0; overflow: hidden;
-    opacity: 0;
+    padding: 20px 52px 16px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; -ms-overflow-style: none;
+    max-height: 0; opacity: 0; overflow: hidden;
     transition: max-height .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;
 }
+.why-media-subs::-webkit-scrollbar { display: none; }
 .why:has(.why-media:hover) .why-media-subs,
-.why-media-subs:hover {
+.why-subs-wrap:hover .why-media-subs {
     max-height: 600px;
     opacity: 1;
+    overflow-x: auto;
 }
+.why-subs-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+    width: 38px; height: 38px; border-radius: 50%; border: 0;
+    background: rgba(255,255,255,.92); color: var(--ink);
+    box-shadow: 0 2px 10px rgba(0,0,0,.13);
+    font-size: 22px; line-height: 1; cursor: pointer; transition: background .2s;
+}
+.why-subs-arrow:hover { background: #fff; }
+.why-subs-arrow.prev { left: 8px; }
+.why-subs-arrow.next { right: 8px; }
 .why-sub-item {
     display: flex; flex-direction: column; align-items: center;
     gap: 0; padding: 0 10px 8px;
-    width: 220px;
+    flex: 0 0 220px; scroll-snap-align: start;
     color: var(--ink); text-decoration: none;
     transition: opacity .2s;
 }
@@ -632,7 +647,7 @@ body.drawer-open { overflow: hidden; }
 @media (max-width: 768px) {
     .why-split { grid-template-columns: 1fr; }
     .why-media { min-height: 300px; order: -1; }
-    .why-media-subs { grid-template-columns: repeat(2, 1fr); }
+    .why-sub-item { flex: 0 0 160px; }
 }
 
 /* ===== Lưới ảnh "Style advice" (collage) ===== */

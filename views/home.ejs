@@ -114,16 +114,24 @@
         </a>
     </div>
     <% if (cat.children && cat.children.length) { %>
-        <div class="why-media-subs">
-            <% cat.children.forEach(function(ch) { %>
-                <a class="why-sub-item" href="/categories/<%= ch.id %>">
-                    <div class="why-sub-thumb">
-                        <img src="<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/300/400') %>"
-                             alt="<%= pick(ch, 'name') %>" loading="lazy">
-                    </div>
-                    <span><%= pick(ch, 'name') %></span>
-                </a>
-            <% }) %>
+        <div class="why-subs-wrap">
+            <div class="why-media-subs" id="whySubs-<%= cat.id %>">
+                <% cat.children.forEach(function(ch) { %>
+                    <a class="why-sub-item" href="/categories/<%= ch.id %>">
+                        <div class="why-sub-thumb">
+                            <img src="<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/300/400') %>"
+                                 alt="<%= pick(ch, 'name') %>" loading="lazy">
+                        </div>
+                        <span><%= pick(ch, 'name') %></span>
+                    </a>
+                <% }) %>
+            </div>
+            <button class="why-subs-arrow prev" type="button"
+                    data-scroll="whySubs-<%= cat.id %>" data-scroll-by-item data-dir="-1"
+                    aria-label="<%= t.common.actions.prev %>">&lsaquo;</button>
+            <button class="why-subs-arrow next" type="button"
+                    data-scroll="whySubs-<%= cat.id %>" data-scroll-by-item data-dir="1"
+                    aria-label="<%= t.common.actions.next %>">&rsaquo;</button>
         </div>
     <% } %>
 </section>
