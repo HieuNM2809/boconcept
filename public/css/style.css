@@ -503,7 +503,7 @@ body.drawer-open { overflow: hidden; }
 /* Dải giới thiệu: split 2 cột — text trái, hình phải. */
 .why { background: var(--white); padding: 0; }
 .why + .why { margin-top: 32px; }
-.why--alt { background: var(--soft); }
+/*.why--alt { background: var(--soft); }*/
 .why--alt .why-media-subs { background: var(--soft); }
 .why-split {
     display: grid;
@@ -588,7 +588,7 @@ body.drawer-open { overflow: hidden; }
     opacity: 0; transform: translate(-50%, -60%);
 }
 /* Danh mục con hiện khi hover — grid tile giống screenshot */
-.why-subs-wrap { position: relative; width: 70%; margin-inline: auto; visibility: hidden; }
+.why-subs-wrap { position: relative; width: 80%; margin-inline: auto; visibility: hidden; }
 .why:has(.why-media:hover) .why-subs-wrap,
 .why-subs-wrap:hover { visibility: visible; }
 .why-media-subs {
