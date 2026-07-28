@@ -1258,7 +1258,8 @@ body.drawer-open { overflow: hidden; }
 .pdg-more[hidden] { display: none; }
 /* Ghim cột thông tin khi cuộn gallery. `top` chừa chỗ để tiêu đề không dính sát
    mép; header là `position: relative` (không sticky) nên không cần trừ chiều cao header. */
-.pd-info.is-sticky { position: sticky; top: 24px; align-self: start; }
+.pd-info.is-sticky { position: sticky; top: 140px; align-self: start; max-height: calc(100vh - 164px); overflow-y: auto; scrollbar-width: none; }
+.pd-info.is-sticky::-webkit-scrollbar { display: none; }
 .pd-name { font-family: var(--serif); font-size: clamp(28px, 4vw, 44px); font-weight: 600; margin: 0 0 12px; }
 .pd-desc { color: var(--muted); line-height: 1.8; margin-bottom: 24px; }
 /* Nhãn nhỏ phía trên một nhóm lựa chọn ở cột phải trang chi tiết (hiện chỉ còn
