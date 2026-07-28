@@ -638,7 +638,7 @@ body.drawer-open { overflow: hidden; }
 
 /* Lưới 12 cột, hàng cao theo vw để cả cụm giữ đúng tỉ lệ khi co giãn màn hình */
 .collage { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 1.9vw; gap: 8px; max-width: 1100px; margin: 0 auto; }
-.gallery-grid-section > .collage { width: 100%; gap: 12px; padding: 0 24px; }
+.gallery-grid-section > .collage { width: 100%; gap: 12px; padding: 0 150px; max-width: none; }
 .collage-cell { position: relative; margin: 0; overflow: hidden; background: var(--soft); }
 
 /* Mọi ảnh trong một ô đều absolute và chồng khít lên nhau. Đây là lý do slider
@@ -944,7 +944,7 @@ body.drawer-open { overflow: hidden; }
    ảnh nằm lệch lạc mỗi cái một cỡ trước đây. */
 .partner-row {
     display: grid; grid-template-columns: repeat(6, 1fr);
-    gap: 14px; max-width: 1100px; margin: 48px auto 0;
+    gap: 14px; max-width: 1100px; margin: 48px auto 0; justify-items: center;
 }
 /* aspect-ratio giữ MỌI ô đúng một khuôn, không phụ thuộc ảnh bên trong cao thấp */
 .partner-logo {
@@ -1634,6 +1634,7 @@ body.modal-open { overflow: hidden; }
 /* Tablet dọc / điện thoại lớn (≤768) — bật menu hamburger */
 @media (max-width: 768px) {
     .section { padding: 44px 0; }
+    .gallery-grid-section > .collage { padding: 0; }
     .partner-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
     /* Khối loại 2 cột -> xếp dọc: danh sách tên ở trên, ảnh xem trước ở dưới.
        Mobile không hover -> chạm tên là vào thẳng trang danh mục. */
