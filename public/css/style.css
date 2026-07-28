@@ -741,7 +741,7 @@ body.drawer-open { overflow: hidden; }
 /* .cat-heading đã bỏ (tên loại chuyển lên <h1> trong .design-strip). Chỉ còn
    phần mô tả, nên bỏ luôn `margin-top` vốn dùng để tách nó khỏi tiêu đề. */
 .cat-heading-wrap { text-align: right; min-width: 0; max-width: 520px; }
-.cat-heading-desc { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.cat-heading-desc { display: none; }
 
 /* Bộ lọc: tên · kích thước · chất liệu · khối lượng */
 /* Phẳng hoàn toàn: không viền, không nền. Bỏ luôn padding ngang để 4 ô lọc
