@@ -29,6 +29,7 @@ module.exports = {
         cta: 'Explore trends',
     },
     partners: {title: 'Our partners', sub: 'Our Partners'},
+    // title = heading above the featured-product strip on the homepage (.showcase-title)
     featured: {title: 'Featured products', sub: 'HOME FURNITURE', productsWord: 'products'},
     certs: {
         title: 'Company certificates',

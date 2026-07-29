@@ -31,7 +31,8 @@ module.exports = {
         cta: 'Khám phá xu hướng',
     },
     partners: {title: 'Đối tác hợp tác', sub: 'Our Partners'},
-    featured: {title: 'Thông tin sản phẩm nổi bật', sub: 'NỘI THẤT GIA ĐÌNH', productsWord: 'sản phẩm'},
+    // title = dòng tiêu đề trên dải ảnh sản phẩm nổi bật ở trang chủ (.showcase-title)
+    featured: {title: 'Sản phẩm nổi bật', sub: 'NỘI THẤT GIA ĐÌNH', productsWord: 'sản phẩm'},
     certs: {
         title: 'Giấy chứng nhận công ty',
         items: [{title: 'Giấy phép kinh doanh'}, {title: 'Chứng nhận chất lượng'}, {title: 'Chứng nhận xuất xứ'}],
