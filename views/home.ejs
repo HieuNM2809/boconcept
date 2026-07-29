@@ -105,82 +105,77 @@
     </section>
 <% } %>
 
-<!-- ── Why us (spec 3.2 · Thông tin doanh nghiệp) — tiêu đề + 1 đoạn, căn giữa ─ -->
-<section class="section why" id="why">
-    <%# Chữ lấy từ trang hệ thống `about` trong DB (sửa ở /admin/pages).
-        Controller đã lo fallback về t.home.why khi DB chưa có gì. %>
-    <div class="container why-intro">
-        <h2 class="section-title"><%= whyTitle %></h2>
-        <p class="why-body"><%= whyBody %></p>
+<!-- ── Why / Categories: loop theo từng loại sản phẩm cha ─ -->
+<%# Mỗi loại cha (parent_id = null) tạo một section split.
+    Hover vào ảnh -> hiện danh sách loại con cấp 2 bên dưới. %>
+<% categories.forEach(function(cat, i) { %>
+<section class="section why<%= i === 0 ? '' : ' why--alt' %>" id="why-<%= cat.id %>">
+    <div class="why-split">
+        <div class="why-copy">
+            <h2 class="why-title"><%= pick(cat, 'title') || pick(cat, 'name') %></h2>
+            <% var catDesc = pick(cat, 'description'); %>
+            <% if (catDesc) { %><p class="why-body"><%= catDesc %></p><% } %>
+        </div>
+        <a class="why-media" href="/categories/<%= cat.id %>">
+            <img src="<%= cat.image || ('https://picsum.photos/seed/cat' + cat.id + '/900/700') %>"
+                 alt="<%= pick(cat, 'name') %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>">
+            <span class="why-media-label"><%= pick(cat, 'name') %></span>
+        </a>
     </div>
+    <% if (cat.children && cat.children.length) { %>
+        <div class="why-subs-wrap">
+            <div class="why-media-subs" id="whySubs-<%= cat.id %>">
+                <% cat.children.forEach(function(ch) { %>
+                    <a class="why-sub-item" href="/categories/<%= ch.id %>">
+                        <div class="why-sub-thumb">
+                            <img src="<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/300/400') %>"
+                                 alt="<%= pick(ch, 'name') %>" loading="lazy">
+                        </div>
+                        <span><%= pick(ch, 'name') %></span>
+                    </a>
+                <% }) %>
+            </div>
+            <button class="why-subs-arrow prev" type="button"
+                    data-scroll="whySubs-<%= cat.id %>" data-scroll-by-item data-dir="-1"
+                    aria-label="<%= t.common.actions.prev %>">&lsaquo;</button>
+            <button class="why-subs-arrow next" type="button"
+                    data-scroll="whySubs-<%= cat.id %>" data-scroll-by-item data-dir="1"
+                    aria-label="<%= t.common.actions.next %>">&rsaquo;</button>
+        </div>
+    <% } %>
 </section>
+<% }) %>
 
 <!-- ── Categories (spec 3.2 · Loại sản phẩm nổi bật — TỪ DB) ────────────────── -->
 <%# Chỉ hiện khi có danh mục cấp 1 nổi bật (is_featured, đánh dấu ở /admin/categories).
     Không mục nào nổi bật -> controller trả mảng rỗng -> cả section biến mất (như
     khối Công năng), không để lại ô "chưa có dữ liệu". %>
-<% if (categories.length) { %>
-    <%# Khối "Loại sản phẩm nổi bật":
-        · Trên: 2 cột — trái (nền kem) chỉ TIÊU ĐỀ + MÔ TẢ; phải là ẢNH XEM TRƯỚC.
-        · Dưới: HÀNG LOẠI CẤP 1 nổi bật — rê vào loại nào thì ảnh lớn đổi sang loại đó.
-        · Rê chuột vào ẢNH LỚN -> hàng dưới đổi thành LOẠI CẤP 2 của loại đang hiện
-          (main.js gạt .is-showing-subs). Mọi thẻ đều là <a> nên chạm/bấm vào thẳng.
-        Giữ id/class "categories" cho link loại trên header cuộn xuống đúng chỗ. %>
+<% if (false && categories.length) { %>
+    <%# Lưới loại sản phẩm cha (parent_id = null, is_featured) — mỗi tile hover
+        xổ danh sách loại con cấp 2. %>
     <section class="section categories cat-showcase" id="categories">
         <div class="container">
-            <div class="cat-showcase-body">
-                <div class="cat-showcase-grid">
-                    <div class="cat-showcase-panel">
-                        <h2 class="cat-showcase-title"><%= categoriesTitle %></h2>
-                        <% if (categoriesDesc) { %><p class="cat-showcase-sub"><%= categoriesDesc %></p><% } %>
-                    </div>
-
-                    <%# Ảnh các loại xếp CHỒNG khít nhau; chỉ ảnh .is-active hiện (server
-                        gắn sẵn cho loại đầu -> không có JS vẫn thấy một ảnh, không trắng). %>
-                    <div class="cat-showcase-media">
-                        <% categories.forEach(function (c, i) { %>
-                            <a class="cat-showcase-photo<%= i === 0 ? ' is-active' : '' %>"
-                               data-cat="<%= c.id %>" href="/categories/<%= c.id %>"
-                               style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/900/1000') %>')"
-                               aria-label="<%= pick(c, 'name') %>">
-                                <span class="cat-showcase-photo-name"><%= pick(c, 'name') %></span>
-                            </a>
-                        <% }) %>
-                    </div>
-                </div>
-
-                <%# Hàng dưới: mặc định hiện LOẠI CẤP 1; khi .is-showing-subs (rê vào ảnh
-                    lớn) thì ẩn hàng cấp 1, hiện track cấp 2 của loại đang .is-active. %>
-                <div class="cat-showcase-below">
-                    <div class="cat-showcase-l1-row">
-                        <% categories.forEach(function (c, i) { %>
-                            <a class="cat-showcase-l1<%= i === 0 ? ' is-active' : '' %>"
-                               data-cat="<%= c.id %>" href="/categories/<%= c.id %>"
-                               style="background-image:url('<%= c.image || ('https://picsum.photos/seed/cat' + c.id + '/450/300') %>')">
-                                <span><%= pick(c, 'name') %></span>
-                            </a>
-                        <% }) %>
-                    </div>
-
-                    <%# Mỗi loại cấp 1 CÓ CON mới render một track; loại không con thì rê
-                        vào ảnh sẽ không bật subs (main.js kiểm tra trước). %>
-                    <div class="cat-showcase-l2-wrap">
-                        <% categories.forEach(function (c, i) { %>
-                            <% if (c.children && c.children.length) { %>
-                                <ul class="cat-showcase-l2<%= i === 0 ? ' is-active' : '' %>" data-cat="<%= c.id %>">
-                                    <% c.children.forEach(function (ch) { %>
-                                        <li>
-                                            <a href="/categories/<%= ch.id %>"
-                                               style="background-image:url('<%= ch.image || ('https://picsum.photos/seed/cat' + ch.id + '/450/300') %>')">
-                                                <span><%= pick(ch, 'name') %></span>
-                                            </a>
-                                        </li>
+            <div class="csc-grid">
+                <% categories.forEach(function(cat) { %>
+                    <div class="csc-item">
+                        <a class="csc-thumb" href="/categories/<%= cat.id %>">
+                            <img src="<%= cat.image || ('https://picsum.photos/seed/cat' + cat.id + '/450/600') %>"
+                                 alt="<%= pick(cat, 'name') %>" loading="lazy">
+                        </a>
+                        <p class="csc-name"><%= pick(cat, 'name') %></p>
+                        <% if (cat.children && cat.children.length) { %>
+                            <div class="csc-dropdown">
+                                <p class="csc-dropdown-title"><%= pick(cat, 'name') %></p>
+                                <ul>
+                                    <% cat.children.forEach(function(ch) { %>
+                                        <li><a href="/categories/<%= ch.id %>"><%= pick(ch, 'name') %></a></li>
                                     <% }) %>
                                 </ul>
-                            <% } %>
-                        <% }) %>
+                                <a class="csc-dropdown-all" href="/categories/<%= cat.id %>">Xem tất cả →</a>
+                            </div>
+                        <% } %>
                     </div>
-                </div>
+                <% }) %>
             </div>
         </div>
     </section>
@@ -197,25 +192,25 @@
             <h2 class="gallery-title"><%= t.home.gallery.title %></h2>
             <p class="gallery-sub"><%= t.home.gallery.sub %></p>
         </div>
+    </div>
 
-        <%# Lớp vị trí lấy theo g.slot chứ KHÔNG theo chỉ số vòng lặp: thiếu một
-            khe là cả mosaic xô lệch sang ô của khe khác.
-            `is-big` chỉ đánh dấu vai trò bố cục (ô lớn, mobile chiếm full-width),
-            không mang hiệu ứng — trùng đúng tập khe slider nên dùng chung cờ. %>
-        <div class="collage" id="collage">
-            <% gallery.forEach(function (g) { %>
-                <figure class="collage-cell collage-slot-<%= g.slot %><%= g.isSlider ? ' is-big' : '' %>">
-                    <% g.images.forEach(function (im, i) { %>
-                        <%# .is-active do SERVER đóng lên ảnh đầu, không phải JS —
-                            nhờ vậy không có JS thì ô vẫn hiện ảnh chứ không trắng. %>
-                        <img class="collage-img<%= i === 0 ? ' is-active' : '' %>"
-                             src="<%= im.image %>" alt="<%= pick(im, 'alt') %>"
-                             <%= i === 0 ? '' : 'aria-hidden="true"' %>
-                             loading="<%= i === 0 ? 'eager' : 'lazy' %>">
-                    <% }) %>
-                </figure>
-            <% }) %>
-        </div>
+    <%# Lớp vị trí lấy theo g.slot chứ KHÔNG theo chỉ số vòng lặp: thiếu một
+        khe là cả mosaic xô lệch sang ô của khe khác.
+        `is-big` chỉ đánh dấu vai trò bố cục (ô lớn, mobile chiếm full-width),
+        không mang hiệu ứng — trùng đúng tập khe slider nên dùng chung cờ. %>
+    <div class="collage" id="collage">
+        <% gallery.forEach(function (g) { %>
+            <figure class="collage-cell collage-slot-<%= g.slot %><%= g.isSlider ? ' is-big' : '' %>">
+                <% g.images.forEach(function (im, i) { %>
+                    <%# .is-active do SERVER đóng lên ảnh đầu, không phải JS —
+                        nhờ vậy không có JS thì ô vẫn hiện ảnh chứ không trắng. %>
+                    <img class="collage-img<%= i === 0 ? ' is-active' : '' %>"
+                         src="<%= im.image %>" alt="<%= pick(im, 'alt') %>"
+                         <%= i === 0 ? '' : 'aria-hidden="true"' %>
+                         loading="<%= i === 0 ? 'eager' : 'lazy' %>">
+                <% }) %>
+            </figure>
+        <% }) %>
     </div>
 </section>
 

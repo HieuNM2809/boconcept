@@ -74,7 +74,7 @@ function applyApiMiddlewares(app) {
     // `image`/`alt_vi`/`alt_en`: whitelist tên chung sẽ gỡ mất lớp bảo vệ này ở
     // MỌI form admin khác đang dùng `image` đơn (slides, news, pages, ...), và ở
     // đó một mảng lọt vào sẽ làm `.trim()` ném lỗi 500.
-    app.use(hpp({whitelist: ['gallery', 'slot_image', 'slot_alt_vi', 'slot_alt_en']}));
+    app.use(hpp({whitelist: ['gallery', 'slot_image', 'slot_alt_vi', 'slot_alt_en', 'color_hex', 'color_name_vi', 'color_name_en', 'color_image']}));
 
     // 4. CORS
     app.use(cors({

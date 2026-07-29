@@ -2,9 +2,9 @@
 module.exports = {
     // Tên thương hiệu KHÔNG dịch — giữ giống nhau ở vi/en. Đây là nguồn duy nhất:
     // header, footer, <title> và pageTitle của controller đều đọc từ đây.
-    brand: 'Huong Sơn entertaimain',
-    brandMain: 'Huong Sơn',   // phần in đậm
-    brandSub: 'entertaimain', // phần thường
+    brand: 'HUONG SON INTERNATIONAL',
+    brandMain: 'HUONG SON',        // phần in đậm
+    brandSub: 'INTERNATIONAL',     // phần thường
     tagline: 'Nội thất thiết kế Ý bền vững với thời gian.',
     findStore: 'Tìm cửa hàng',
     actions: {

@@ -78,7 +78,7 @@
 
                 <% if (hidden.length) { %>
                     <button class="pdg-more" type="button" id="pdgMore" aria-controls="pdGallery" aria-expanded="false">
-                        <span aria-hidden="true">⌄</span> <%= t.product.showMore %>
+                        <%= t.product.showMore %>
                     </button>
                     <%# Ảnh còn lại render sẵn nhưng ẩn — bấm là hiện ngay, không phải tải thêm.
                         Không xếp khảm nhóm này: mọi ảnh xổ ra đều tràn bề ngang (s6),
@@ -147,7 +147,7 @@
                 %>
                 <div class="pd-meta">
                     <% specs.forEach(function (s) { %>
-                        <div><span class="pd-meta-k"><%= s.label %>:</span> <%= s.value %></div>
+                        <div><span class="pd-meta-k"><%= s.label %>:</span> <span class="pd-meta-v"><%= s.value %></span></div>
                     <% }) %>
                     <% if (breadcrumb.length) { %>
                         <div>

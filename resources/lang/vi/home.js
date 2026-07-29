@@ -1,10 +1,10 @@
 // Chuỗi UI riêng cho trang chủ
 module.exports = {
-    meta: {title: 'Huong Sơn entertaimain — Nội thất thiết kế Ý'},
+    meta: {title: 'HUONG SON INTERNATIONAL — Nội thất thiết kế Ý'},
     // Slideshow giờ chỉ còn ảnh + MỘT dòng tên thương hiệu đứng yên phía trên.
     // Badge/tiêu đề theo từng slide đã bỏ, nên mảng chuỗi mẫu cũ ở đây cũng bỏ luôn.
     // Tên thương hiệu KHÔNG dịch — hai file vi/en cố ý để y hệt nhau.
-    hero: {brand: 'HƯƠNG SƠN ENTERTAIMAIN'},
+    hero: {brand: 'HUONG SON INTERNATIONAL'},
     // Dải giới thiệu doanh nghiệp — tiêu đề + 1 đoạn văn, căn giữa.
     // CHỈ LÀ FALLBACK: chữ thật lấy từ trang hệ thống `about` trong DB
     // (title_* + excerpt_*, sửa ở /admin/pages). Hai chuỗi dưới chỉ hiện khi
@@ -12,7 +12,15 @@ module.exports = {
     // được nội dung đang chạy.
     why: {
         title: 'Chúng tôi chuyên về Nội thất và Chậu gốm',
-        body: 'Công ty TNHH Quốc tế Hương Sơn là nhà sản xuất và xuất khẩu tại Việt Nam, chuyên về nội thất và gốm sứ. Chúng tôi cam kết mang đến những sản phẩm chất lượng cao, kết hợp tay nghề thủ công tinh xảo, thiết kế hiện đại và độ bền lâu dài. Phục vụ khách hàng trên toàn thế giới, chúng tôi cung cấp dịch vụ sản xuất tin cậy, kiểm soát chất lượng nghiêm ngặt và dịch vụ xuất khẩu chuyên nghiệp, đáp ứng nhu cầu đa dạng của thị trường quốc tế. Sứ mệnh của chúng tôi là tạo ra sản phẩm giàu giá trị, đồng thời xây dựng quan hệ hợp tác lâu dài dựa trên sự tin cậy, chất lượng và tính bền vững.',
+        body: 'Công ty TNHH Quốc tế Hương Sơn là nhà sản xuất và xuất khẩu tại Việt Nam, chuyên về nội thất và gốm sứ. Chúng tôi cam kết mang đến những sản phẩm chất lượng cao, kết hợp tay nghề thủ công tinh xảo, thiết kế hiện đại và độ bền lâu dài.',
+        features: [
+            'Gỗ teak nguyên khối cao cấp',
+            'Thiết kế thân thiện, thoải mái',
+            'Dễ bảo quản & chăm sóc',
+            'Phù hợp không gian trong và ngoài nhà',
+        ],
+        cta: 'Tìm hiểu thêm về chúng tôi',
+        imageLabel: 'Nội thất',
     },
     categories: {
         title: 'Chất lượng thấy được, sự thoải mái cảm nhận được.',

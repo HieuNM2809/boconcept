@@ -242,13 +242,9 @@
     // đi mất) — dùng .focus() để kích handler focus đã gắn ở khối trên (setActive),
     // khỏi nhân đôi logic. preventScroll để không giành cuộn với scrollIntoView dưới.
     const jumpToCategory = (id, smooth) => {
-        // Phải có thẻ của ĐÚNG loại đó thì mới nhận. Trước đây thiếu thẻ vẫn rơi về
-        // #categories: trang cuộn xuống khối nhưng hiện nguyên loại cũ, mà click thì
-        // đã bị preventDefault -> link cũng không mở được trang loại. Bấm như trượt.
-        const card = document.querySelector('.cat-showcase-l1[data-cat="' + id + '"]');
-        if (!card) return false; // không có thẻ (trang chi tiết, loại không nổi bật) -> để link chạy bình thường
-        card.focus({preventScroll: true});
-        (card.closest('.categories') || card).scrollIntoView({behavior: smooth ? 'smooth' : 'auto', block: 'start'});
+        const sec = document.getElementById('why-' + id) || document.getElementById('why');
+        if (!sec) return false;
+        sec.scrollIntoView({behavior: smooth ? 'smooth' : 'auto', block: 'start'});
         return true;
     };
 
