@@ -312,7 +312,7 @@ body.drawer-open { overflow: hidden; }
        admin nhập tiêu đề dài xuống 2-3 dòng: chiều cao khối tự nở, không có
        `top` cố định nào để mà lệch. */
     display: flex; flex-direction: column; align-items: center;
-    padding: calc(var(--hero-brand-top) + var(--hero-brand-gap)) 24px 0;
+    padding: calc(var(--hero-brand-top) + var(--hero-brand-gap)) 0 0;
 }
 /* Vệt tối ĐỔ TỪ TRÊN XUỐNG chứ không từ trái sang: chữ đã dời lên đỉnh giữa,
    vệt ngang cũ chỉ tối mép trái nên chữ nằm chỗ sáng nhất của ảnh.
@@ -347,14 +347,14 @@ body.drawer-open { overflow: hidden; }
     font-family: var(--display);
     font-size: clamp(36px, 6vw, 79px);
     font-weight: 400; line-height: 1.2; letter-spacing: -.01em;
-    text-wrap: balance;
+    max-width: 90vw;
 }
 .hero-slide-sub {
     margin: 14px 0 0;
     font-size: clamp(16px, 2.2vw, 30px);
     font-weight: 300; letter-spacing: .16em; text-transform: uppercase;
     line-height: 1.2;
-    text-wrap: balance;
+    max-width: 90vw;
 }
 .hero-arrow {
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
