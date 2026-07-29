@@ -12,7 +12,7 @@
     --link: #2f6fd0;
     --link-dark: #1f52a3;
     --dark: #1b1917;
-    --radius: 14px;
+    --radius: 0px;
     --container: 1200px;
     /* Lề trái/phải chừa lại cho các khối ẢNH kéo sát mép (lưới tin tức).
        CỐ Ý không có mốc max-width như --container: khối phải bám mép màn hình
@@ -54,8 +54,8 @@ body {
 img { max-width: 100%; display: block; }
 a { color: inherit; text-decoration: none; }
 
-.container { width: calc(100% - 40px); margin-inline: auto; }
-.container-wide { width: 100%; padding-inline: clamp(20px, 4vw, 80px); }
+.container { width: calc(100% - 50px); margin-inline: auto; }
+.container-wide { width: 100%; padding-inline: 25px; }
 .center { text-align: center; }
 
 /* ===== Buttons ===== */
@@ -367,7 +367,7 @@ body.drawer-open { overflow: hidden; }
 .dot.active { background: #fff; width: 26px; border-radius: 6px; }
 
 /* ===== Sections ===== */
-.section { padding: 72px 0; }
+.section { padding: 50px 0; }
 .section-title { font-family: var(--serif); font-size: clamp(26px, 3.4vw, 40px); font-weight: 600; margin: 0 0 6px; }
 .section-title.center { margin-bottom: 34px; }
 .section-sub { color: var(--muted); margin: 0; }
@@ -377,7 +377,7 @@ body.drawer-open { overflow: hidden; }
 /* ===== Khối Công năng (dải 4 mục dưới slideshow) ===== */
 /* Nền TRẮNG chứ không var(--soft): khối .why ngay bên dưới đã là --soft, hai dải
    cùng màu dính liền nhau thành một mảng không phân biệt được. */
-.features { background: var(--bg); border-bottom: 1px solid var(--line); padding: 40px 0; }
+.features { background: var(--bg); border-bottom: 1px solid var(--line); padding: 50px 0; }
 .feature-strip { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); }
 /* Chiều cao CỐ ĐỊNH + canh giữa dọc: lúc chưa rê chuột, icon và tiêu đề nằm
    chính giữa ô. Chiều cao không đổi khi hover nên trang không bị đẩy xuống,
@@ -547,7 +547,6 @@ body.drawer-open { overflow: hidden; }
     position: relative; overflow: hidden;
     background: var(--soft);
     min-height: 520px;
-    border-radius: 12px;
     text-decoration: none; color: inherit;
     cursor: pointer;
 }
@@ -1343,7 +1342,7 @@ body.drawer-open { overflow: hidden; }
 }
 /* Trong <pre>, thẻ <code> không cần nền/đệm riêng nữa — <pre> đã lo */
 .article-body pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.6; }
-.article-body img { border-radius: 10px; margin: 0 0 20px; }
+.article-body img { margin: 0 0 20px; }
 /* Bảng cuộn ngang TRONG khung trên màn hẹp, không đẩy cả trang */
 .article-body table {
     width: 100%; margin: 0 0 20px; border-collapse: collapse;
@@ -1475,7 +1474,7 @@ body.modal-open { overflow: hidden; }
 .modal-body input.is-error { border-color: #b23b3b; }
 .modal-body input.is-error:focus { box-shadow: 0 0 0 3px rgba(178, 59, 59, .14); }
 .modal-error { margin: -8px 0 14px; color: #b23b3b; font-size: 12.5px; }
-.modal-img-preview { max-height: 160px; margin: 4px 0 14px; border-radius: 8px; border: 1px solid var(--line); }
+.modal-img-preview { max-height: 160px; margin: 4px 0 14px; border: 1px solid var(--line); }
 /* Bảng cú pháp trong hộp trợ giúp */
 .modal-help .modal-body { max-height: 60vh; overflow-y: auto; }
 .help-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
