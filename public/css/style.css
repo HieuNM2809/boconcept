@@ -1643,7 +1643,7 @@ body.modal-open { overflow: hidden; }
 /* Tablet dọc / điện thoại lớn (≤768) — bật menu hamburger */
 @media (max-width: 768px) {
     .section { padding: 44px 0; }
-    .gallery-grid-section > .collage { padding: 0; }
+    .gallery-grid-section > .collage { padding: 0 25px; }
     .partner-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
     /* Khối loại 2 cột -> xếp dọc: danh sách tên ở trên, ảnh xem trước ở dưới.
        Mobile không hover -> chạm tên là vào thẳng trang danh mục. */
