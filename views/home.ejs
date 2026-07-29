@@ -71,28 +71,37 @@
      kéo bằng 2 nút ở giữa hai mép. -->
 <% if (showcase.length) { %>
     <section class="showcase">
-        <div class="showcase-track" id="showcaseTrack">
-            <% showcase.forEach(function (p) { %>
-                <a class="showcase-item" href="/products/<%= p.id %>">
-                    <div class="showcase-media">
-                        <img src="<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/600/750') %>"
-                             alt="<%= pick(p, 'name') %>" loading="lazy">
-                    </div>
-                    <div class="showcase-info">
-                        <% if (p.category) { %><span class="showcase-cat"><%= pick(p.category, 'name') %></span><% } %>
-                        <h3 class="showcase-name"><%= pick(p, 'name') %></h3>
-                    </div>
-                </a>
-            <% }) %>
-        </div>
+        <%# Tiêu đề "Sản phẩm nổi bật" — chữ cố định trong resources/lang (t.home.featured),
+            admin không sửa được, giống các tiêu đề đóng cứng khác của trang chủ. %>
+        <h2 class="showcase-title"><%= t.home.featured.title %></h2>
 
-        <%# data-scroll-by-item: cuộn đúng bề ngang 1 ảnh thay vì 260px cứng %>
-        <button class="showcase-arrow prev" type="button"
-                data-scroll="showcaseTrack" data-scroll-by-item data-dir="-1"
-                aria-label="<%= t.common.actions.prev %>">&lsaquo;</button>
-        <button class="showcase-arrow next" type="button"
-                data-scroll="showcaseTrack" data-scroll-by-item data-dir="1"
-                aria-label="<%= t.common.actions.next %>">&rsaquo;</button>
+        <%# Track + 2 nút bọc trong .showcase-body: nút canh giữa theo CHIỀU CAO ẢNH
+            (top:50% của body). Nếu để nút canh theo cả <section> thì dòng tiêu đề
+            mới thêm sẽ kéo tâm xuống, nút lệch hẳn khỏi giữa ảnh. %>
+        <div class="showcase-body">
+            <div class="showcase-track" id="showcaseTrack">
+                <% showcase.forEach(function (p) { %>
+                    <a class="showcase-item" href="/products/<%= p.id %>">
+                        <div class="showcase-media">
+                            <img src="<%= p.thumbnail || ('https://picsum.photos/seed/p' + p.id + '/600/750') %>"
+                                 alt="<%= pick(p, 'name') %>" loading="lazy">
+                        </div>
+                        <div class="showcase-info">
+                            <% if (p.category) { %><span class="showcase-cat"><%= pick(p.category, 'name') %></span><% } %>
+                            <h3 class="showcase-name"><%= pick(p, 'name') %></h3>
+                        </div>
+                    </a>
+                <% }) %>
+            </div>
+
+            <%# data-scroll-by-item: cuộn đúng bề ngang 1 ảnh thay vì 260px cứng %>
+            <button class="showcase-arrow prev" type="button"
+                    data-scroll="showcaseTrack" data-scroll-by-item data-dir="-1"
+                    aria-label="<%= t.common.actions.prev %>">&lsaquo;</button>
+            <button class="showcase-arrow next" type="button"
+                    data-scroll="showcaseTrack" data-scroll-by-item data-dir="1"
+                    aria-label="<%= t.common.actions.next %>">&rsaquo;</button>
+        </div>
     </section>
 <% } %>
 

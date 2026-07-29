@@ -442,6 +442,14 @@ body.drawer-open { overflow: hidden; }
 /* Lề hai bên + khe giữa các ảnh đặt qua biến để công thức flex-basis bên dưới
    và các mốc responsive luôn khớp nhau, không phải sửa số ở nhiều chỗ. */
 .showcase { position: relative; padding: 24px var(--showcase-pad); --showcase-gap: 20px; --showcase-pad: 26px; }
+/* Tiêu đề "Sản phẩm nổi bật" — cùng cỡ/kiểu chữ với .section-title để không lạc
+   nhịp với các khối khác của trang chủ. */
+.showcase-title {
+    font-family: var(--serif); font-size: clamp(26px, 3.4vw, 40px);
+    font-weight: 600; text-align: center; margin: 6px 0 22px;
+}
+/* Mốc canh giữa của 2 nút mũi tên: chỉ bọc dải ảnh, KHÔNG tính dòng tiêu đề. */
+.showcase-body { position: relative; }
 .showcase-track {
     display: flex; gap: var(--showcase-gap);
     overflow-x: auto; scroll-snap-type: x mandatory;
@@ -481,9 +489,10 @@ body.drawer-open { overflow: hidden; }
     font-size: 26px; line-height: 1; cursor: pointer; transition: background .2s;
 }
 .showcase-arrow:hover { background: #fff; }
-/* Nằm đè lên mép ảnh chứ không lọt vào vùng lề trắng */
-.showcase-arrow.prev { left: calc(var(--showcase-pad) + 10px); }
-.showcase-arrow.next { right: calc(var(--showcase-pad) + 10px); }
+/* Nằm đè lên mép ảnh chứ không lọt vào vùng lề trắng. Mốc là .showcase-body —
+   đã nằm trong lề của .showcase nên chỉ cần thụt thêm 10px, không cộng --showcase-pad. */
+.showcase-arrow.prev { left: 10px; }
+.showcase-arrow.next { right: 10px; }
 
 @media (prefers-reduced-motion: reduce) {
     .showcase-media img { transition: none; }
@@ -1303,6 +1312,37 @@ body.drawer-open { overflow: hidden; }
 .article-layout.article-layout-noimg .article-hero { display: none; }
 .article-hero { float: left; width: 46%; margin: 4px 36px 20px 0; border-radius: var(--radius); overflow: hidden; }
 .article-hero img { width: 100%; height: auto; display: block; object-fit: cover; }
+
+/* ── Trang nội dung (/about, /pages/:slug) — bản rộng, ảnh nằm góc ───────────
+   Chỉ áp cho .page-article, KHÔNG đụng .article dùng chung với trang tin. */
+
+/* Khối bọc lead + body + ảnh float. `display: flow-root` tạo BFC nên tự bao
+   trọn phần ảnh thả nổi — sạch hơn clearfix ::after, và không cần thêm thẻ. */
+.page-article-flow { display: flow-root; }
+
+/* Ảnh dạt góc trên-PHẢI, chữ chảy vòng quanh.
+   `width` theo % để ảnh co giãn cùng cột chữ; kèm mốc px để trên màn siêu rộng
+   nó không phình thành tấm poster nuốt hết trang. */
+.page-article-figure {
+    float: right;
+    width: min(40%, 480px);
+    margin: 4px 0 24px 40px;
+}
+/* Ảnh nội dung tỉ lệ rất lung tung (admin dán ảnh bất kỳ). Chốt khung + `cover`
+   để mọi ảnh về cùng một khối gọn ở góc, không có tấm cao lêu nghêu đẩy chữ
+   xuống tận cuối trang. */
+.page-article-figure img { aspect-ratio: 4 / 3; object-fit: cover; }
+
+/* Hẹp thì bỏ float: cột chữ còn ~300px mà né ảnh nữa thì mỗi dòng được vài từ,
+   xuống dòng loạn xạ. Trả ảnh về khối ngang bình thường, nằm trên phần chữ. */
+@media (max-width: 860px) {
+    .page-article-figure {
+        float: none;
+        width: 100%;
+        margin: 0 0 24px;
+    }
+    .page-article-figure img { aspect-ratio: 16 / 9; }
+}
 
 /* Kiểu chữ cho nội dung do richtext.helper dựng ra */
 .article-body { font-size: 16.5px; line-height: 1.85; color: var(--ink); }
