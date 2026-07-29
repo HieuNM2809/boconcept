@@ -328,10 +328,7 @@ body.drawer-open { overflow: hidden; }
     position: absolute; top: var(--hero-brand-top); left: 0; right: 0; z-index: 3;
     text-align: center; color: #fff;
     font-family: var(--sans);
-    font-size: clamp(16px, 2vw, 26px); font-weight: 700; letter-spacing: .02em;
-    /* Ảnh nền do admin tự upload, không đoán trước được sáng hay tối:
-       bóng đổ là lớp bảo hiểm để chữ trắng còn đọc được trên ảnh sáng. */
-    text-shadow: 0 2px 12px rgba(0, 0, 0, .45);
+    font-size: clamp(11px, 1.05vw, 14px); font-weight: 300; letter-spacing: .16em; text-transform: uppercase;
     pointer-events: none;
 }
 
@@ -341,28 +338,22 @@ body.drawer-open { overflow: hidden; }
    pointer-events:none để chữ không nuốt cú bấm rơi vào vùng của nó. */
 .hero-copy {
     position: relative; z-index: 2;
-    width: min(1040px, 100%);
+    width: 100%;
     text-align: center; color: #fff;
     pointer-events: none;
 }
 .hero-slide-title {
     margin: 0;
     font-family: var(--display);
-    font-size: clamp(26px, 4.4vw, 56px);
-    /* Nét 400 chứ không 700: tiêu đề đã rất lớn, để đậm là thành biển quảng
-       cáo — ảnh mẫu dùng nét mảnh. */
-    font-weight: 400; line-height: 1.12; letter-spacing: -.01em;
-    text-shadow: 0 2px 16px rgba(0, 0, 0, .45);
-    /* Tiêu đề dài tự ngắt thành các dòng DÀI GẦN BẰNG NHAU thay vì kiểu dòng
-       đầu chật ních - dòng cuối trơ trọi một chữ. Trình duyệt cũ bỏ qua thuộc
-       tính này, chữ vẫn xuống dòng bình thường, không vỡ gì. */
+    font-size: clamp(36px, 6vw, 79px);
+    font-weight: 400; line-height: 1.2; letter-spacing: -.01em;
     text-wrap: balance;
 }
 .hero-slide-sub {
     margin: 14px 0 0;
-    font-size: clamp(11px, 1.05vw, 14px);
-    font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
-    text-shadow: 0 1px 10px rgba(0, 0, 0, .5);
+    font-size: clamp(16px, 2.2vw, 30px);
+    font-weight: 300; letter-spacing: .16em; text-transform: uppercase;
+    line-height: 1.2;
     text-wrap: balance;
 }
 .hero-arrow {
