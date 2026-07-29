@@ -579,28 +579,28 @@ body.drawer-open { overflow: hidden; }
 .why-split:has(.why-media:hover) .why-media-label {
     opacity: 0; transform: translate(-50%, -60%);
 }
-/* Danh mục con hiện khi hover — grid tile giống screenshot */
-.why-subs-wrap { position: relative; width: 80%; margin-inline: auto; visibility: hidden; }
+/* Danh mục con: ẩn hoàn toàn khi không hover, fade in/out khi hover */
+.why-subs-wrap {
+    position: relative; width: 80%; margin-inline: auto;
+    display: none; opacity: 0;
+    transition: opacity .3s ease, display .3s allow-discrete;
+}
 .why:has(.why-media:hover) .why-subs-wrap,
-.why-subs-wrap:hover { visibility: visible; }
+.why-subs-wrap:hover { display: block; opacity: 1; }
+/* Fade-in từ opacity 0 khi element vừa xuất hiện */
+@starting-style {
+    .why:has(.why-media:hover) .why-subs-wrap,
+    .why-subs-wrap:hover { opacity: 0; }
+}
 .why-media-subs {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0;
+    display: flex; flex-wrap: nowrap; gap: 0;
     background: var(--white);
     padding: 20px 52px 16px;
     scroll-snap-type: x mandatory;
+    overflow-x: auto;
     scrollbar-width: none; -ms-overflow-style: none;
-    max-height: 0; opacity: 0; overflow: hidden;
-    transition: max-height .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;
 }
 .why-media-subs::-webkit-scrollbar { display: none; }
-.why:has(.why-media:hover) .why-media-subs,
-.why-subs-wrap:hover .why-media-subs {
-    max-height: 600px;
-    opacity: 1;
-    overflow-x: auto;
-}
 .why-subs-arrow {
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
     width: 38px; height: 38px; border-radius: 50%; border: 0;
@@ -640,8 +640,7 @@ body.drawer-open { overflow: hidden; }
     .why-split { grid-template-columns: 1fr; }
     .why-media { min-height: 300px; order: -1; }
     .why-sub-item { flex: 0 0 160px; }
-    .why-subs-wrap { visibility: visible; }
-    .why-media-subs { max-height: 600px; opacity: 1; overflow-x: auto; }
+    .why-subs-wrap { display: block; opacity: 1; }
 }
 
 /* ===== Lưới ảnh "Style advice" (collage) ===== */
