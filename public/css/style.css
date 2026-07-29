@@ -1094,15 +1094,15 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Listing / Category page ===== */
-.listing { padding: 28px 0 72px; }
+.listing { padding: 50px 0; }
 .breadcrumb {
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
     font-size: 13px; color: var(--muted);
     background: var(--soft); border-bottom: 1px solid var(--line);
     padding: 15px 20px; margin-bottom: 28px;
     /* tràn ra sát mép container, text thụt vào đúng lề container-wide */
-    margin-left: calc(-1 * clamp(20px, 4vw, 80px)); margin-right: calc(-1 * clamp(20px, 4vw, 80px));
-    padding-left: clamp(20px, 4vw, 80px); padding-right: clamp(20px, 4vw, 80px);
+    margin-left: -25px; margin-right: -25px;
+    padding-left: 25px; padding-right: 25px;
 }
 .breadcrumb a:hover { color: var(--accent-dark); }
 .breadcrumb .sep { color: #cfc7bb; }
