@@ -43,7 +43,7 @@
                 <%# <h1> chứ không <h2>: tiêu đề lớn ở .cat-header đã bỏ theo yêu cầu,
                     đây là tiêu đề chính duy nhất của trang. Ưu tiên tiêu đề riêng
                     admin nhập, không có thì lấy tên loại — y như .cat-heading cũ. %>
-                <h1 class="design-title"><%= pick(category, 'title') || pick(category, 'name') %></h1>
+                <h1 class="design-title"><%= pick(category, 'name') %></h1>
                 <a class="design-cta" href="/#categories">
                     <span class="design-cta-icon" aria-hidden="true">→</span><%= t.catalog.design.cta %>
                 </a>

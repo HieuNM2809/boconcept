@@ -90,20 +90,24 @@ async function index(req, res) {
             if (!childrenOf.has(c.parent_id)) childrenOf.set(c.parent_id, []);
             childrenOf.get(c.parent_id).push(c);
         });
-        // CHỈ danh mục cấp 1 NỔI BẬT (is_featured, đánh dấu ở /admin/categories) hiện
-        // ở khối "Loại sản phẩm". Không đánh dấu mục nào -> mảng rỗng -> view ẩn cả
-        // section (như khối Công năng) thay vì để lại ô "chưa có dữ liệu".
-        // Thứ tự giữ nguyên sort_order/id mà service đã xếp. Con cấp 2 lấy hết (mọi
-        // danh mục con đang hiện của mục đó), không lọc theo nổi bật.
+        // Tất cả danh mục cấp 1 (parent_id = null) hiện ở lưới tile trang chủ.
+        // Không lọc is_featured: mọi danh mục gốc đang hiện (status=1) đều lên lưới.
+        // Thứ tự theo sort_order/id mà service đã xếp. Con cấp 2 gắn kèm để hover xổ ra.
         const rootCats = allCats
-            .filter((c) => c.parent_id == null && c.is_featured)
+            .filter((c) => c.parent_id == null)
             .map((c) => ({...c, children: childrenOf.get(c.id) || []}));
 
-        // Chữ hai khối "Loại sản phẩm" và "Tin tức" trước đây sửa được ở
-        // /admin/content. Màn đó đã gỡ theo yêu cầu, chữ chuyển hẳn về
-        // resources/lang/{vi,en}/home.js — muốn đổi thì sửa thẳng ở đó.
+        // Danh mục cấp 2 hiển thị dạng lưới tile, mỗi tile hover xổ ra cấp 3.
+        const allLevel2 = rootCats.flatMap((c) =>
+            c.children.map((ch) => ({...ch, children: childrenOf.get(ch.id) || []}))
+        );
 
-        // Khối giới thiệu doanh nghiệp thì NGƯỢC LẠI: lấy từ DB (trang `about`),
+        // Tiêu đề & mô tả khối "Loại sản phẩm": lấy từ title_vi/description_vi của danh mục
+        // nổi bật đầu tiên (sửa ở /admin/categories/<id>/edit). Lang file chỉ là fallback
+        // khi chưa có danh mục nổi bật hoặc ô để trống.
+        const pickCat = (field, fallback) => (rootCats.length && res.locals.pick(rootCats[0], field)) || fallback;
+
+        // Khối giới thiệu doanh nghiệp: lấy từ DB (trang `about`),
         // chữ trong resources/lang chỉ còn là lưới an toàn cho lúc chưa có bản ghi,
         // trang bị ẩn (status=0), hoặc cột để trống.
         const about = aboutPage && aboutPage.get ? aboutPage.get({plain: true}) : aboutPage;
@@ -122,9 +126,14 @@ async function index(req, res) {
             heroBrand,
             whyTitle: pickAbout('title', home.why.title),
             whyBody: pickAbout('excerpt', home.why.body),
+            whyImage: (about && about.image) || (rootCats[0] && rootCats[0].image) || null,
+            whyImageLabel: home.why.imageLabel,
+            whyFeatures: home.why.features || [],
+            whyCta: home.why.cta,
             categories: rootCats,
-            categoriesTitle: home.categories.title,
-            categoriesDesc: home.categories.sub,
+            allLevel2,
+            categoriesTitle: pickCat('title', home.categories.title),
+            categoriesDesc: pickCat('description', home.categories.sub),
             news: toPlain(newsRows),
             newsTitle: home.news.title,
             newsDesc: home.news.sub,

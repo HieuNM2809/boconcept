@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `product_variants` (
     `sku`        VARCHAR(100)  NULL,
     `price`      DECIMAL(15,2) NULL,
     `stock`      INT           NOT NULL DEFAULT 0,
-    `image`      VARCHAR(500)  NULL,
+    `image`      MEDIUMTEXT    NULL,
     `status`     TINYINT       NOT NULL DEFAULT 1,
     `created_at` DATETIME      NULL,
     `updated_at` DATETIME      NULL,
@@ -119,13 +119,35 @@ CREATE TABLE IF NOT EXISTS `product_variants` (
 CREATE TABLE IF NOT EXISTS `product_images` (
     `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `product_id` INT UNSIGNED NOT NULL,
-    `url`        VARCHAR(500) NOT NULL,
+    `url`        MEDIUMTEXT   NOT NULL,
     `sort_order` INT          NOT NULL DEFAULT 0,
     `created_at` DATETIME     NULL,
     `updated_at` DATETIME     NULL,
     PRIMARY KEY (`id`),
     KEY `idx_product_images_product_id` (`product_id`),
     CONSTRAINT `fk_images_product` FOREIGN KEY (`product_id`)
+        REFERENCES `products` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Màu sản phẩm cho khách chọn (ô vuông màu ở trang chi tiết) ────────────────
+-- `image_index` TRỎ tới vị trí một ảnh đã có trong gallery chứ không lưu ảnh
+-- riêng: ảnh ở đây là base64 ~2MB/tấm, nhân lên theo số màu là con đường ngắn
+-- nhất quay lại sự cố "1114 The table is full". Dùng vị trí thay vì khoá ngoại
+-- tới product_images.id vì lúc TẠO sản phẩm mới ảnh chưa tồn tại nên chưa có id.
+CREATE TABLE IF NOT EXISTS `product_colors` (
+    `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `product_id`  INT UNSIGNED NOT NULL,
+    `hex`         CHAR(7)      NOT NULL,   -- '#RRGGBB', thứ vẽ ra ô vuông
+    -- Tên màu KHÔNG hiện thành chữ trên giao diện; chỉ dùng cho title/aria-label.
+    `name_vi`     VARCHAR(120) NULL,
+    `name_en`     VARCHAR(120) NULL,
+    `image_index` INT          NULL,       -- NULL = màu này không đổi ảnh
+    `sort_order`  INT          NOT NULL DEFAULT 0,
+    `created_at`  DATETIME     NULL,
+    `updated_at`  DATETIME     NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_product_colors_product_id` (`product_id`),
+    CONSTRAINT `fk_colors_product` FOREIGN KEY (`product_id`)
         REFERENCES `products` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -150,7 +172,7 @@ CREATE TABLE IF NOT EXISTS `slides` (
 CREATE TABLE IF NOT EXISTS `partners` (
     `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `name`       VARCHAR(255) NOT NULL,
-    `logo`       VARCHAR(500) NULL,
+    `logo`       MEDIUMTEXT NULL,
     `link`       VARCHAR(500) NULL,
     `sort_order` INT          NOT NULL DEFAULT 0,
     `status`     TINYINT      NOT NULL DEFAULT 1,
@@ -290,5 +312,7 @@ ON DUPLICATE KEY UPDATE `updated_at` = NOW();
 
 -- ── Migrations: mở rộng cột trên DB đã tồn tại ────────────────────────────────
 -- Chạy khi áp schema.sql lên DB cũ (volume không bị xóa).
-ALTER TABLE `slides`       MODIFY `image` MEDIUMTEXT NOT NULL;
-ALTER TABLE `certificates` MODIFY `image` MEDIUMTEXT NOT NULL;
+ALTER TABLE `slides`            MODIFY `image` MEDIUMTEXT NOT NULL;
+ALTER TABLE `certificates`      MODIFY `image` MEDIUMTEXT NOT NULL;
+ALTER TABLE `product_variants`  MODIFY `image` MEDIUMTEXT NULL;
+ALTER TABLE `product_images`    MODIFY `url`   MEDIUMTEXT NOT NULL;

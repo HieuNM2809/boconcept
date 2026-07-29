@@ -10,7 +10,15 @@ module.exports = {
     // what the site currently renders.
     why: {
         title: 'We Specialize in Furniture and Pottery Planter',
-        body: 'Huong Son International Co., Ltd. is a Vietnam-based manufacturer and exporter specializing in furniture and ceramic pottery. We are committed to delivering high-quality products that combine excellent craftsmanship, modern design, and lasting durability. Serving customers worldwide, we offer reliable manufacturing, strict quality control, and professional export services to meet the diverse needs of global markets. Our mission is to provide value-driven products while building long-term partnerships based on trust, quality, and sustainability.',
+        body: 'Huong Son International Co., Ltd. is a Vietnam-based manufacturer and exporter specializing in furniture and ceramic pottery. We are committed to delivering high-quality products that combine excellent craftsmanship, modern design, and lasting durability.',
+        features: [
+            'Solid teak wood construction',
+            'Ergonomic & comfortable design',
+            'Low maintenance & easy to care',
+            'Made for outdoor & indoor spaces',
+        ],
+        cta: 'Learn more about us',
+        imageLabel: 'Furniture',
     },
     categories: {
         title: 'Quality You Can See, Comfort You Can Feel.',
@@ -29,6 +37,7 @@ module.exports = {
         cta: 'Explore trends',
     },
     partners: {title: 'Our partners', sub: 'Our Partners'},
+    // title = heading above the featured-product strip on the homepage (.showcase-title)
     featured: {title: 'Featured products', sub: 'HOME FURNITURE', productsWord: 'products'},
     certs: {
         title: 'Company certificates',

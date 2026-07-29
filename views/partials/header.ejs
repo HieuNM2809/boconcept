@@ -5,7 +5,13 @@
    và luôn có guard `typeof`. Tuyệt đối không đọc local của trang (vd `filters.q`). */
 const navs = (typeof navCategories !== 'undefined' && navCategories) || [];
 const sq = (typeof searchQuery !== 'undefined' && searchQuery) || '';
-const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh; còn lại nằm trong panel
+/* 2 danh mục hiện thẳng trên thanh; còn lại nằm trong panel.
+   ƯU TIÊN loại NỔI BẬT: khối "Loại sản phẩm" ở trang chủ chỉ render loại
+   is_featured (home.controller.js:99), nên CHỈ loại nổi bật mới có thẻ để cuộn
+   tới. Lấy bừa 2 loại đầu như trước thì loại không nổi bật trỏ vào "/#cat-<id>"
+   — một id không tồn tại — và bấm vào không thấy gì xảy ra. */
+const featuredNavs = navs.filter((c) => c.is_featured);
+const inlineCats = featuredNavs.concat(navs.filter((c) => !c.is_featured)).slice(0, 2);
 %>
 <header class="site-header">
 
@@ -44,12 +50,19 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
                     aria-label="<%= t.common.actions.menu %>"><span aria-hidden="true">☰</span></button>
 
             <nav class="nav-cats" aria-label="<%= t.common.actions.menu %>">
-                <%# Hai loại hiện thẳng trên thanh KHÔNG mở trang danh mục: chúng cuộn
-                    xuống khối "Loại sản phẩm" ở trang chủ và chọn sẵn đúng loại (main.js).
-                    href vẫn là "/#cat-<id>" tuyệt đối để ở trang khác trình duyệt về
-                    trang chủ trước, và để chuột giữa / mở tab mới vẫn có đích thật. %>
+                <%# Loại NỔI BẬT không mở trang danh mục: nó cuộn xuống khối "Loại sản
+                    phẩm" ở trang chủ và chọn sẵn đúng loại (main.js). href vẫn là
+                    "/#cat-<id>" tuyệt đối để ở trang khác trình duyệt về trang chủ
+                    trước, và để chuột giữa / mở tab mới vẫn có đích thật.
+                    Loại KHÔNG nổi bật (chỉ lọt vào đây khi chưa đủ 2 loại nổi bật) không
+                    có thẻ nào dưới trang chủ -> trỏ thẳng sang trang danh mục, thà mở
+                    đúng trang còn hơn một cái neo chết. %>
                 <% inlineCats.forEach(function (c) { %>
-                    <a href="/#cat-<%= c.id %>" data-cat-jump="<%= c.id %>"><%= pick(c, 'name') %></a>
+                    <% if (c.is_featured) { %>
+                        <a href="/#cat-<%= c.id %>" data-cat-jump="<%= c.id %>"><%= pick(c, 'name') %></a>
+                    <% } else { %>
+                        <a href="/categories/<%= c.id %>"><%= pick(c, 'name') %></a>
+                    <% } %>
                 <% }) %>
                 <% if (navs.length > inlineCats.length) { %>
                     <button class="nav-more" type="button" data-nav-toggle
@@ -69,7 +82,7 @@ const inlineCats = navs.slice(0, 2); // 2 danh mục hiện thẳng trên thanh;
                        placeholder="<%= t.common.actions.searchPlaceholder %>"
                        aria-label="<%= t.common.actions.search %>">
                 <button class="header-search-btn" type="submit" aria-label="<%= t.common.actions.search %>">
-                    <span aria-hidden="true">🔍</span>
+                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </button>
             </form>
         </div>

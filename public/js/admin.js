@@ -51,6 +51,31 @@
         });
     }
 
+    // ── Màu sản phẩm: thêm/xóa dòng động ──────────────────────────────────────
+    // Không dùng lại bindEncoders: dòng màu không có ô chọn file, `<input type=
+    // "color">` là bộ chọn màu sẵn của trình duyệt và luôn trả về dạng #rrggbb.
+    var colorRows = document.getElementById('colorRows');
+    var addColorBtn = document.getElementById('addColorRow');
+    if (colorRows && addColorBtn) {
+        addColorBtn.addEventListener('click', function () {
+            var row = document.createElement('div');
+            row.className = 'gallery-row color-row';
+            row.innerHTML =
+                '<input type="color" name="color_hex[]" value="#000000" title="Chọn màu">' +
+                '<input type="text" name="color_name_vi[]" placeholder="Tên màu (VD: Nâu óc chó)">' +
+                '<input type="text" name="color_name_en[]" placeholder="Tên tiếng anh">' +
+                '<select name="color_image[]"><option value="">— không đổi ảnh —</option>' +
+                (colorRows.dataset.imageOptions || '') + '</select>' +
+                '<button type="button" class="btn-sm danger" data-remove-row>Xóa</button>';
+            colorRows.appendChild(row);
+        });
+
+        colorRows.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-remove-row]');
+            if (btn) btn.closest('.gallery-row').remove();
+        });
+    }
+
     // ── Khe slider của lưới ảnh trang chủ: thêm/xóa dòng động ─────────────────
     // Giống galleryRows ở trên nhưng mỗi dòng mang THÊM alt_vi[]/alt_en[]. Ba mảng
     // đi song song theo thứ tự DOM, controller ghép theo chỉ số — nên mỗi dòng

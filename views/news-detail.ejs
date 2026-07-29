@@ -39,21 +39,23 @@
                 <p class="article-lead"><%= pick(post, 'excerpt') %></p>
             <% } %>
 
-            <% if (post.image) { %>
-                <figure class="article-hero">
-                    <img src="<%= post.image %>" alt="<%= pick(post, 'title') %>">
-                </figure>
-            <% } %>
-
-            <%# bodyHtml do richtext.helper dựng ra: nó escape toàn bộ đầu vào rồi
-                mới sinh một tập thẻ cố định, nên việc in thô ở đây KHÔNG mở đường
-                cho XSS. Tuyệt đối không in thô bất kỳ chuỗi nào khác của người dùng. %>
-            <div class="article-body">
-                <% if (bodyHtml) { %>
-                    <%- bodyHtml %>
-                <% } else { %>
-                    <p class="empty"><%= t.news.noBody %></p>
+            <div class="article-layout<%= post.image ? '' : ' article-layout-noimg' %>">
+                <% if (post.image) { %>
+                    <figure class="article-hero">
+                        <img src="<%= post.image %>" alt="<%= pick(post, 'title') %>">
+                    </figure>
                 <% } %>
+
+                <%# bodyHtml do richtext.helper dựng ra: nó escape toàn bộ đầu vào rồi
+                    mới sinh một tập thẻ cố định, nên việc in thô ở đây KHÔNG mở đường
+                    cho XSS. Tuyệt đối không in thô bất kỳ chuỗi nào khác của người dùng. %>
+                <div class="article-body">
+                    <% if (bodyHtml) { %>
+                        <%- bodyHtml %>
+                    <% } else { %>
+                        <p class="empty"><%= t.news.noBody %></p>
+                    <% } %>
+                </div>
             </div>
 
             <p class="article-back">

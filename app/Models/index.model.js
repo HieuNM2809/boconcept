@@ -5,6 +5,7 @@ const Category = require('./Category.model');
 const Product = require('./Product.model');
 const ProductVariant = require('./ProductVariant.model');
 const ProductImage = require('./ProductImage.model');
+const ProductColor = require('./ProductColor.model');
 const Slide = require('./Slide.model');
 const Partner = require('./Partner.model');
 const Certificate = require('./Certificate.model');
@@ -29,6 +30,10 @@ ProductVariant.belongsTo(Product, {foreignKey: 'product_id', as: 'product'});
 Product.hasMany(ProductImage, {foreignKey: 'product_id', as: 'images'});
 ProductImage.belongsTo(Product, {foreignKey: 'product_id', as: 'product'});
 
+// ── Product ⇄ Color (ô vuông màu khách chọn ở trang chi tiết) ─────────────────
+Product.hasMany(ProductColor, {foreignKey: 'product_id', as: 'colors'});
+ProductColor.belongsTo(Product, {foreignKey: 'product_id', as: 'product'});
+
 module.exports = {
     ApiClient,
     Example,
@@ -36,6 +41,7 @@ module.exports = {
     Product,
     ProductVariant,
     ProductImage,
+    ProductColor,
     Slide,
     Partner,
     Certificate,
