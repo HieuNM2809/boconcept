@@ -500,6 +500,31 @@ body.drawer-open { overflow: hidden; }
     .showcase-item:hover .showcase-media img { transform: none; }
 }
 
+/* ===== Company intro (about split) ===== */
+.intro-section { background: #fff; }
+.intro-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+}
+.intro-media { overflow: hidden; }
+.intro-media img { width: 100%; height: 100%; object-fit: cover; display: block; aspect-ratio: 4 / 3; }
+.intro-copy { display: flex; flex-direction: column; gap: 18px; }
+.intro-title {
+    font-family: var(--serif);
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 600; margin: 0;
+}
+.intro-body { color: var(--muted); font-size: 15px; line-height: 1.85; margin: 0; }
+.intro-features {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.intro-features li { font-size: 14px; padding-left: 18px; position: relative; color: var(--ink); }
+.intro-features li::before { content: "–"; position: absolute; left: 0; color: var(--accent); }
+.intro-cta { align-self: flex-start; margin-top: 4px; }
+
 /* ===== Why us ===== */
 /* Dải giới thiệu: split 2 cột — text trái, hình phải. */
 .why { background: var(--white); padding: 0; }
@@ -961,19 +986,16 @@ body.drawer-open { overflow: hidden; }
 
 /* ===== Partners ===== */
 .partners { background: var(--soft); padding-top: 50px; padding-bottom: 50px; }
-.partners > .container { width: 100%; max-width: none; padding-inline: clamp(24px, 5vw, 80px); }
+.partners > .container { width: calc(100% - 50px); max-width: none; }
 .partners-sub { text-align: center; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; color: var(--muted); margin: 0 0 6px; }
-/* Số cột CỐ ĐỊNH chứ không auto-fit: auto-fit theo bề ngang màn hình sẽ đẻ ra
-   hàng cuối thiếu ô, các ô còn lại giãn rộng khác hẳn hàng trên — đúng cảnh
-   ảnh nằm lệch lạc mỗi cái một cỡ trước đây. */
 .partner-row {
-    display: grid; grid-template-columns: repeat(6, 1fr);
-    gap: 14px; max-width: 1100px; margin: 48px auto 0; justify-items: center;
+    display: flex; flex-wrap: nowrap;
+    gap: 14px; margin: 50px auto 0; justify-content: center; align-items: stretch;
 }
-/* aspect-ratio giữ MỌI ô đúng một khuôn, không phụ thuộc ảnh bên trong cao thấp */
 .partner-logo {
     display: flex; align-items: center; justify-content: center;
-    aspect-ratio: 16 / 9; padding: 16px 20px;
+    flex: 1 1 0; min-width: 0;
+    aspect-ratio: 16 / 9; padding: 0;
     background: #fff; border-radius: 2px;
     font-size: 20px; font-weight: 700; color: #9a9186; letter-spacing: .5px; text-align: center;
 }
@@ -1673,7 +1695,7 @@ body.modal-open { overflow: hidden; }
        Dồn hết danh mục vào panel ☰, chỉ giữ nút ☰. */
     /* .nav-cats vẫn hiện trên tablet/điện thoại */
     .header-search { width: 240px; }
-    .partner-row { grid-template-columns: repeat(4, 1fr); }
+    .partner-row { gap: 10px; }
     .features { padding: 34px 0; }
     .feature-item { padding: 8px 14px; }
     /* Giữ 3 cột, chỉ thu lề và khe lại */
@@ -1687,7 +1709,8 @@ body.modal-open { overflow: hidden; }
 @media (max-width: 768px) {
     .section { padding: 44px 0; }
     .gallery-grid-section > .collage { padding: 0 25px; }
-    .partner-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .partner-row { flex-wrap: wrap; gap: 12px; }
+    .partner-logo { flex-basis: calc(33.33% - 8px); flex-grow: 0; }
     /* Khối loại 2 cột -> xếp dọc: danh sách tên ở trên, ảnh xem trước ở dưới.
        Mobile không hover -> chạm tên là vào thẳng trang danh mục. */
     .cat-showcase-grid { grid-template-columns: 1fr; min-height: 0; }
@@ -1697,6 +1720,7 @@ body.modal-open { overflow: hidden; }
     /* Chứng nhận mobile: grid 3 cột, căn trái, hiện toàn bộ */
     .cert-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; justify-items: stretch; flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; }
     .cert-card { width: auto; max-width: none; scroll-snap-align: none; flex: none; }
+    .intro-split { grid-template-columns: 1fr; gap: 30px; }
     /* Bỏ bố cục so le: 12 cột co lại thì ô 2-3 cột hẹp tới mức không nhìn được ảnh.
        Chuyển sang lưới 2 cột đều, ô lớn chiếm trọn hàng. */
     .collage { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 30vw; gap: 8px; }
@@ -1772,7 +1796,7 @@ body.modal-open { overflow: hidden; }
     .hero-arrow { width: 38px; height: 38px; font-size: 22px; }
     .hero-arrow.prev { left: 10px; }
     .hero-arrow.next { right: 10px; }
-    .partner-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .partner-logo { flex-basis: calc(50% - 5px); flex-grow: 0; }
     .cert-row { grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .cert-card { width: auto; }
     .footer-grid { grid-template-columns: 1fr; gap: 26px; }

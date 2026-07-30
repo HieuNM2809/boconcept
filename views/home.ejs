@@ -105,6 +105,31 @@
     </section>
 <% } %>
 
+<!-- ── Giới thiệu công ty ────────────────────────────────────────────────────── -->
+<section class="section intro-section" id="about">
+    <div class="container">
+        <div class="intro-split">
+            <% if (whyImage) { %>
+                <div class="intro-media">
+                    <img src="<%= whyImage %>" alt="<%= whyImageLabel || whyTitle %>">
+                </div>
+            <% } %>
+            <div class="intro-copy">
+                <h2 class="intro-title"><%= whyTitle %></h2>
+                <% if (whyBody) { %><p class="intro-body"><%= whyBody %></p><% } %>
+                <% if (whyFeatures && whyFeatures.length) { %>
+                    <ul class="intro-features">
+                        <% whyFeatures.forEach(function(f) { %><li><%= f %></li><% }) %>
+                    </ul>
+                <% } %>
+                <% if (whyCta) { %>
+                    <a class="btn btn-outline intro-cta" href="/about"><%= whyCta %></a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- ── Why / Categories: loop theo từng loại sản phẩm cha ─ -->
 <%# Mỗi loại cha (parent_id = null) tạo một section split.
     Hover vào ảnh -> hiện danh sách loại con cấp 2 bên dưới. %>
