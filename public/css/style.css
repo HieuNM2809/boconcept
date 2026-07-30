@@ -446,7 +446,7 @@ body.drawer-open { overflow: hidden; }
    nhịp với các khối khác của trang chủ. */
 .showcase-title {
     font-family: var(--serif); font-size: clamp(26px, 3.4vw, 40px);
-    font-weight: 600; text-align: center; margin: 6px 0 22px;
+    font-weight: 600; text-align: center; margin: 0 0 50px 0;
 }
 /* Mốc canh giữa của 2 nút mũi tên: chỉ bọc dải ảnh, KHÔNG tính dòng tiêu đề. */
 .showcase-body { position: relative; }
