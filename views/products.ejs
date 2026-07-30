@@ -2,22 +2,38 @@
 <body>
 <%- include('partials/header') %>
 
-<div class="container listing">
+<div class="listing">
 
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb">
-        <a href="/"><%= t.catalog.home %></a>
-        <span class="sep">/</span>
-        <a href="/products"><%= t.catalog.allTitle %></a>
-    </nav>
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="/"><%= t.catalog.home %></a>
+            <span class="sep">/</span>
+            <a href="/products"><%= t.catalog.allTitle %></a>
+        </nav>
 
-    <div class="listing-head">
-        <h1 class="listing-title"><%= t.catalog.allTitle %></h1>
-    </div>
+        <div class="listing-head">
+            <h1 class="listing-title"><%= t.catalog.allTitle %></h1>
+        </div>
+    </div><%# /container (breadcrumb + title) %>
+
+    <div class="container-wide">
 
     <%# Bộ lọc: LOẠI · tên · kích thước · chất liệu · khối lượng. Cùng form-bar như
         trang theo loại, chỉ THÊM ô chọn loại (ở trang theo loại không cần vì đã cố
         định 1 loại). action=/products, method=get -> mọi bộ lọc nằm trên URL. %>
+    <button class="filter-toggle" type="button" id="filterToggle"
+            aria-controls="filterPanel" aria-expanded="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+        </svg>
+        <%= t.catalog.filters.title %>
+    </button>
+    <div class="filter-panel" id="filterPanel" role="dialog" aria-label="<%= t.catalog.filters.title %>" aria-modal="true">
+        <div class="filter-panel-head">
+            <span class="filter-panel-title"><%= t.catalog.filters.title %></span>
+            <button type="button" class="filter-panel-close" data-filter-close aria-label="Đóng">&#x2715;</button>
+        </div>
     <form class="filter-bar filter-bar-wide" action="/products" method="get">
         <input type="hidden" name="sort" value="<%= filters.sort %>">
         <div class="filter-field">
@@ -55,6 +71,9 @@
             <a class="btn btn-outline" href="/products"><%= t.catalog.filters.clear %></a>
         </div>
     </form>
+
+    </div><%# /filter-panel %>
+    <div class="filter-scrim" id="filterScrim" hidden></div>
 
     <!-- Thanh sắp xếp + số kết quả -->
     <div class="toolbar">
@@ -124,7 +143,8 @@
     <% } else { %>
         <p class="empty listing-empty"><%= t.catalog.empty %></p>
     <% } %>
-</div>
+    </div><%# /container-wide (filter + toolbar + grid) %>
+</div><%# /listing %>
 
 <%- include('partials/footer') %>
 <script src="/static/js/main.js?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>"></script>

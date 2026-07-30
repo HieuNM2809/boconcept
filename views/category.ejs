@@ -87,7 +87,22 @@
             </div>
         <% } %>
 
+    </div><%# /container (breadcrumb + design-strip) %>
+
+    <div class="container-wide">
         <!-- Bộ lọc: tên · kích thước · chất liệu · khối lượng -->
+        <button class="filter-toggle" type="button" id="filterToggle"
+                aria-controls="filterPanel" aria-expanded="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+            </svg>
+            <%= t.catalog.filters.title %>
+        </button>
+        <div class="filter-panel" id="filterPanel" role="dialog" aria-label="<%= t.catalog.filters.title %>" aria-modal="true">
+            <div class="filter-panel-head">
+                <span class="filter-panel-title"><%= t.catalog.filters.title %></span>
+                <button type="button" class="filter-panel-close" data-filter-close aria-label="Đóng">&#x2715;</button>
+            </div>
         <form class="filter-bar" action="/categories/<%= category.id %>" method="get">
             <input type="hidden" name="sort" value="<%= filters.sort %>">
             <div class="filter-field">
@@ -115,13 +130,12 @@
                 <a class="btn btn-outline" href="/categories/<%= category.id %>"><%= t.catalog.filters.clear %></a>
             </div>
         </form>
+        </div><%# /filter-panel %>
+        <div class="filter-scrim" id="filterScrim" hidden></div>
 
         <%# Ô "Tìm loại sản phẩm" đã bỏ cùng với dải chip: nó chỉ lọc đúng các chip đó,
             giữ lại thì gõ gì cũng ra "không tìm thấy". %>
 
-    </div><%# /container (breadcrumb → filter) %>
-
-    <div class="container-wide">
         <!-- Thanh sắp xếp + số kết quả -->
         <div class="toolbar">
             <div class="sort-chips">

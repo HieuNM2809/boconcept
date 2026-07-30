@@ -581,7 +581,7 @@ body.drawer-open { overflow: hidden; }
 }
 .why-cta:hover { background: #444; }
 .why-media {
-    display: block;
+    display: flex;
     position: relative; overflow: hidden;
     background: var(--soft);
     min-height: 520px;
@@ -598,10 +598,11 @@ body.drawer-open { overflow: hidden; }
 .why-media img {
     width: 100%; height: 100%;
     object-fit: cover; display: block;
-    position: absolute; inset: 0;
+    flex: 1 1 100%;
     transition: transform .6s cubic-bezier(.25,.8,.25,1);
 }
-.why-media:hover img { transform: scale(1.07); }
+.why-media:hover img,
+.why-media.is-hovered img { transform: scale(1.07); }
 .why-media-label {
     position: absolute;
     top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -779,13 +780,11 @@ body.drawer-open { overflow: hidden; }
    thẳng hàng với lưới sản phẩm bên dưới — còn 20px thụt vào sẽ thấy lệch ngay
    khi mất nền che. */
 .filter-bar {
-    display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 14px 18px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px 18px;
     align-items: end; background: none; border: 0;
     padding: 0 0 18px; margin-bottom: 18px;
 }
-/* Biến thể 5 ô lọc (trang "Tất cả sản phẩm" thêm ô chọn loại) -> mở thêm 1 cột
-   để cả hàng vẫn nằm gọn một dòng trên màn rộng. */
-.filter-bar-wide { grid-template-columns: repeat(5, 1fr) auto; }
+.filter-bar-wide { grid-template-columns: repeat(6, 1fr); }
 .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .filter-field label { font-size: 12px; color: var(--muted); font-weight: 600; }
 .filter-field input,
@@ -801,7 +800,14 @@ body.drawer-open { overflow: hidden; }
 .filter-range input { width: 100%; }
 .filter-range span { color: var(--muted); }
 .filter-actions { display: flex; gap: 8px; }
-.filter-actions .btn { padding: 10px 18px; font-size: 14px; }
+.filter-actions .btn { padding: 10px 32px; font-size: 14px; flex: 1; text-align: center; }
+
+/* ── Filter panel / toggle (mobile slide-in từ phải) ── */
+/* Desktop: panel là wrapper trong suốt, toggle và header ẩn */
+.filter-toggle { display: none; }
+.filter-panel { display: contents; } /* transparent wrapper — không ảnh hưởng layout */
+.filter-panel-head { display: none; }
+.filter-scrim { display: none; }
 
 /* Ô tìm loại sản phẩm — lọc chip ngay tại chỗ, không tải lại trang */
 .cat-finder { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -1118,7 +1124,7 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Listing / Category page ===== */
-/*.listing { padding: 50px 0; }*/
+.listing { padding: 50px 0; }
 .breadcrumb {
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
     font-size: 13px; color: var(--muted);
@@ -1138,7 +1144,7 @@ body.drawer-open { overflow: hidden; }
 .design-strip {
     display: grid; grid-template-columns: minmax(220px, 1fr) 2fr;
     gap: 30px; align-items: center;
-    margin: 0 0 34px; padding-bottom: 30px; border-bottom: 1px solid var(--line);
+    margin: 0 0 75px; padding-bottom: 30px; border-bottom: 1px solid var(--line);
 }
 /* Loại sản phẩm duy nhất -> không có dải ảnh, cột 2fr bên phải sẽ rỗng và đẩy
    tiêu đề nép sang trái một phần ba màn hình. Một cột thì tiêu đề trải hết. */
@@ -1721,6 +1727,57 @@ body.modal-open { overflow: hidden; }
     .cert-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; justify-items: stretch; flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; }
     .cert-card { width: auto; max-width: none; scroll-snap-align: none; flex: none; }
     .intro-split { grid-template-columns: 1fr; gap: 30px; }
+    /* ── Filter panel mobile ── */
+    .filter-bar { display: none; }          /* ẩn inline trên mobile */
+    .filter-toggle {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 18px; margin-bottom: 16px;
+        background: var(--accent); color: #fff;
+        border: none; border-radius: 4px;
+        font-family: var(--sans); font-size: 14px; font-weight: 600;
+        cursor: pointer; letter-spacing: .02em;
+    }
+    .filter-panel {
+        display: flex; flex-direction: column; /* đặt lại từ display:contents */
+        position: fixed; top: 0; right: 0; bottom: 0;
+        width: 88vw; max-width: 360px;
+        background: #fff; z-index: 160;
+        overflow-y: auto; overscroll-behavior: contain;
+        padding: 0 25px 40px;
+        transform: translateX(100%);
+        transition: transform .28s cubic-bezier(.32,.72,0,1);
+        box-shadow: -4px 0 24px rgba(0,0,0,.12);
+    }
+    .filter-panel.is-open { transform: translateX(0); }
+    .filter-panel-head {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 20px 0 16px;
+        border-bottom: 1px solid var(--line); margin-bottom: 20px;
+        position: sticky; top: 0; background: #fff; z-index: 1;
+    }
+    .filter-panel-title { font-family: var(--serif); font-size: 18px; font-weight: 600; }
+    .filter-panel-close {
+        background: none; border: none;
+        font-size: 22px; line-height: 1; color: var(--muted);
+        cursor: pointer; padding: 4px 6px;
+    }
+    /* Form bên trong panel: 1 cột dọc */
+    .filter-panel .filter-bar,
+    .filter-panel .filter-bar-wide {
+        display: flex !important; flex-direction: column; gap: 16px;
+        padding: 0; margin: 0; border: 0;
+    }
+    .filter-panel .filter-field { width: 100%; }
+    .filter-panel .filter-field input,
+    .filter-panel .filter-field select { width: 100%; box-sizing: border-box; }
+    .filter-panel .filter-actions { flex-direction: row; }
+    .filter-panel .filter-actions .btn { flex: 1; text-align: center; justify-content: center; padding: 0px 25px; }
+    /* Scrim */
+    .filter-scrim {
+        position: fixed; inset: 0; z-index: 159;
+        background: rgba(27,25,23,.45);
+    }
+    .filter-scrim[hidden] { display: none; }
     /* Bỏ bố cục so le: 12 cột co lại thì ô 2-3 cột hẹp tới mức không nhìn được ảnh.
        Chuyển sang lưới 2 cột đều, ô lớn chiếm trọn hàng. */
     .collage { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 30vw; gap: 8px; }

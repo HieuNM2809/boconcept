@@ -401,4 +401,36 @@
 
         sync(); // tải lại trang giữa chừng (trình duyệt khôi phục vị trí cuộn) vẫn có nút
     }
+
+    // ── Filter panel (mobile slide-in từ phải) ─────────────────────────────────
+    const filterToggle = document.getElementById('filterToggle');
+    const filterPanel  = document.getElementById('filterPanel');
+    const filterScrim  = document.getElementById('filterScrim');
+
+    if (filterToggle && filterPanel && filterScrim) {
+        const setFilter = (open) => {
+            filterPanel.classList.toggle('is-open', open);
+            filterScrim.hidden = !open;
+            document.body.classList.toggle('drawer-open', open);
+            filterToggle.setAttribute('aria-expanded', String(open));
+            if (!open) filterToggle.focus();
+        };
+
+        filterToggle.addEventListener('click', () => setFilter(true));
+        filterScrim.addEventListener('click', () => setFilter(false));
+        filterPanel.addEventListener('click', (e) => {
+            if (e.target.closest('[data-filter-close]')) setFilter(false);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && filterPanel.classList.contains('is-open')) setFilter(false);
+        });
+    }
+
+    // ── Why-media image zoom on hover ───────────────────────────────────────────
+    document.querySelectorAll('.why-media').forEach((el) => {
+        const img = el.querySelector('img');
+        if (!img) return;
+        el.addEventListener('mouseenter', () => el.classList.add('is-hovered'));
+        el.addEventListener('mouseleave', () => el.classList.remove('is-hovered'));
+    });
 })();
