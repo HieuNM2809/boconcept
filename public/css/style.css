@@ -511,18 +511,21 @@ body.drawer-open { overflow: hidden; }
 .why-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 35px;
     min-height: 480px;
     position: relative;
 }
 .why-copy {
-    padding: clamp(40px, 5vw, 80px) clamp(28px, 4vw, 72px);
-    display: flex; flex-direction: column; justify-content: flex-start;
-    background: #fff;
+    padding: 50px 25px;
+    display: flex; flex-direction: column;
+    justify-content: flex-start; align-items: flex-start;
+    background: var(--soft);
 }
 .why-title {
     font-family: var(--serif);
     font-size: clamp(24px, 3vw, 40px);
     font-weight: 700; line-height: 1.15;
+    text-align: left;
     margin: 0 0 20px;
 }
 .why-body { color: var(--muted); font-size: 14px; line-height: 1.85; margin: 0 0 24px; white-space: pre-line; }
