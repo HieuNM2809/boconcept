@@ -1074,7 +1074,7 @@ body.drawer-open { overflow: hidden; }
    Khoá 1240px + auto margin để trên màn rộng ô không kéo dài lê thê. */
 .partner-row {
     display: flex; flex-wrap: wrap;
-    gap: 14px; margin: 50px auto 0; justify-content: center; align-items: stretch;
+    gap: 16px; margin: 50px auto 0; justify-content: center; align-items: stretch;
 }
 /* padding trong ô: logo chừa lề trắng quanh viền thay vì dán sát mép thẻ */
 .partner-logo {
