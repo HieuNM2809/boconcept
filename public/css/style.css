@@ -1720,8 +1720,10 @@ body.modal-open { overflow: hidden; }
     .product-grid { grid-template-columns: repeat(3, 1fr); }
     .cat-grid { grid-template-columns: repeat(3, 1fr); }
     .news-grid-3 { grid-template-columns: repeat(2, 1fr); }
-    .filter-bar { grid-template-columns: repeat(2, 1fr); }
-    .filter-actions { grid-column: 1 / -1; }
+    /* filter-bar (5 cột, category) giữ nguyên — vừa 1 hàng ở ≤992px.
+       filter-bar-wide (6 cột, products) thu về 3 cột để khỏi wrap xấu. */
+    .filter-bar-wide { grid-template-columns: repeat(3, 1fr); }
+    .filter-bar-wide .filter-actions { grid-column: 1 / -1; }
     /* Bản đồ xuống hàng riêng, chiếm trọn bề ngang — nhét vào 1 cột hẹp thì
        khung iframe quá bé, không đọc được tên đường. */
     .footer-grid { grid-template-columns: 1fr 1fr; }
