@@ -124,12 +124,12 @@ async function index(req, res) {
         res.render('home', {
             pageTitle: home.meta.title,
             heroBrand,
+            // Khối .intro của trang chủ: đúng hai chuỗi này, không hơn.
+            // Ảnh/nhãn ảnh/danh sách tính năng/CTA đã bỏ khỏi view nên cũng bỏ
+            // luôn ở đây — truyền dữ liệu không ai đọc chỉ tạo ảo giác là view
+            // còn dùng tới `about.image`.
             whyTitle: pickAbout('title', home.why.title),
             whyBody: pickAbout('excerpt', home.why.body),
-            whyImage: (about && about.image) || (rootCats[0] && rootCats[0].image) || null,
-            whyImageLabel: home.why.imageLabel,
-            whyFeatures: home.why.features || [],
-            whyCta: home.why.cta,
             categories: rootCats,
             allLevel2,
             categoriesTitle: pickCat('title', home.categories.title),
