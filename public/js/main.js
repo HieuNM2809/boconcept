@@ -402,35 +402,51 @@
         sync(); // tải lại trang giữa chừng (trình duyệt khôi phục vị trí cuộn) vẫn có nút
     }
 
-    // ── Filter panel (mobile slide-in từ phải) ─────────────────────────────────
-    const filterToggle = document.getElementById('filterToggle');
-    const filterPanel  = document.getElementById('filterPanel');
-    const filterScrim  = document.getElementById('filterScrim');
+    // ── Ngăn kéo bộ lọc & sắp xếp (mobile, trượt từ phải) ──────────────────────
+    // Hai ngăn kéo DÙNG CHUNG một lớp nền mờ: mỗi cái một scrim riêng thì lúc mở
+    // cái thứ hai sẽ có hai lớp phủ chồng lên nhau, nền tối gấp đôi.
+    const drawerScrim = document.getElementById('filterScrim');
 
-    if (filterToggle && filterPanel && filterScrim) {
-        const setFilter = (open) => {
-            filterPanel.classList.toggle('is-open', open);
-            filterScrim.hidden = !open;
-            document.body.classList.toggle('drawer-open', open);
-            filterToggle.setAttribute('aria-expanded', String(open));
-            if (!open) filterToggle.focus();
-        };
+    if (drawerScrim) {
+        const drawers = [
+            ['filterToggle', 'filterPanel'],
+            ['sortToggle', 'sortPanel'],
+        ]
+            .map(([toggleId, panelId]) => ({
+                toggle: document.getElementById(toggleId),
+                panel: document.getElementById(panelId),
+            }))
+            .filter((d) => d.toggle && d.panel);
 
-        filterToggle.addEventListener('click', () => setFilter(true));
-        filterScrim.addEventListener('click', () => setFilter(false));
-        filterPanel.addEventListener('click', (e) => {
-            if (e.target.closest('[data-filter-close]')) setFilter(false);
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && filterPanel.classList.contains('is-open')) setFilter(false);
-        });
+        if (drawers.length) {
+            const setDrawer = (d, open) => {
+                d.panel.classList.toggle('is-open', open);
+                d.toggle.setAttribute('aria-expanded', String(open));
+                // Scrim/khoá cuộn bám theo việc CÒN ngăn kéo nào đang mở hay không,
+                // chứ không theo riêng ngăn kéo vừa thao tác.
+                const anyOpen = drawers.some((x) => x.panel.classList.contains('is-open'));
+                drawerScrim.hidden = !anyOpen;
+                document.body.classList.toggle('drawer-open', anyOpen);
+                if (!open) d.toggle.focus();
+            };
+            const closeAll = () => drawers.forEach((d) => {
+                if (d.panel.classList.contains('is-open')) setDrawer(d, false);
+            });
+
+            drawers.forEach((d) => {
+                d.toggle.addEventListener('click', () => {
+                    closeAll();            // mở cái này thì đóng cái kia
+                    setDrawer(d, true);
+                });
+                d.panel.addEventListener('click', (e) => {
+                    if (e.target.closest('[data-filter-close]')) setDrawer(d, false);
+                });
+            });
+
+            drawerScrim.addEventListener('click', closeAll);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeAll();
+            });
+        }
     }
-
-    // ── Why-media image zoom on hover ───────────────────────────────────────────
-    document.querySelectorAll('.why-media').forEach((el) => {
-        const img = el.querySelector('img');
-        if (!img) return;
-        el.addEventListener('mouseenter', () => el.classList.add('is-hovered'));
-        el.addEventListener('mouseleave', () => el.classList.remove('is-hovered'));
-    });
 })();

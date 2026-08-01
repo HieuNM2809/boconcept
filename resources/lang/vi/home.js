@@ -19,8 +19,6 @@ module.exports = {
             'Dễ bảo quản & chăm sóc',
             'Phù hợp không gian trong và ngoài nhà',
         ],
-        cta: 'Tìm hiểu thêm về chúng tôi',
-        imageLabel: 'Nội thất',
     },
     categories: {
         title: 'Chất lượng thấy được, sự thoải mái cảm nhận được.',

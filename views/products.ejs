@@ -22,13 +22,34 @@
     <%# Bộ lọc: LOẠI · tên · kích thước · chất liệu · khối lượng. Cùng form-bar như
         trang theo loại, chỉ THÊM ô chọn loại (ở trang theo loại không cần vì đã cố
         định 1 loại). action=/products, method=get -> mọi bộ lọc nằm trên URL. %>
-    <button class="filter-toggle" type="button" id="filterToggle"
-            aria-controls="filterPanel" aria-expanded="false">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
-        </svg>
-        <%= t.catalog.filters.title %>
-    </button>
+    <%# Đếm bộ lọc đang bật để hiện huy hiệu số trên nút — `sort` KHÔNG tính vì nó
+        luôn có giá trị và đã có nút sắp xếp riêng bên cạnh. %>
+    <%
+    const activeFilterCount = ['category_id', 'q', 'dimensions', 'material', 'min_weight', 'max_weight']
+        .filter(function (k) { return filters[k] !== undefined && filters[k] !== null && String(filters[k]) !== ''; })
+        .length;
+    %>
+    <%# Cụm 2 nút CHỈ hiện ở mobile (CSS ẩn trên desktop, nơi đã có hàng lọc inline
+        và dải chip sắp xếp): trái mở ngăn kéo bộ lọc, phải mở ngăn kéo sắp xếp. %>
+    <div class="listing-actions">
+        <button class="filter-toggle" type="button" id="filterToggle"
+                aria-controls="filterPanel" aria-expanded="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+            </svg>
+            <span class="listing-action-label"><%= t.catalog.filters.title %></span>
+            <% if (activeFilterCount) { %><span class="filter-count"><%= activeFilterCount %></span><% } %>
+        </button>
+        <button class="sort-toggle" type="button" id="sortToggle"
+                aria-controls="sortPanel" aria-expanded="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/>
+            </svg>
+            <%# Nhãn nút là tên kiểu sắp xếp ĐANG chọn, không phải chữ "Sắp xếp" —
+                người dùng thấy ngay trang đang xếp theo gì mà không cần mở ngăn kéo. %>
+            <span class="listing-action-label"><%= t.catalog.sort[filters.sort] || t.catalog.sortBy %></span>
+        </button>
+    </div>
     <div class="filter-panel" id="filterPanel" role="dialog" aria-label="<%= t.catalog.filters.title %>" aria-modal="true">
         <div class="filter-panel-head">
             <span class="filter-panel-title"><%= t.catalog.filters.title %></span>
@@ -73,6 +94,20 @@
     </form>
 
     </div><%# /filter-panel %>
+
+    <%# Ngăn kéo sắp xếp — dùng chung khung .filter-panel nên thừa hưởng luôn hiệu
+        ứng trượt, nền mờ và nút đóng. Trên desktop .sort-panel bị ẩn hẳn. %>
+    <div class="filter-panel sort-panel" id="sortPanel" role="dialog" aria-label="<%= t.catalog.sortBy %>" aria-modal="true">
+        <div class="filter-panel-head">
+            <span class="filter-panel-title"><%= t.catalog.sortBy %></span>
+            <button type="button" class="filter-panel-close" data-filter-close aria-label="Đóng">&#x2715;</button>
+        </div>
+        <div class="sort-options">
+            <a class="sort-option <%= filters.sort === 'newest' ? 'is-active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+            <a class="sort-option <%= filters.sort === 'popular' ? 'is-active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+        </div>
+    </div>
+
     <div class="filter-scrim" id="filterScrim" hidden></div>
 
     <!-- Thanh sắp xếp + số kết quả -->

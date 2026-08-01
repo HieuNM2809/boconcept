@@ -124,12 +124,14 @@ async function index(req, res) {
         res.render('home', {
             pageTitle: home.meta.title,
             heroBrand,
-            // Khối .intro của trang chủ: đúng hai chuỗi này, không hơn.
-            // Ảnh/nhãn ảnh/danh sách tính năng/CTA đã bỏ khỏi view nên cũng bỏ
-            // luôn ở đây — truyền dữ liệu không ai đọc chỉ tạo ảo giác là view
-            // còn dùng tới `about.image`.
+            // Khối .intro-section của trang chủ: một cột chữ căn giữa.
+            // ĐÚNG BA biến này, không hơn — view đã bỏ cột ảnh và nút CTA nên
+            // `about.image`/`why.imageLabel`/`why.cta` cũng bỏ luôn ở đây.
+            // Sửa view và controller phải đi cùng nhau: lần merge PR #19 giữ view cũ
+            // (có ảnh + CTA) với controller đã cắt bớt -> "whyImage is not defined".
             whyTitle: pickAbout('title', home.why.title),
             whyBody: pickAbout('excerpt', home.why.body),
+            whyFeatures: home.why.features || [],
             categories: rootCats,
             allLevel2,
             categoriesTitle: pickCat('title', home.categories.title),

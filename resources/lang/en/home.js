@@ -17,8 +17,6 @@ module.exports = {
             'Low maintenance & easy to care',
             'Made for outdoor & indoor spaces',
         ],
-        cta: 'Learn more about us',
-        imageLabel: 'Furniture',
     },
     categories: {
         title: 'Quality You Can See, Comfort You Can Feel.',
