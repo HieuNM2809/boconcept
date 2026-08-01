@@ -19,6 +19,18 @@
 
     <div class="container-wide">
 
+    <!-- Thanh sắp xếp + số kết quả — nằm TRÊN filter -->
+    <div class="toolbar">
+        <div class="sort-chips">
+            <span class="toolbar-label"><%= t.catalog.sortBy %></span>
+            <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+            <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+        </div>
+        <div class="toolbar-right">
+            <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
+        </div>
+    </div>
+
     <%# Bộ lọc: LOẠI · tên · kích thước · chất liệu · khối lượng. Cùng form-bar như
         trang theo loại, chỉ THÊM ô chọn loại (ở trang theo loại không cần vì đã cố
         định 1 loại). action=/products, method=get -> mọi bộ lọc nằm trên URL. %>
@@ -74,18 +86,6 @@
 
     </div><%# /filter-panel %>
     <div class="filter-scrim" id="filterScrim" hidden></div>
-
-    <!-- Thanh sắp xếp + số kết quả -->
-    <div class="toolbar">
-        <div class="sort-chips">
-            <span class="toolbar-label"><%= t.catalog.sortBy %></span>
-            <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
-            <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
-        </div>
-        <div class="toolbar-right">
-            <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
-        </div>
-    </div>
 
     <!-- Lưới sản phẩm: 4 cột × 6 dòng (controller trả 24/trang) -->
     <% if (products.length) { %>

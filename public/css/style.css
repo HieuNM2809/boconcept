@@ -836,7 +836,7 @@ body.drawer-open { overflow: hidden; }
 .filter-range input { width: 100%; }
 .filter-range span { color: var(--muted); }
 .filter-actions { display: flex; gap: 8px; }
-.filter-actions .btn { padding: 10px 32px; font-size: 14px; flex: 1; text-align: center; }
+.filter-actions .btn { padding: 7px 18px; font-size: 13px; flex: 1; text-align: center; }
 
 /* ── Filter panel / toggle (mobile slide-in từ phải) ── */
 /* Desktop: panel là wrapper trong suốt, toggle và header ẩn */
