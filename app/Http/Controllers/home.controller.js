@@ -131,7 +131,10 @@ async function index(req, res) {
             // (có ảnh + CTA) với controller đã cắt bớt -> "whyImage is not defined".
             whyTitle: pickAbout('title', home.why.title),
             whyBody: pickAbout('excerpt', home.why.body),
+            whyImage: (about && about.image) || null,
+            whyImageLabel: pickAbout('title', ''),
             whyFeatures: home.why.features || [],
+            whyCta: home.why.cta || '',
             categories: rootCats,
             allLevel2,
             categoriesTitle: pickCat('title', home.categories.title),
