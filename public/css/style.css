@@ -441,12 +441,21 @@ body.drawer-open { overflow: hidden; }
 /* ===== Showcase sản phẩm nổi bật (tràn màn hình) ===== */
 /* Lề hai bên + khe giữa các ảnh đặt qua biến để công thức flex-basis bên dưới
    và các mốc responsive luôn khớp nhau, không phải sửa số ở nhiều chỗ. */
-.showcase { position: relative; padding: 24px var(--showcase-pad); --showcase-gap: 20px; --showcase-pad: 26px; }
+/* padding-bottom = 0 CÓ CHỦ Ý: khoảng hở xuống khối .intro bên dưới do đúng một
+   nơi quyết định (.section = 50px). Để lại 24px ở đây thì hai con số cộng dồn
+   thành 74px và sửa "cho đúng 50px" phải mò ở hai rule khác nhau.
+   padding-top = 50px là khe với dải công năng phía trên, và cũng một mình nó
+   quyết định — nên .showcase-title ngay dưới phải để margin-top 0. */
+.showcase { position: relative; padding: 50px var(--showcase-pad) 0; --showcase-gap: 20px; --showcase-pad: 26px; }
 /* Tiêu đề "Sản phẩm nổi bật" — cùng cỡ/kiểu chữ với .section-title để không lạc
-   nhịp với các khối khác của trang chủ. */
+   nhịp với các khối khác của trang chủ.
+   margin-top = 0 CÓ CHỦ Ý: khe phía trên đã do padding-top của .showcase lo trọn.
+   Để lại 6px như trước thì hai số cộng dồn thành 56px chứ không phải 50px.
+   margin-bottom = khe xuống hàng ảnh, cũng do một mình nó quyết định (.showcase-body
+   và .showcase-track đều margin 0 nên không có gì gộp vào). */
 .showcase-title {
     font-family: var(--serif); font-size: clamp(26px, 3.4vw, 40px);
-    font-weight: 600; text-align: center; margin: 6px 0 22px;
+    font-weight: 600; text-align: center; margin: 0 0 50px;
 }
 /* Mốc canh giữa của 2 nút mũi tên: chỉ bọc dải ảnh, KHÔNG tính dòng tiêu đề. */
 .showcase-body { position: relative; }
@@ -499,22 +508,55 @@ body.drawer-open { overflow: hidden; }
     .showcase-item:hover .showcase-media img { transform: none; }
 }
 
+/* ===== Giới thiệu doanh nghiệp (tiêu đề + 1 đoạn văn, căn giữa) ===== */
+/* Dùng luôn class .section (padding: 50px 0) chứ không tự đặt padding riêng:
+   khe 50px với dải ảnh phía trên và với dải loại sản phẩm phía dưới nhờ đó đi
+   theo cùng một nhịp với mọi khối khác của trang chủ, không phải số lẻ tự chế. */
+.intro { background: var(--white); text-align: center; }
+.intro-title {
+    font-family: var(--serif);
+    font-size: clamp(24px, 3vw, 40px);
+    font-weight: 700; line-height: 1.15;
+    margin: 0 0 16px;
+}
+/* max-width tính theo dòng chữ chứ không theo .container (rộng gần hết màn):
+   đoạn văn kéo dài 1600px thì mắt lạc dòng khi xuống hàng. */
+.intro-body {
+    max-width: 820px; margin: 0 auto;
+    color: var(--muted); font-size: 15px; line-height: 1.85;
+    white-space: pre-line;
+}
+
 /* ===== Why us ===== */
 /* Dải giới thiệu: split 2 cột — text trái, hình phải. */
 .why { background: var(--white); padding: 0; }
-.why + .why { margin-top: 32px; }
+/* Khe giữa hai dải loại sản phẩm liền nhau — 50px, cùng nhịp giãn cách với các
+   khối khác của trang chủ. Chỉ .why + .why nên dải ĐẦU TIÊN không bị đội thêm
+   khe: khoảng hở với khối .intro phía trên do padding-bottom của .intro lo. */
+.why + .why { margin-top: 50px; }
 /*.why--alt { background: var(--soft); }*/
 .why--alt .why-media-subs {
     /*background: var(--soft); */
 }
+/* Lề ngang 25px và khe 150px giữa hai cột đặt ở ĐÂY chứ không nhét vào .why-copy:
+   cột chữ và cột ảnh phải chung một mốc lề. Để trong con thì mỗi cột tự giữ một
+   con số riêng, và mép phải của cột ảnh không có rule nào lo — đúng lỗi ảnh dính
+   sát mép màn hình.
+   Dùng column-gap chứ không phải gap: ở ≤768px lưới xuống 1 cột, `gap` sẽ biến
+   con số này thành khe DỌC khổng lồ giữa ảnh và chữ. Khe dọc mobile do row-gap
+   trong media query lo, tách bạch hẳn. */
 .why-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    column-gap: 150px;
+    padding: 0 25px;
     min-height: 480px;
     position: relative;
 }
 .why-copy {
-    padding: clamp(40px, 5vw, 80px) clamp(28px, 4vw, 72px);
+    /* Không còn padding ngang: 25px lề đã do .why-split lo. Giữ lại clamp cũ thì
+       chữ bị đẩy vào 25 + 45 = 70px tính từ mép trang. */
+    padding: 10px;
     display: flex; flex-direction: column; justify-content: flex-start;
     background: #fff;
 }
@@ -524,7 +566,19 @@ body.drawer-open { overflow: hidden; }
     font-weight: 700; line-height: 1.15;
     margin: 0 0 20px;
 }
-.why-body { color: var(--muted); font-size: 14px; line-height: 1.85; margin: 0 0 24px; white-space: pre-line; }
+/* text-align: justify + white-space: pre-line phối hợp có chủ ý, KHÔNG phải lỗi:
+   CSS không kéo giãn dòng kết thúc bằng ngắt dòng cưỡng bức, mà mô tả trong DB
+   xuống dòng bằng \n — nên các dòng gạch đầu dòng ngắn giữ nguyên căn trái, chỉ
+   đoạn văn dài tự wrap mới được căn đều hai bên.
+   text-indent thụt dòng đầu ~1em (cỡ chữ 14px). Cả mô tả là MỘT thẻ <p> nên chỉ
+   dòng đầu của toàn khối được thụt, không thụt lại sau mỗi lần xuống dòng. */
+.why-body {
+    color: var(--muted); font-size: 14px; line-height: 1.85;
+    margin: 0 0 24px;
+    white-space: pre-line;
+    text-align: justify;
+    text-indent: 15px;
+}
 .why-features {
     list-style: none; margin: 0 0 28px; padding: 0;
     display: flex; flex-direction: column; gap: 10px;
@@ -645,8 +699,14 @@ body.drawer-open { overflow: hidden; }
     text-align: center; color: var(--ink);
     letter-spacing: .02em;
 }
+/* Laptop hẹp: giữ nguyên 150px thì mỗi cột chỉ còn ~450px, tiêu đề vỡ thành 4-5
+   dòng và đoạn văn căn đều bắt đầu giãn chữ thưa. 150px chỉ dành cho desktop. */
+@media (max-width: 1200px) {
+    .why-split { column-gap: 60px; }
+}
+/* Phải nằm SAU khối 1200px: ở ≤768px cả hai cùng khớp, khối viết sau thắng. */
 @media (max-width: 768px) {
-    .why-split { grid-template-columns: 1fr; }
+    .why-split { grid-template-columns: 1fr; row-gap: 24px; }
     .why-media { min-height: 300px; order: -1; }
     .why-sub-item { flex: 0 0 160px; }
     .why-subs-wrap { display: block; opacity: 1; }

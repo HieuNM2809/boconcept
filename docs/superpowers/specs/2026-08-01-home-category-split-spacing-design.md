@@ -67,14 +67,14 @@ Tách hai vai này ra là toàn bộ nội dung phần hình học bên dưới.
 
 Chỉ sửa `public/css/style.css`. **Không** đụng `views/home.ejs`, không đụng model/service/route.
 
-### 1. Hình học — `.why-split` (dòng 510) và `.why-copy` (dòng 516)
+### 1. Hình học — `.why-split` và `.why-copy`
 
 ```css
 .why-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 150px;
-    padding-inline: 25px;
+    column-gap: 150px;
+    padding: 0 25px;
     min-height: 480px;
     position: relative;
 }
@@ -85,6 +85,10 @@ Chỉ sửa `public/css/style.css`. **Không** đụng `views/home.ejs`, không 
 }
 ```
 
+Dùng `column-gap` chứ **không** phải `gap`: ở ≤768px lưới xuống một cột, `gap: 150px` sẽ
+biến thành khe **dọc** 150px giữa ảnh và chữ. Khe dọc mobile do `row-gap` trong media query
+lo, tách bạch hẳn hai trục.
+
 **Bắt buộc phải gỡ `clamp(28px, 4vw, 72px)` khỏi `.why-copy`.** Nếu để lại, nó cộng dồn với
 `padding-inline: 25px` của grid và chữ rơi vào 53–97px thay vì 25px. Padding **dọc**
 `clamp(40px, 5vw, 80px)` giữ nguyên — ảnh chụp không đánh dấu chiều dọc.
@@ -92,7 +96,7 @@ Chỉ sửa `public/css/style.css`. **Không** đụng `views/home.ejs`, không 
 Vì `* { box-sizing: border-box }` (dòng 44) nên `min-height: 480px` đã tính cả padding,
 không cần chỉnh.
 
-### 2. Chữ — `.why-body` (dòng 527)
+### 2. Chữ — `.why-body`
 
 ```css
 .why-body {

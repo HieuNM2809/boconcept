@@ -105,6 +105,19 @@
     </section>
 <% } %>
 
+<!-- ── Giới thiệu doanh nghiệp (từ DB · /admin/pages · trang hệ thống `about`) ── -->
+<%# CHỈ tiêu đề + 1 đoạn văn, căn giữa. Cố ý KHÔNG có ảnh, nút CTA hay danh sách
+    gạch đầu dòng: phần ảnh lớn + hover xổ loại con là việc của các dải .why ngay
+    bên dưới, khối này chỉ để giới thiệu công ty.
+    Chữ lấy từ trang `about` (title + excerpt); ô để trống / trang bị ẩn thì
+    controller đã lùi về t.home.why trong resources/lang nên không bao giờ rỗng. %>
+<section class="section intro" id="about-intro">
+    <div class="container">
+        <h2 class="intro-title"><%= whyTitle %></h2>
+        <% if (whyBody) { %><p class="intro-body"><%= whyBody %></p><% } %>
+    </div>
+</section>
+
 <!-- ── Why / Categories: loop theo từng loại sản phẩm cha ─ -->
 <%# Mỗi loại cha (parent_id = null) tạo một section split.
     Hover vào ảnh -> hiện danh sách loại con cấp 2 bên dưới. %>
