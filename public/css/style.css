@@ -563,7 +563,6 @@ body.drawer-open { overflow: hidden; }
     padding: 50px 25px;
     display: flex; flex-direction: column;
     justify-content: flex-start; align-items: flex-start;
-    background: var(--soft);
 }
 .why-title {
     font-family: var(--serif);
@@ -764,7 +763,7 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Tin tức ===== */
-.news-head { text-align: center; max-width: 780px; margin: 0 auto 44px; }
+.news-head { text-align: center; max-width: 780px; margin: 0 auto 25px; }
 .news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 0 0 14px; }
 .news-desc { margin: 0 auto; color: var(--ink); font-size: 15px; line-height: 1.75; max-width: 68ch; }
 .news-cta {
@@ -1359,7 +1358,7 @@ body.drawer-open { overflow: hidden; }
    minh hoạ trong tab đã bỏ nên các lớp .tab-2col/.tab-h/.tab-desc/.spec-table/
    .tab-img không còn được dùng ở đâu nữa. */
 /* ===== Bài viết tin tức ===== */
-.news-head-page { margin-bottom: 44px; }
+.news-head-page { margin-bottom: 25px; }
 .news-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .news-card-meta { margin: 14px 0 6px; font-size: 12.5px; color: var(--muted); letter-spacing: .3px; }
 .news-card-title a { transition: .2s; }
