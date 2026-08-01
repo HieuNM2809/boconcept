@@ -805,11 +805,14 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Trang danh sách theo loại (/categories/:id) ===== */
-/* Danh mục con BÊN TRÁI, tên loại BÊN PHẢI trên cùng một hàng */
+/* Dải mô tả loại + đường kẻ ngăn với lưới sản phẩm.
+   Bỏ `justify-content: space-between`: bố cục "danh mục con bên trái, tên loại
+   bên phải" không còn — .cat-header giờ chỉ còn MỘT con (.cat-heading-wrap),
+   nên space-between là khai báo chết. */
 .cat-header {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: center;
     gap: 20px 32px; flex-wrap: wrap;
-    padding-bottom: 18px; margin-bottom: 24px; border-bottom: 1px solid var(--line);
+    padding-bottom: 25px; margin-bottom: 25px; border-bottom: 1px solid var(--line);
 }
 .cat-subnav { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
 .cat-chip {
@@ -831,7 +834,7 @@ body.drawer-open { overflow: hidden; }
 .filter-bar {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px 18px;
     align-items: end; background: none; border: 0;
-    padding: 0 0 18px; margin-bottom: 18px;
+    padding: 0; margin-bottom: 25px;
 }
 .filter-bar-wide { grid-template-columns: repeat(6, 1fr); }
 .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -1112,7 +1115,7 @@ body.drawer-open { overflow: hidden; }
 /* ===== Certificates ===== */
 .certs { background: var(--soft); padding-top: 50px; padding-bottom: 50px; }
 .partners + .certs { margin-top: 0; border-top: 1px solid var(--line); }
-.cert-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+.cert-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
 .cert-card { margin: 0; width: 200px; background: #fff; border: 1px solid var(--line); overflow: hidden; }
 .cert-card img {
     width: 100%; height: auto; object-fit: contain;
@@ -1300,7 +1303,7 @@ body.drawer-open { overflow: hidden; }
 .search-form { display: flex; gap: 10px; margin: 0 0 24px; }
 .search-input { flex: 1; max-width: 480px; padding: 11px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; font-family: var(--sans); }
 .search-input:focus { outline: none; border-color: transparent; }
-.listing-grid { margin-top: 8px; }
+.listing-grid { margin-top: 25px; }
 .listing-empty { padding: 60px 20px; }
 .pagination { display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 40px; }
 .pg-num, .pg-arrow, .pg-ellipsis { min-width: 40px; height: 40px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; background: #fff; }
