@@ -1156,7 +1156,7 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Listing / Category page ===== */
-.listing { padding: 50px 0; }
+.listing { padding: 0; }
 .breadcrumb {
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
     font-size: 13px; color: var(--muted);
@@ -1176,7 +1176,7 @@ body.drawer-open { overflow: hidden; }
 .design-strip {
     display: grid; grid-template-columns: minmax(220px, 1fr) 2fr;
     gap: 30px; align-items: center;
-    margin: 0 0 75px; padding-bottom: 30px; border-bottom: 1px solid var(--line);
+    margin: 0 0 0px; padding-bottom: 30px;
 }
 /* Loại sản phẩm duy nhất -> không có dải ảnh, cột 2fr bên phải sẽ rỗng và đẩy
    tiêu đề nép sang trái một phần ba màn hình. Một cột thì tiêu đề trải hết. */
