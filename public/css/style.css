@@ -1071,13 +1071,9 @@ body.drawer-open { overflow: hidden; }
 .certs { background: var(--soft); padding-top: 50px; padding-bottom: 50px; }
 .partners + .certs { margin-top: 0; border-top: 1px solid var(--line); }
 .cert-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
-.cert-card { margin: 0; width: 180px; background: #fff; border: 1px solid var(--line); overflow: hidden; }
-/* `contain` chứ KHÔNG `cover`: cover CẮT mất mép ảnh — đúng lỗi làm chữ
-   "LAW LABEL, INC" cụt ở thẻ American Law Label. Khung VUÔNG thay vì 300×400:
-   logo chứng nhận hầu hết vuông hoặc tròn, khung cao khiến chúng bị thu nhỏ lại
-   để vừa chiều cao rồi hở hai dải trắng trên dưới. */
+.cert-card { margin: 0; width: 260px; background: #fff; border: 1px solid var(--line); overflow: hidden; }
 .cert-card img {
-    aspect-ratio: 1 / 1; height: auto; width: 100%; object-fit: contain;
+    width: 100%; height: auto; object-fit: contain;
     background: #fff; padding: 12px; display: block;
 }
 
