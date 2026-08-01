@@ -455,7 +455,10 @@ body.drawer-open { overflow: hidden; }
    và .showcase-track đều margin 0 nên không có gì gộp vào). */
 .showcase-title {
     font-family: var(--serif); font-size: clamp(26px, 3.4vw, 40px);
-    font-weight: 600; text-align: center; margin: 0 0 50px 0;
+    font-weight: 600; text-align: center;
+    /* Margin âm hai bên = --showcase-pad -> nền kem tràn hết bề ngang màn hình,
+       trong khi dải ảnh bên dưới vẫn giữ lề. */
+    margin: 0 calc(-1 * var(--showcase-pad)) 50px;
     background: var(--soft); padding: 22px 40px; letter-spacing: .04em;
 }
 /* Mốc canh giữa của 2 nút mũi tên: chỉ bọc dải ảnh, KHÔNG tính dòng tiêu đề. */
