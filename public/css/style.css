@@ -666,7 +666,7 @@ body.drawer-open { overflow: hidden; }
 .why-media-subs {
     display: flex; flex-wrap: nowrap; gap: 0;
     background: var(--white);
-    padding: 20px 52px 16px;
+    padding: 20px 52px 15px;
     scroll-snap-type: x mandatory;
     overflow-x: auto;
     scrollbar-width: none; -ms-overflow-style: none;
@@ -718,7 +718,7 @@ body.drawer-open { overflow: hidden; }
     .why-copy { padding: 25px; }
     .why-media { min-height: 300px; order: -1; }
     .showcase { padding-top: 0px!important; }
-    .why + .why { margin-top: 0; }
+    .why + .why { margin-top: 25px; }
     .why-sub-item { flex: 0 0 160px; }
     .why-subs-wrap { display: block; opacity: 1; }
     .why {    padding-bottom: 0px !important;}
