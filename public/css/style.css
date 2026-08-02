@@ -1816,6 +1816,7 @@ body.modal-open { overflow: hidden; }
 @media (max-width: 768px) {
     /* Mobile: lưới ảnh tràn sát mép màn hình, không chừa lề */
     .gallery-grid-section > .collage { padding: 0; }
+    .why-copy { padding: 0 25px; }
     .partner-row { grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 0 16px; }
     /* Khối loại 2 cột -> xếp dọc: danh sách tên ở trên, ảnh xem trước ở dưới.
        Mobile không hover -> chạm tên là vào thẳng trang danh mục. */
