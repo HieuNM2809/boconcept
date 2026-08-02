@@ -1810,7 +1810,6 @@ body.modal-open { overflow: hidden; }
 
 /* Tablet dọc / điện thoại lớn (≤768) — bật menu hamburger */
 @media (max-width: 768px) {
-    .section { padding: 44px 0; }
     /* Mobile: lưới ảnh tràn sát mép màn hình, không chừa lề */
     .gallery-grid-section > .collage { padding: 0; }
     .partner-row { grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 0 16px; }
