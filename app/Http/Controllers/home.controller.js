@@ -8,6 +8,7 @@ const NewsService = require('../../Services/Api/news.service');
 const GalleryService = require('../../Services/Api/gallery.service');
 const SettingService = require('../../Services/Api/setting.service');
 const PageService = require('../../Services/Api/page.service');
+const richtext = require('../../Helpers/richtext.helper');
 const {logger} = require('../../../config/log4js');
 
 // Dữ liệu KHÔNG dịch (ảnh/icon) — phần chữ lấy từ resources/lang.
@@ -131,6 +132,7 @@ async function index(req, res) {
             // (có ảnh + CTA) với controller đã cắt bớt -> "whyImage is not defined".
             whyTitle: pickAbout('title', home.why.title),
             whyBody: pickAbout('excerpt', home.why.body),
+            whyBodyHtml: richtext.render(about ? res.locals.pick(about, 'body') : ''),
             whyImage: (about && about.image) || null,
             whyImageLabel: pickAbout('title', ''),
             whyFeatures: home.why.features || [],

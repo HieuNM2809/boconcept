@@ -721,7 +721,7 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Lưới ảnh "Style advice" (collage) ===== */
-.gallery-head { text-align: center; max-width: none; padding: 0 25px; margin: 0 0 25px; }
+.gallery-head { text-align: center; max-width: none; padding: 0 25px; margin: 30px 0 25px; }
 .gallery-title { font-size: clamp(26px, 3.2vw, 40px); font-weight: 700; letter-spacing: -.02em; line-height: 1.2; margin: 0 0 20px; }
 .gallery-sub { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
 
@@ -773,7 +773,7 @@ body.drawer-open { overflow: hidden; }
 
 /* ===== Tin tức ===== */
 .news-head { text-align: center; max-width: 780px; margin: 0 auto 25px; }
-.news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 0 0 14px; }
+.news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 30px 0 14px; }
 .news-desc { margin: 0 auto; color: var(--ink); font-size: 15px; line-height: 1.75; max-width: 68ch; }
 .news-cta {
     display: inline-block; margin-top: 22px; font-size: 15px;
