@@ -1301,6 +1301,9 @@ body.drawer-open { overflow: hidden; }
 .listing-head { border-top: 1px solid var(--line); padding-top: 26px; }
 .listing-title { font-family: var(--serif); font-size: 30px; font-weight: 600; margin: 0 0 18px; }
 .listing-count { font-family: var(--sans); font-size: 14px; color: var(--muted); font-weight: 400; }
+/* Số kết quả bên dưới 2 nút filter/sort — chỉ hiện ở ≤1000px */
+.listing-count-below { display: none; margin: 8px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+@media (max-width: 1000px) { .listing-count-below { display: block; } }
 .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 /* 11px = đúng cỡ .filter-field label: "Sắp xếp theo" và "Tên sản phẩm / Kích
    thước…" đều là nhãn phụ, giờ đứng chung một hàng nên lệch cỡ là thấy ngay. */
