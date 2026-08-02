@@ -1229,7 +1229,7 @@ body.drawer-open { overflow: hidden; }
 .design-strip {
     display: grid; grid-template-columns: minmax(220px, 1fr) 2fr;
     gap: 30px; align-items: center;
-    margin: 0 0 0px; padding-bottom: 30px;
+    margin: 0 0 0px;
 }
 /* Loại sản phẩm duy nhất -> không có dải ảnh, cột 2fr bên phải sẽ rỗng và đẩy
    tiêu đề nép sang trái một phần ba màn hình. Một cột thì tiêu đề trải hết. */
