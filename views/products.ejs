@@ -90,7 +90,6 @@
             <a class="chip sort-btn <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
             <a class="chip sort-btn <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
         </div>
-        <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
     </div>
     </div><%# /listing-controls %>
 
