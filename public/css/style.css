@@ -1086,8 +1086,7 @@ body.drawer-open { overflow: hidden; }
 /* padding trong ô: logo chừa lề trắng quanh viền thay vì dán sát mép thẻ */
 .partner-logo {
     display: flex; align-items: center; justify-content: center;
-    flex: 0 0 150px;
-    aspect-ratio: 16 / 9; padding: 0;
+    aspect-ratio: 16 / 9; padding: 8px;
     background: #fff; border-radius: 2px;
     font-size: 20px; font-weight: 700; color: #9a9186; letter-spacing: .5px; text-align: center;
 }
@@ -1814,8 +1813,7 @@ body.modal-open { overflow: hidden; }
     .section { padding: 44px 0; }
     /* Mobile: lưới ảnh tràn sát mép màn hình, không chừa lề */
     .gallery-grid-section > .collage { padding: 0; }
-    .partner-row { flex-wrap: wrap; gap: 12px; }
-    .partner-logo { flex-basis: calc(33.33% - 8px); flex-grow: 0; }
+    .partner-row { grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 0 16px; }
     /* Khối loại 2 cột -> xếp dọc: danh sách tên ở trên, ảnh xem trước ở dưới.
        Mobile không hover -> chạm tên là vào thẳng trang danh mục. */
     .cat-showcase-grid { grid-template-columns: 1fr; min-height: 0; }
