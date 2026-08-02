@@ -1775,7 +1775,6 @@ body.modal-open { overflow: hidden; }
 
 /* Laptop / desktop nhỏ (≤1200) */
 @media (max-width: 1200px) {
-    .section { padding: 60px 0; }
     .product-grid { gap: 20px; }
     .pd-top { gap: 40px; }
 }
