@@ -717,9 +717,11 @@ body.drawer-open { overflow: hidden; }
     .why-split { grid-template-columns: 1fr; row-gap: 24px; }
     .why-copy { padding: 25px; }
     .why-media { min-height: 300px; order: -1; }
-    .showcase { padding-top: 0;padding-top: 0px !important; }
+    .showcase { padding-top: 0px!important; }
+    .why + .why { margin-top: 0; }
     .why-sub-item { flex: 0 0 160px; }
     .why-subs-wrap { display: block; opacity: 1; }
+    .why {    padding-bottom: 0px !important;}
 }
 
 /* ===== Lưới ảnh "Style advice" (collage) ===== */
