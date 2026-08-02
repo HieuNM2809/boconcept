@@ -91,25 +91,13 @@
 
     <div class="container-wide">
 
-        <!-- Dải sắp xếp + số kết quả — TRÊN filter, giống products page -->
-        <div class="toolbar">
-            <div class="sort-chips">
-                <span class="toolbar-label"><%= t.catalog.sortBy %></span>
-                <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
-                <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
-            </div>
-            <div class="toolbar-right">
-                <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
-            </div>
-        </div>
-
-        <!-- Bộ lọc — DƯỚI toolbar -->
         <%
-        const activeFilterCount = ['q', 'dimensions', 'material', 'min_weight', 'max_weight']
+        const activeFilterCount = ['q', 'dimensions', 'material']
             .filter(function (k) { return filters[k] !== undefined && filters[k] !== null && String(filters[k]) !== ''; })
             .length;
         %>
-        <div class="listing-controls">
+
+        <%# Mobile: 2 nút %>
         <div class="listing-actions">
             <button class="filter-toggle" type="button" id="filterToggle"
                     aria-controls="filterPanel" aria-expanded="false">
@@ -119,14 +107,10 @@
                 <span class="listing-action-label"><%= t.catalog.filters.title %></span>
                 <% if (activeFilterCount) { %><span class="filter-count"><%= activeFilterCount %></span><% } %>
             </button>
-            <button class="sort-toggle" type="button" id="sortToggle"
-                    aria-controls="sortPanel" aria-expanded="false">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/>
-                </svg>
-                <span class="listing-action-label"><%= t.catalog.sort[filters.sort] || t.catalog.sortBy %></span>
-            </button>
         </div>
+
+        <%# Desktop: filter + sort cùng 1 hàng %>
+        <div class="listing-controls">
         <div class="filter-panel" id="filterPanel" role="dialog" aria-label="<%= t.catalog.filters.title %>" aria-modal="true">
             <div class="filter-panel-head">
                 <span class="filter-panel-title"><%= t.catalog.filters.title %></span>
@@ -160,6 +144,16 @@
             </div>
         </form>
         </div><%# /filter-panel %>
+
+        <%# Toolbar sort + kết quả — bên phải trong listing-controls flex %>
+        <div class="toolbar">
+            <div class="sort-chips">
+                <span class="toolbar-label"><%= t.catalog.sortBy %></span>
+                <a class="chip sort-btn <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+                <a class="chip sort-btn <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+            </div>
+            <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
+        </div>
         </div><%# /listing-controls %>
 
         <%# Ngăn kéo sắp xếp — dùng chung khung .filter-panel nên thừa hưởng luôn hiệu

@@ -19,26 +19,12 @@
 
     <div class="container-wide">
 
-    <!-- Thanh sắp xếp -->
-    <div class="toolbar">
-        <div class="sort-chips">
-            <a class="chip sort-btn <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
-            <a class="chip sort-btn <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
-        </div>
-    </div>
-
-    <%# Bộ lọc: LOẠI · tên · kích thước · chất liệu · khối lượng. Cùng form-bar như
-        trang theo loại, chỉ THÊM ô chọn loại (ở trang theo loại không cần vì đã cố
-        định 1 loại). action=/products, method=get -> mọi bộ lọc nằm trên URL. %>
-    <%# Đếm bộ lọc đang bật để hiện huy hiệu số trên nút — `sort` KHÔNG tính vì nó
-        luôn có giá trị và đã có nút sắp xếp riêng bên cạnh. %>
     <%
     const activeFilterCount = ['category_id', 'q', 'dimensions', 'material', 'min_weight', 'max_weight']
         .filter(function (k) { return filters[k] !== undefined && filters[k] !== null && String(filters[k]) !== ''; })
         .length;
     %>
-    <%# Cụm 2 nút CHỈ hiện ở mobile (CSS ẩn trên desktop, nơi đã có hàng lọc inline
-        và dải chip sắp xếp): trái mở ngăn kéo bộ lọc, phải mở ngăn kéo sắp xếp. %>
+    <%# Mobile: 2 nút Bộ lọc + Sắp xếp %>
     <div class="listing-actions">
         <button class="filter-toggle" type="button" id="filterToggle"
                 aria-controls="filterPanel" aria-expanded="false">
@@ -49,6 +35,9 @@
             <% if (activeFilterCount) { %><span class="filter-count"><%= activeFilterCount %></span><% } %>
         </button>
     </div>
+
+    <%# Desktop: filter + sort cùng 1 hàng qua listing-controls flex %>
+    <div class="listing-controls">
     <div class="filter-panel" id="filterPanel" role="dialog" aria-label="<%= t.catalog.filters.title %>" aria-modal="true">
         <div class="filter-panel-head">
             <span class="filter-panel-title"><%= t.catalog.filters.title %></span>
@@ -94,6 +83,16 @@
 
     </div><%# /filter-panel %>
 
+    <%# Toolbar sort + kết quả — bên phải trong listing-controls flex %>
+    <div class="toolbar">
+        <div class="sort-chips">
+            <span class="toolbar-label"><%= t.catalog.sortBy %></span>
+            <a class="chip sort-btn <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+            <a class="chip sort-btn <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+        </div>
+        <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
+    </div>
+    </div><%# /listing-controls %>
 
     <div class="filter-scrim" id="filterScrim" hidden></div>
 

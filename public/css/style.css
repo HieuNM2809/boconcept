@@ -856,7 +856,7 @@ body.drawer-open { overflow: hidden; }
 .filter-range input { width: 100%; }
 .filter-range span { color: var(--muted); }
 .filter-actions { display: flex; gap: 8px; align-items: flex-start; }
-.filter-actions .btn { padding: 7px 18px; font-size: 13px; line-height: 1.6; flex: 1; text-align: center; }
+.filter-actions .btn { padding: 7px 18px; font-size: 13px; line-height: 1.6; flex: 1; text-align: center; display: block;width: 100px}
 
 /* Hàng điều khiển của trang danh sách: ô lọc bên trái, sắp xếp + số kết quả dồn
    về phải — TRÊN CÙNG MỘT HÀNG (trước đây sắp xếp nằm ở dải riêng bên dưới).
@@ -872,7 +872,7 @@ body.drawer-open { overflow: hidden; }
 }
 /* .listing-grid tự cộng thêm 8px margin-top -> khoảng cách xuống lưới thành 33px
    chứ không phải 25px. Chỉ gỡ ở trang có hàng điều khiển này. */
-.listing-controls ~ .listing-grid { margin-top: 0; }
+.listing-controls ~ .listing-grid { margin-top: 0; margin-bottom: 25px;}
 .listing-controls .filter-bar { flex: 1 1 420px; padding-bottom: 0; margin-bottom: 0; }
 .listing-controls .toolbar {
     flex: 0 0 auto; gap: 12px; justify-content: flex-end;
@@ -1790,6 +1790,8 @@ body.modal-open { overflow: hidden; }
 
 /* ≤1000px: ẩn filter bar inline, hiện 2 nút Bộ lọc + Sắp xếp */
 @media (max-width: 1000px) {
+    /* Toolbar sort bên trong listing-controls ẩn trên mobile — sort dùng qua sort-panel */
+    .listing-actions ~ .listing-controls .toolbar { display: none; }
     .listing-controls { display: block; padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
     .listing-controls .toolbar {
         justify-content: space-between; gap: 14px;
@@ -1863,7 +1865,7 @@ body.modal-open { overflow: hidden; }
     .filter-panel .filter-field input,
     .filter-panel .filter-field select { width: 100%; box-sizing: border-box; }
     .filter-panel .filter-actions { flex-direction: row; }
-    .filter-panel .filter-actions .btn { flex: 1; text-align: center; justify-content: center; padding: 0 25px; }
+    .filter-panel .filter-actions .btn { flex: 1; text-align: center; justify-content: center; padding: 0 25px; display: block; width: 100px }
     .filter-scrim { position: fixed; inset: 0; z-index: 159; background: rgba(27,25,23,.45); }
     .filter-scrim[hidden] { display: none; }
 }
