@@ -777,7 +777,7 @@ body.drawer-open { overflow: hidden; }
 
 /* ===== Tin tức ===== */
 .news-head { text-align: center; max-width: 780px; margin: 0 auto 25px; }
-.news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 50px 0 -5px; }
+.news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 0; }
 .news-desc { margin: 0 auto; color: var(--ink); font-size: 15px; line-height: 1.75; max-width: 68ch; padding: 0 10px }
 .news-cta {
     display: inline-block; margin-top: 22px; font-size: 15px;
@@ -785,7 +785,7 @@ body.drawer-open { overflow: hidden; }
 }
 .news-cta:hover { color: var(--accent-dark); border-bottom-color: var(--accent-dark); }
 
-.news-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 44px 32px; padding: 0 24px; }
+.news-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 44px 32px; padding: 50px 25px; }
 /* Khối tin ở trang chủ: lề trái/phải bằng đúng 25px của .container-wide bọc ngoài.
    Trước đây .news-grid cộng thêm 24px padding riêng nên thành ~50px. Chỉ gỡ ở đây,
    lưới /news và khối "bài khác" cuối trang tin vẫn giữ padding cũ. */
@@ -1413,7 +1413,7 @@ body.drawer-open { overflow: hidden; }
    minh hoạ trong tab đã bỏ nên các lớp .tab-2col/.tab-h/.tab-desc/.spec-table/
    .tab-img không còn được dùng ở đâu nữa. */
 /* ===== Bài viết tin tức ===== */
-.news-head-page { margin-bottom: 16px; }
+.news-head-page { margin-bottom: 0px; }
 .news-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .news-card-meta { margin: 14px 0 6px; font-size: 12.5px; color: var(--muted); letter-spacing: .3px; }
 .news-card-title a { transition: .2s; }
