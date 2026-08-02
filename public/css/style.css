@@ -522,8 +522,8 @@ body.drawer-open { overflow: hidden; }
 }
 .intro-copy { display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: left; }
 .intro-title {
-    font-family: var(--serif);
-    font-size: clamp(24px, 3vw, 38px);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(24px, 3vw, 36px);
     font-weight: 600; margin: 0;
 }
 .intro-body { color: var(--muted); font-size: 14px; line-height: 1.85; margin: 0; }
@@ -1919,10 +1919,10 @@ body.modal-open { overflow: hidden; }
         background: rgba(27,25,23,.45);
     }
     .filter-scrim[hidden] { display: none; }
-    /* Mobile: 3 cột — ô nhỏ 1/3 hàng, ô lớn (is-big) full hàng cao 2 row. */
-    .collage { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 33vw; gap: 8px; }
-    .collage-cell { grid-column: auto !important; grid-row: auto !important; }
-    .collage-cell.is-big { grid-column: 1 / -1 !important; grid-row: span 2 !important; }
+    /* Mobile: 1 cột — mỗi ảnh full width, 1 dòng. */
+    .collage { grid-template-columns: 1fr; grid-auto-rows: 65vw; gap: 8px; }
+    .collage-cell { grid-column: 1 / -1 !important; grid-row: auto !important; }
+    .collage-cell.is-big { grid-column: 1 / -1 !important; grid-row: auto !important; }
     /* Hàng 1: ☰ | logo (giữa) | search icon
        Hàng 2: nav-cats full width
        Hàng 3: search input full width */
