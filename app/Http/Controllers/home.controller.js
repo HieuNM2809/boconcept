@@ -145,7 +145,7 @@ async function index(req, res) {
             newsTitle: home.news.title,
             newsDesc: home.news.sub,
             newsCta: home.news.cta,
-            newsCtaLink: '#news',
+            newsCtaLink: '/news',
             // Lưới collage: cả 8 khe từ DB. Mỗi phần tử {slot, isSlider, images[]};
             // khe 1-3 có thể nhiều ảnh (slider), khe 4-8 đúng một ảnh.
             gallery: galleryRows,
