@@ -6,6 +6,28 @@
         <h1>Tin tức</h1>
         <a class="btn btn-primary" href="/admin/news/new">+ Thêm bài viết</a>
     </div>
+
+    <form class="admin-filter" method="get" action="/admin/news">
+        <div class="admin-filter-grid">
+            <div class="admin-filter-field">
+                <label for="f_q">Tiêu đề</label>
+                <input type="text" id="f_q" name="q" value="<%= filters.q %>" placeholder="Gõ tiêu đề VI hoặc EN">
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_feat">Nổi bật</label>
+                <select id="f_feat" name="is_featured">
+                    <option value="">Tất cả</option>
+                    <option value="1" <%= filters.is_featured === '1' ? 'selected' : '' %>>Có</option>
+                    <option value="0" <%= filters.is_featured === '0' ? 'selected' : '' %>>Không</option>
+                </select>
+            </div>
+        </div>
+        <div class="admin-filter-actions">
+            <a class="btn-sm" href="/admin/news">Làm lại</a>
+            <button class="btn-sm primary" type="submit">Lọc</button>
+        </div>
+    </form>
+
     <table class="admin-table">
         <thead>
         <tr><th>STT</th><th>Ảnh</th><th>Tiêu đề tin tức</th><th>Tiêu đề tiếng anh</th><th>Nội dung bài viết</th><th>Thứ tự</th><th title="Bài có sao vàng mới lên trang chủ">Nổi bật</th><th>Trạng thái</th><th></th></tr>

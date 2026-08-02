@@ -42,8 +42,16 @@ class NewsService {
         };
     }
 
-    static async getAll() {
-        return News.findAll({order: [['sort_order', 'ASC'], ['id', 'ASC']]});
+    static async getAll({q = '', is_featured = ''} = {}) {
+        const {Op} = require('sequelize');
+        const where = {};
+        if (q) where[Op.or] = [
+            {title_vi: {[Op.like]: `%${q}%`}},
+            {title_en: {[Op.like]: `%${q}%`}},
+        ];
+        if (is_featured === '1') where.is_featured = 1;
+        if (is_featured === '0') where.is_featured = 0;
+        return News.findAll({where, order: [['sort_order', 'ASC'], ['id', 'ASC']]});
     }
 
     static async getById(id) {

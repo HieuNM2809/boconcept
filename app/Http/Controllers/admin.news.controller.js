@@ -4,9 +4,18 @@ const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.
 const {backWithError} = require('../../Helpers/adminFlash.helper');
 const flashText = (k) => ({created: 'Đã thêm bài viết.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
 
+function readFilters(q = {}) {
+    const str = (v) => (v == null ? '' : String(v).trim());
+    return {
+        q: str(q.q),
+        is_featured: ['0', '1'].includes(str(q.is_featured)) ? str(q.is_featured) : '',
+    };
+}
+
 async function index(req, res) {
-    const items = toPlain(await NewsService.getAll());
-    res.render('admin/news', {pageTitle: 'Tin tức', section: 'news', items, flash: flashText(req.query.msg)});
+    const filters = readFilters(req.query);
+    const items = toPlain(await NewsService.getAll(filters));
+    res.render('admin/news', {pageTitle: 'Tin tức', section: 'news', items, filters, flash: flashText(req.query.msg)});
 }
 
 async function form(req, res) {
