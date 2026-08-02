@@ -5,8 +5,9 @@ const {backWithError} = require('../../Helpers/adminFlash.helper');
 const flashText = (k) => ({created: 'Đã thêm đối tác.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
 
 async function index(req, res) {
-    const items = toPlain(await PartnerService.getAll());
-    res.render('admin/partners', {pageTitle: 'Đối tác hợp tác', section: 'partners', items, flash: flashText(req.query.msg)});
+    const filters = {q: req.query.q ? String(req.query.q).trim() : ''};
+    const items = toPlain(await PartnerService.getAll(filters));
+    res.render('admin/partners', {pageTitle: 'Đối tác hợp tác', section: 'partners', items, filters, flash: flashText(req.query.msg)});
 }
 
 async function form(req, res) {

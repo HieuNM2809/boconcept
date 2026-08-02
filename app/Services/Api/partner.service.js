@@ -5,8 +5,11 @@ class PartnerService {
         return Partner.findAll({where: {status: 1}, order: [['sort_order', 'ASC'], ['id', 'ASC']]});
     }
 
-    static async getAll() {
-        return Partner.findAll({order: [['sort_order', 'ASC'], ['id', 'ASC']]});
+    static async getAll({q = ''} = {}) {
+        const {Op} = require('sequelize');
+        const where = {};
+        if (q) where.name = {[Op.like]: `%${q}%`};
+        return Partner.findAll({where, order: [['sort_order', 'ASC'], ['id', 'ASC']]});
     }
 
     static async getById(id) {
