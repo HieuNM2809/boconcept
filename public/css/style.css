@@ -1409,7 +1409,7 @@ body.drawer-open { overflow: hidden; }
    minh hoạ trong tab đã bỏ nên các lớp .tab-2col/.tab-h/.tab-desc/.spec-table/
    .tab-img không còn được dùng ở đâu nữa. */
 /* ===== Bài viết tin tức ===== */
-.news-head-page { margin-bottom: 25px; }
+.news-head-page { margin-bottom: 16px; }
 .news-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .news-card-meta { margin: 14px 0 6px; font-size: 12.5px; color: var(--muted); letter-spacing: .3px; }
 .news-card-title a { transition: .2s; }
