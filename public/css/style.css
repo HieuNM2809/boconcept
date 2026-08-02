@@ -1865,7 +1865,7 @@ body.modal-open { overflow: hidden; }
     .filter-panel .filter-field input,
     .filter-panel .filter-field select { width: 100%; box-sizing: border-box; }
     .filter-panel .filter-actions { flex-direction: row; }
-    .filter-panel .filter-actions .btn { flex: 1; text-align: center; justify-content: center; padding: 0 25px; display: block; width: 100px }
+    .filter-panel .filter-actions .btn {height: 50px; flex: 1; text-align: center; justify-content: center; padding: 0 25px; display: block; width: 100px }
     .filter-scrim { position: fixed; inset: 0; z-index: 159; background: rgba(27,25,23,.45); }
     .filter-scrim[hidden] { display: none; }
 }
