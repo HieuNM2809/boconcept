@@ -295,7 +295,7 @@
                 <%# Bỏ figcaption theo yêu cầu — chỉ còn ảnh. Tên chứng nhận vẫn
                     giữ ở `alt` để trình đọc màn hình và SEO còn đọc được. %>
                 <figure class="cert-card">
-                    <img src="<%= c.image %>" alt="<%= pick(c, 'title') %>" loading="lazy">
+                    <img src="<%= c.image %>" alt="<%= pick(c, 'title') %>" loading="lazy" style="padding:0px!important">
                 </figure>
             <% }) %>
         </div>
