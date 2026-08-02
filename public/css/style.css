@@ -816,7 +816,6 @@ body.drawer-open { overflow: hidden; }
 .cat-header {
     display: flex; align-items: center;
     gap: 20px 32px; flex-wrap: wrap;
-    padding-bottom: 25px; margin-bottom: 25px; border-bottom: 1px solid var(--line);
 }
 .cat-subnav { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
 .cat-chip {
