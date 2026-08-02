@@ -1808,7 +1808,7 @@ body.modal-open { overflow: hidden; }
     .filter-bar { display: none; }
     .listing-actions {
         display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-        width: 100%; margin-bottom: 16px;
+        width: 100%; margin-bottom: 25px;
     }
     .filter-toggle,
     .sort-toggle {
