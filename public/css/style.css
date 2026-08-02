@@ -715,7 +715,9 @@ body.drawer-open { overflow: hidden; }
 /* Phải nằm SAU khối 1200px: ở ≤768px cả hai cùng khớp, khối viết sau thắng. */
 @media (max-width: 768px) {
     .why-split { grid-template-columns: 1fr; row-gap: 24px; }
+    .why-copy { padding: 25px; }
     .why-media { min-height: 300px; order: -1; }
+    .showcase { padding-top: 0;padding-top: 0px !important; }
     .why-sub-item { flex: 0 0 160px; }
     .why-subs-wrap { display: block; opacity: 1; }
 }
