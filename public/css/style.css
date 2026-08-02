@@ -785,7 +785,7 @@ body.drawer-open { overflow: hidden; }
 /* Khối tin ở trang chủ: lề trái/phải bằng đúng 25px của .container-wide bọc ngoài.
    Trước đây .news-grid cộng thêm 24px padding riêng nên thành ~50px. Chỉ gỡ ở đây,
    lưới /news và khối "bài khác" cuối trang tin vẫn giữ padding cũ. */
-.news .news-grid { padding-inline: 0;     padding-bottom: 25px;}
+.news .news-grid { padding-inline: 0;     padding-bottom: 50px;}
 .news-card { min-width: 0; }
 /* 3/2 chứ không phải 4/3: ô đã kéo rộng ra gần mép màn hình, giữ 4/3 thì mỗi
    ảnh cao hơn 600px trên laptop — đẩy tiêu đề rơi khỏi màn hình. */
