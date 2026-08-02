@@ -24,7 +24,6 @@
         <div class="sort-chips">
             <a class="chip sort-btn <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
             <a class="chip sort-btn <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
-            <a class="chip sort-btn <%= filters.sort === 'price_asc' ? 'active' : '' %>" href="<%= linkFor({sort: 'price_asc', page: 1}) %>"><%= t.catalog.sort.price_asc || 'Giá tăng dần' %></a>
         </div>
     </div>
 
