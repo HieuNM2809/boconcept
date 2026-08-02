@@ -1309,6 +1309,10 @@ body.drawer-open { overflow: hidden; }
 .chip { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); font-size: 12px; font-weight: 500; transition: .2s; }
 .chip:hover { border-color: var(--accent); color: var(--accent-dark); }
 .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+/* Sort nút: luôn có nền trắng + viền, active thì nền accent */
+.sort-btn { background: #fff; color: var(--ink); }
+.sort-btn:hover { background: var(--soft); border-color: var(--ink); color: var(--ink); }
+.sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .select { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 13px; background: #fff; cursor: pointer; }
 .toolbar-right { display: flex; align-items: center; gap: 6px; }
 .search-label { font-size: 16px; font-weight: 600; margin: 26px 0 12px; }
