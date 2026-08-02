@@ -816,6 +816,7 @@ body.drawer-open { overflow: hidden; }
 .cat-header {
     display: flex; align-items: center;
     gap: 20px 32px; flex-wrap: wrap;
+    padding-bottom: 25px;
 }
 .cat-subnav { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
 .cat-chip {
@@ -1223,7 +1224,7 @@ body.drawer-open { overflow: hidden; }
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
     font-size: 13px; color: var(--muted);
     background: var(--soft); border-bottom: 1px solid var(--line);
-    padding: 15px 20px; margin-bottom: 28px;
+    padding: 15px 20px; margin-bottom: 25px;
     /* tràn ra sát mép container, text thụt vào đúng lề container-wide */
     margin-left: -25px; margin-right: -25px;
     padding-left: 25px; padding-right: 25px;
