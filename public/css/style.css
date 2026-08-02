@@ -1821,8 +1821,8 @@ body.modal-open { overflow: hidden; }
         border-radius: 999px; background: #fff; color: var(--accent);
         font-size: 11px; font-weight: 700; line-height: 1;
     }
+    .sort-chips { display: none; }
     .listing-actions ~ .toolbar { justify-content: center; }
-    .listing-actions ~ .toolbar .sort-chips { display: none; }
     .listing-actions ~ .toolbar .toolbar-right { justify-content: center; }
     .sort-options { display: flex; flex-direction: column; }
     .sort-option {

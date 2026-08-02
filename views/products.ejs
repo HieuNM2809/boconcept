@@ -34,6 +34,13 @@
             <span class="listing-action-label"><%= t.catalog.filters.title %></span>
             <% if (activeFilterCount) { %><span class="filter-count"><%= activeFilterCount %></span><% } %>
         </button>
+        <button class="sort-toggle" type="button" id="sortToggle"
+                aria-controls="sortPanel" aria-expanded="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/>
+            </svg>
+            <span class="listing-action-label"><%= t.catalog.sort[filters.sort] || t.catalog.sortBy %></span>
+        </button>
     </div>
 
     <%# Desktop: filter + sort cùng 1 hàng qua listing-controls flex %>
@@ -93,6 +100,16 @@
     </div>
     </div><%# /listing-controls %>
 
+    <div class="filter-panel sort-panel" id="sortPanel" role="dialog" aria-label="<%= t.catalog.sortBy %>" aria-modal="true">
+        <div class="filter-panel-head">
+            <span class="filter-panel-title"><%= t.catalog.sortBy %></span>
+            <button type="button" class="filter-panel-close" data-filter-close aria-label="Đóng">&#x2715;</button>
+        </div>
+        <div class="sort-options">
+            <a class="sort-option <%= filters.sort === 'newest' ? 'is-active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+            <a class="sort-option <%= filters.sort === 'popular' ? 'is-active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+        </div>
+    </div>
     <div class="filter-scrim" id="filterScrim" hidden></div>
 
     <!-- Lưới sản phẩm: 4 cột × 6 dòng (controller trả 24/trang) -->
