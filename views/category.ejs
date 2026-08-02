@@ -90,22 +90,26 @@
     </div><%# /container (breadcrumb + design-strip) %>
 
     <div class="container-wide">
-        <%# Hàng điều khiển: bộ lọc bên trái + sắp xếp/số kết quả dồn về phải, CÙNG
-            một hàng. .filter-panel là wrapper `display: contents` trên desktop nên
-            <form class="filter-bar"> mới là flex-item thật của .listing-controls.
-            .toolbar phải nằm NGOÀI .filter-panel: trên mobile panel biến thành drawer
-            trượt, để sắp xếp bên trong thì nó bị nuốt vào drawer luôn. %>
-        <div class="listing-controls">
-        <!-- Bộ lọc: tên · kích thước · chất liệu · khối lượng -->
-        <%# Đếm bộ lọc đang bật để hiện huy hiệu số trên nút — `sort` KHÔNG tính vì nó
-            luôn có giá trị và đã có nút sắp xếp riêng bên cạnh. %>
+
+        <!-- Dải sắp xếp + số kết quả — TRÊN filter, giống products page -->
+        <div class="toolbar">
+            <div class="sort-chips">
+                <span class="toolbar-label"><%= t.catalog.sortBy %></span>
+                <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
+                <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
+            </div>
+            <div class="toolbar-right">
+                <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
+            </div>
+        </div>
+
+        <!-- Bộ lọc — DƯỚI toolbar -->
         <%
         const activeFilterCount = ['q', 'dimensions', 'material', 'min_weight', 'max_weight']
             .filter(function (k) { return filters[k] !== undefined && filters[k] !== null && String(filters[k]) !== ''; })
             .length;
         %>
-        <%# Cụm 2 nút CHỈ hiện ở mobile (CSS ẩn trên desktop, nơi đã có hàng lọc inline
-            và dải chip sắp xếp): trái mở ngăn kéo bộ lọc, phải mở ngăn kéo sắp xếp. %>
+        <div class="listing-controls">
         <div class="listing-actions">
             <button class="filter-toggle" type="button" id="filterToggle"
                     aria-controls="filterPanel" aria-expanded="false">
@@ -120,8 +124,6 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/>
                 </svg>
-                <%# Nhãn nút là tên kiểu sắp xếp ĐANG chọn, không phải chữ "Sắp xếp" —
-                    người dùng thấy ngay trang đang xếp theo gì mà không cần mở ngăn kéo. %>
                 <span class="listing-action-label"><%= t.catalog.sort[filters.sort] || t.catalog.sortBy %></span>
             </button>
         </div>
@@ -158,18 +160,6 @@
             </div>
         </form>
         </div><%# /filter-panel %>
-
-        <!-- Thanh sắp xếp + số kết quả -->
-        <div class="toolbar">
-            <div class="sort-chips">
-                <span class="toolbar-label"><%= t.catalog.sortBy %></span>
-                <a class="chip <%= filters.sort === 'popular' ? 'active' : '' %>" href="<%= linkFor({sort: 'popular', page: 1}) %>"><%= t.catalog.sort.popular %></a>
-                <a class="chip <%= filters.sort === 'newest' ? 'active' : '' %>" href="<%= linkFor({sort: 'newest', page: 1}) %>"><%= t.catalog.sort.newest %></a>
-            </div>
-            <div class="toolbar-right">
-                <span class="listing-count"><%= meta.total %> <%= t.catalog.results %></span>
-            </div>
-        </div>
         </div><%# /listing-controls %>
 
         <%# Ngăn kéo sắp xếp — dùng chung khung .filter-panel nên thừa hưởng luôn hiệu

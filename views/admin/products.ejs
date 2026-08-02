@@ -42,13 +42,6 @@
                 </select>
             </div>
             <div class="admin-filter-field">
-                <label for="f_min">Khoảng giá</label>
-                <div class="admin-filter-range">
-                    <input type="number" id="f_min" name="min_price" value="<%= filters.min_price %>" placeholder="Từ" min="0" step="1000">
-                    <input type="number" name="max_price" value="<%= filters.max_price %>" placeholder="Đến" min="0" step="1000">
-                </div>
-            </div>
-            <div class="admin-filter-field">
                 <label for="f_mat">Chất liệu</label>
                 <input type="text" id="f_mat" name="material" value="<%= filters.material %>" placeholder="Gỗ sồi, vải nỉ...">
             </div>
@@ -99,7 +92,7 @@
     <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
-            <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Danh mục</th><th>Giá</th><th>Nổi bật</th><th>Trạng thái</th><th></th></tr>
+            <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Danh mục</th><th>Nổi bật</th><th>Trạng thái</th><th>Ưu tiên</th><th></th></tr>
             </thead>
             <tbody>
             <%# Trang trống vì vượt quá trang cuối (hay gặp sau khi xoá bớt hàng) thì
@@ -118,11 +111,9 @@
                     <td><% if (p.thumbnail) { %><img class="admin-thumb" src="<%= p.thumbnail %>" alt="" loading="lazy"><% } else { %>—<% } %></td>
                     <td><%= p.name_vi %></td>
                     <td><%= p.category ? p.category.name_vi : '—' %></td>
-                    <td><%= Number(p.price || 0).toLocaleString('vi-VN') %> ₫</td>
-                    <%# Ô trống khi không nổi bật đọc mơ hồ (chưa set? hay tắt?) -> để dấu
-                        sao mờ, sao vàng đặc mới là bật. title cho người dùng rê chuột. %>
                     <td class="admin-star"><% if (p.is_featured) { %><span class="star on" title="Nổi bật">★</span><% } else { %><span class="star off" title="Không nổi bật">★</span><% } %></td>
                     <td><span class="badge-status <%= p.status ? 'on' : 'off' %>"><%= p.status ? 'Hiện' : 'Ẩn' %></span></td>
+                    <td class="admin-stt"><%= p.priority || 0 %></td>
                     <td class="admin-row-actions">
                         <a class="btn-sm" href="/admin/products/<%= p.id %>/edit">Sửa</a>
                         <a class="btn-sm" href="/products/<%= p.id %>" target="_blank" rel="noopener">Xem</a>
