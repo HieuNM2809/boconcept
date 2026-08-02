@@ -4,12 +4,21 @@
 <main class="admin-wrap">
     <div class="admin-head">
         <h1>CHỨNG NHẬN CÔNG TY</h1>
-        <div style="display:flex;gap:10px;align-items:center;">
-            <input id="searchInput" type="search" placeholder="Tìm theo tên..." oninput="filterRows(this.value)"
-                   style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;width:220px;">
-            <a class="btn btn-primary" href="/admin/certificates/new">+ Thêm chứng nhận</a>
-        </div>
+        <a class="btn btn-primary" href="/admin/certificates/new">+ Thêm chứng nhận</a>
     </div>
+
+    <form class="admin-filter" method="get" action="/admin/certificates">
+        <div class="admin-filter-grid">
+            <div class="admin-filter-field">
+                <label for="f_q">Tên chứng nhận</label>
+                <input type="text" id="f_q" name="q" value="<%= filters.q %>" placeholder="Gõ tên VI hoặc EN">
+            </div>
+        </div>
+        <div class="admin-filter-actions">
+            <a class="btn-sm" href="/admin/certificates">Làm lại</a>
+            <button class="btn-sm primary" type="submit">Lọc</button>
+        </div>
+    </form>
     <table class="admin-table" id="adminTable">
         <thead>
         <tr><th>STT</th><th>Ảnh chứng nhận</th><th>Tiêu đề chứng nhận</th><th>Tiêu đề tiếng anh</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr>
@@ -34,14 +43,5 @@
     </table>
 </main>
 <script src="/static/js/admin.js"></script>
-<script>
-function filterRows(q) {
-    const v = q.toLowerCase();
-    document.querySelectorAll('#adminTable tbody tr').forEach(function(tr) {
-        const name = ((tr.cells[2] && tr.cells[2].textContent || '') + ' ' + (tr.cells[3] && tr.cells[3].textContent || '')).toLowerCase();
-        tr.style.display = (!v || name.includes(v)) ? '' : 'none';
-    });
-}
-</script>
 </body>
 </html>

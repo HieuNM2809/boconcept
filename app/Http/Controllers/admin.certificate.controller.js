@@ -5,8 +5,9 @@ const {backWithError} = require('../../Helpers/adminFlash.helper');
 const flashText = (k) => ({created: 'Đã thêm chứng nhận.', updated: 'Đã cập nhật.', deleted: 'Đã xóa.', notfound: 'Không tìm thấy.'}[k] || '');
 
 async function index(req, res) {
-    const items = toPlain(await CertificateService.getAll());
-    res.render('admin/certificates', {pageTitle: 'Giấy chứng nhận công ty', section: 'certificates', items, flash: flashText(req.query.msg)});
+    const filters = {q: req.query.q ? String(req.query.q).trim() : ''};
+    const items = toPlain(await CertificateService.getAll(filters));
+    res.render('admin/certificates', {pageTitle: 'Giấy chứng nhận công ty', section: 'certificates', items, filters, flash: flashText(req.query.msg)});
 }
 
 async function form(req, res) {

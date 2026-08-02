@@ -5,8 +5,14 @@ class CertificateService {
         return Certificate.findAll({where: {status: 1}, order: [['sort_order', 'ASC'], ['id', 'ASC']]});
     }
 
-    static async getAll() {
-        return Certificate.findAll({order: [['sort_order', 'ASC'], ['id', 'ASC']]});
+    static async getAll({q = ''} = {}) {
+        const {Op} = require('sequelize');
+        const where = {};
+        if (q) where[Op.or] = [
+            {title_vi: {[Op.like]: `%${q}%`}},
+            {title_en: {[Op.like]: `%${q}%`}},
+        ];
+        return Certificate.findAll({where, order: [['sort_order', 'ASC'], ['id', 'ASC']]});
     }
 
     static async getById(id) {
