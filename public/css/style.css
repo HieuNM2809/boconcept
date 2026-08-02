@@ -776,8 +776,8 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Tin tức ===== */
-.news-head { text-align: center; max-width: 780px; margin: 0 auto 25px; }
-.news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 0; padding-top: 50px; }
+.news-head { text-align: center; max-width: 780px; margin: 0 auto 0; }
+.news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 0; padding-top: 0; }
 .news-desc { margin: 0 auto; color: var(--ink); font-size: 15px; line-height: 1.75; max-width: 68ch; padding: 0 10px }
 .news-cta {
     display: inline-block; margin-top: 22px; font-size: 15px;
@@ -1303,8 +1303,8 @@ body.drawer-open { overflow: hidden; }
 .subcat-thumb { height: 130px; background-size: cover; background-position: center; }
 .subcat-name { font-weight: 600; margin: 12px 12px 2px; font-size: 15px; }
 .subcat-count { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
-.listing-head { padding-top: 26px; }
-.listing-title { font-family: var(--serif); font-size: 30px; font-weight: 600; margin: 0 0 18px; }
+.listing-head { padding-top: 0 }
+.listing-title { font-family: var(--serif); font-size: 30px; font-weight: 600; margin: 0 0 25px; }
 .listing-count { font-family: var(--sans); font-size: 14px; color: var(--muted); font-weight: 400; }
 /* Số kết quả bên dưới 2 nút filter/sort — chỉ hiện ở ≤1000px */
 .listing-count-below { display: none; margin: 8px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
@@ -1316,7 +1316,7 @@ body.drawer-open { overflow: hidden; }
 /* 11px = đúng cỡ .filter-field label: "Sắp xếp theo" và "Tên sản phẩm / Kích
    thước…" đều là nhãn phụ, giờ đứng chung một hàng nên lệch cỡ là thấy ngay. */
 .toolbar-label { font-size: 11px; color: var(--muted); flex-basis: 100%; margin-right: 0; }
-.sort-chips { display: flex; align-items: center; gap: 6px 8px; flex-wrap: wrap; }
+.sort-chips { display: flex; align-items: center; gap: 6px 8px; flex-wrap: wrap; width: 72%; }
 .chip { display: inline-block; padding: 7px 18px; border-radius: 999px; border: 1px solid var(--line); font-size: 13px; font-weight: 600; cursor: pointer; transition: .2s; }
 .chip:hover { border-color: var(--accent); color: var(--accent-dark); }
 .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
