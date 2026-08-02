@@ -890,6 +890,11 @@ body.drawer-open { overflow: hidden; }
 .sort-panel { display: none; }
 .filter-panel-head { display: none; }
 .filter-scrim { display: none; }
+/* Ép ẩn trên mọi desktop — ngăn sort-panel bật lên khi JS add is-open ở viewport rộng */
+@media (min-width: 769px) {
+    .sort-panel, .sort-panel.is-open { display: none !important; }
+    .listing-actions { display: none !important; }
+}
 
 /* Ô tìm loại sản phẩm — lọc chip ngay tại chỗ, không tải lại trang */
 .cat-finder { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
