@@ -6,7 +6,7 @@
     trải hết màn hình thì hai input dài hoá ra khó ước lượng độ dài thật. %>
 <main class="admin-wrap admin-narrow">
     <div class="admin-head">
-        <h1>SLOGAN SLIDESHOW</h1>
+        <h1>HEADING SLIDESHOW</h1>
         <a class="btn-sm" href="/" target="_blank" rel="noopener">Xem trang chủ ↗</a>
     </div>
     <% if (flash) { %><div class="admin-flash"><%= flash %></div><% } %>
@@ -19,11 +19,11 @@
             <strong>Để trống là dùng lại chữ mặc định.</strong>
         </p>
 
-        <label for="slogan_vi">Slogan (VI)</label>
+        <label for="slogan_vi">Heading (VI)</label>
         <input id="slogan_vi" name="slogan_vi" maxlength="200"
                placeholder="<%= defaultVi %>" value="<%= sloganVi %>">
 
-        <label for="slogan_en">Slogan (EN)</label>
+        <label for="slogan_en">Heading (EN)</label>
         <input id="slogan_en" name="slogan_en" maxlength="200"
                placeholder="<%= defaultEn %>" value="<%= sloganEn %>">
         <p class="admin-hint">
