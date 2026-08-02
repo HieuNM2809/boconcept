@@ -773,7 +773,7 @@ body.drawer-open { overflow: hidden; }
 
 /* ===== Tin tức ===== */
 .news-head { text-align: center; max-width: 780px; margin: 0 auto 25px; }
-.news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 50px 0 14px; }
+.news-title { font-size: clamp(28px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.02em; margin: 50px 0 -5px; }
 .news-desc { margin: 0 auto; color: var(--ink); font-size: 15px; line-height: 1.75; max-width: 68ch; }
 .news-cta {
     display: inline-block; margin-top: 22px; font-size: 15px;
