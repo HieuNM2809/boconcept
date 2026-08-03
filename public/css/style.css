@@ -725,7 +725,7 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* ===== Lưới ảnh "Style advice" (collage) ===== */
-.gallery-head { text-align: center; max-width: none; padding: 0 25px; margin: 50px 0 25px; }
+.gallery-head { text-align: center; max-width: none; padding: 0 25px; margin: 0; }
 .gallery-title { font-size: clamp(26px, 3.2vw, 40px); font-weight: 700; letter-spacing: -.02em; line-height: 1.2; margin: 0 0 20px; }
 .gallery-sub { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
 
@@ -738,7 +738,7 @@ body.drawer-open { overflow: hidden; }
    Hai cạnh trái/phải giữ 25px để mép lưới thẳng hàng với .gallery-head (cũng
    padding 0 25px); đổi thành 50px là chữ tiêu đề lệch khỏi mép ảnh. */
 .gallery-grid-section > .collage { width: 100%; gap: 12px; padding: 25px 25px 0; max-width: none; }
-.gallery-grid-section { padding-bottom: 0; }
+.gallery-grid-section { padding-bottom: 50px; }
 .collage-cell { position: relative; margin: 0; overflow: hidden; background: var(--soft); }
 
 /* Mọi ảnh trong một ô đều absolute và chồng khít lên nhau. Đây là lý do slider
