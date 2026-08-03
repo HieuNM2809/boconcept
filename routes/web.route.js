@@ -15,7 +15,10 @@ const adminGalleryController = require('../app/Http/Controllers/admin.gallery.co
 const adminPageController = require('../app/Http/Controllers/admin.page.controller');
 const adminSloganController = require('../app/Http/Controllers/admin.slogan.controller');
 const adminPreviewController = require('../app/Http/Controllers/admin.preview.controller');
+const adminAuthController = require('../app/Http/Controllers/admin.auth.controller');
+const adminUserController = require('../app/Http/Controllers/admin.user.controller');
 const adminAuth = require('../app/Http/Middleware/adminAuth.middleware');
+const requireRole = require('../app/Http/Middleware/requireRole.middleware');
 const navigation = require('../app/Http/Middleware/navigation.middleware');
 const mergeRichtextImages = require('../app/Http/Middleware/richtextImages.middleware');
 
@@ -60,7 +63,6 @@ router.get('/pages/:slug', (req, res) => pageController.bySlug(req, res));
 
 // ───── Admin (Basic Auth) — quản lý slideshow ────────────────────────────────
 const adminRouter = Router();
-// adminRouter.use(adminAuth);
 // Đặt ở CẤP ROUTER, không rắc vào từng route: mọi form admin đều có thể có ô
 // soạn thảo, và thêm route mới mà quên gắn thì lỗi biểu hiện là "lưu xong ảnh
 // trong bài biến mất" — rất khó lần ra.
@@ -70,6 +72,20 @@ adminRouter.param('id', (req, res, next, id) => {
     if (!/^[1-9][0-9]*$/.test(id)) return res.status(404).send('ID không hợp lệ.');
     next();
 });
+
+// ───── Đăng nhập / đăng xuất ──────────────────────────────────────────────────
+// PHẢI khai TRƯỚC adminAuth: người chưa đăng nhập vẫn phải vào được trang này,
+// nếu không sẽ bị đá về /admin/login thành vòng lặp vô hạn.
+adminRouter.get('/login', (req, res) => adminAuthController.showLogin(req, res));
+adminRouter.post('/login', (req, res) => adminAuthController.login(req, res));
+adminRouter.get('/logout', (req, res) => adminAuthController.logout(req, res));
+adminRouter.post('/logout', (req, res) => adminAuthController.logout(req, res));
+
+// ───── Từ đây trở xuống YÊU CẦU đăng nhập ─────────────────────────────────────
+// Trước đây dòng này bị comment nên cả khu /admin mở toang. Giờ bật lại bằng
+// phiên đăng nhập (adminAuth.middleware) để gắn được danh tính + vai trò.
+adminRouter.use(adminAuth);
+
 adminRouter.get('/', (req, res) => res.redirect('/admin/slides'));
 
 // Xem trước nội dung soạn thảo (nút hình con mắt trên thanh công cụ) -> trả JSON,
@@ -117,6 +133,17 @@ adminRouter.post('/gallery/:slot', (req, res) => adminGalleryController.update(r
 // Slogan đè lên slideshow: đúng 2 khoá VI/EN trong bảng `settings`, chỉ sửa.
 adminRouter.get('/slogan', (req, res) => adminSloganController.form(req, res));
 adminRouter.post('/slogan', (req, res) => adminSloganController.update(req, res));
+
+// ───── Quản lý tài khoản (CHỈ admin) ──────────────────────────────────────────
+// Kích hoạt mục "Nhân viên" vốn đã có sẵn trong views/admin/_nav.ejs. requireRole
+// chặn staff ở tầng route; _nav cũng ẩn link này với staff cho khỏi thấy.
+const onlyAdmin = requireRole('admin');
+adminRouter.get('/staff', onlyAdmin, (req, res) => adminUserController.index(req, res));
+adminRouter.get('/staff/new', onlyAdmin, (req, res) => adminUserController.form(req, res));
+adminRouter.post('/staff', onlyAdmin, (req, res) => adminUserController.create(req, res));
+adminRouter.get('/staff/:id/edit', onlyAdmin, (req, res) => adminUserController.form(req, res));
+adminRouter.post('/staff/:id/delete', onlyAdmin, (req, res) => adminUserController.destroy(req, res));
+adminRouter.post('/staff/:id', onlyAdmin, (req, res) => adminUserController.update(req, res));
 
 router.use('/admin', adminRouter);
 

@@ -14,6 +14,7 @@ const News = require('./News.model');
 const Gallery = require('./Gallery.model');
 const Page = require('./Page.model');
 const Setting = require('./Setting.model');
+const User = require('./User.model');
 
 // ── Category (cây danh mục) ───────────────────────────────────────────────────
 Category.hasMany(Category, {foreignKey: 'parent_id', as: 'children'});
@@ -50,4 +51,5 @@ module.exports = {
     Gallery,
     Page,
     Setting,
+    User,
 };

@@ -1,0 +1,42 @@
+<%- include('../partials/head') %>
+<body class="admin admin-login">
+<%# Trang đăng nhập ĐỘC LẬP: KHÔNG include _nav (chưa đăng nhập thì chưa có menu,
+    và _nav cần adminUser vốn chưa tồn tại ở đây). CSS admin vẫn nạp qua body.admin. %>
+<main class="login-wrap">
+    <form class="login-card form-card" method="post" action="/admin/login" autocomplete="off">
+        <h1 class="login-title">⚙️ Quản trị</h1>
+        <p class="login-sub">Đăng nhập để tiếp tục</p>
+
+        <% if (error) { %><p class="login-error" role="alert"><%= error %></p><% } %>
+
+        <input type="hidden" name="next" value="<%= next %>">
+
+        <label for="username">Tên đăng nhập</label>
+        <input id="username" name="username" value="<%= username %>" autocomplete="username" autofocus required>
+
+        <label for="password">Mật khẩu</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Đăng nhập</button>
+        </div>
+    </form>
+    <p class="login-foot"><a href="/">← Về trang chủ</a></p>
+</main>
+
+<style>
+    /* body.admin là display:flex (sidebar + nội dung). Trang login KHÔNG có sidebar
+       nên .login-wrap thành flex-item chỉ rộng bằng nội dung -> lệch trái. Trả về
+       block cho riêng trang này (2 class -> đè được body.admin 1 class). */
+    body.admin.admin-login{display:block;background:#f5f6f8}
+    .login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px}
+    .login-card{width:100%;max-width:360px}
+    .login-title{margin:0 0 2px;font-size:22px}
+    .login-sub{margin:0 0 16px;color:#666}
+    .login-card label{display:block;margin:12px 0 4px;font-weight:600}
+    .login-card input{width:100%;box-sizing:border-box}
+    .login-error{background:#fdecea;color:#b3261e;border:1px solid #f5c6cb;padding:9px 12px;border-radius:8px;margin:0 0 6px}
+    .login-foot{margin:0;font-size:14px}
+</style>
+</body>
+</html>

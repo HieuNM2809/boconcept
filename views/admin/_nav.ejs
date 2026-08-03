@@ -1,6 +1,15 @@
 <%
 /* Menu dọc bên trái. Khai báo một mảng thay vì lặp <a> bằng tay: thêm mục mới
    chỉ sửa một dòng, và không còn nguy cơ quên `class="active"` ở mục nào đó. */
+/* Mục "Nhân viên" (quản lý tài khoản) CHỈ hiện với admin — staff không có quyền
+   vào (route cũng chặn bằng requireRole). adminUser do adminAuth.middleware gắn. */
+const isAdmin = typeof adminUser !== 'undefined' && adminUser && adminUser.role === 'admin';
+const otherItems = [
+    {key: 'partners',     href: '/admin/partners',     label: 'Đối tác',    icon: '🤝'},
+    {key: 'certificates', href: '/admin/certificates', label: 'Chứng nhận', icon: '🏅'},
+];
+if (isAdmin) otherItems.push({key: 'staff', href: '/admin/staff', label: 'Nhân viên', icon: '👥'});
+
 const adminMenu = [
     {group: 'Trang chủ', items: [
         {key: 'slides',       href: '/admin/slides',       label: 'Slideshow',         icon: '🖼️'},
@@ -16,11 +25,7 @@ const adminMenu = [
         {key: 'news',         href: '/admin/news',         label: 'Tin tức',           icon: '📰'},
         {key: 'pages',        href: '/admin/pages',        label: 'Trang giới thiệu',  icon: '📄'},
     ]},
-    {group: 'Khác', items: [
-        {key: 'partners',     href: '/admin/partners',     label: 'Đối tác',           icon: '🤝'},
-        {key: 'certificates', href: '/admin/certificates', label: 'Chứng nhận',        icon: '🏅'},
-        {key: 'staff',        href: '/admin/staff',        label: 'Nhân viên',         icon: '👥'},
-    ]},
+    {group: 'Khác', items: otherItems},
 ];
 %>
 <a class="admin-skip" href="#adminMain">Bỏ qua menu</a>
@@ -47,4 +52,24 @@ const adminMenu = [
     </nav>
 
     <a class="admin-bar-link" href="/" target="_blank" rel="noopener">Xem site ↗</a>
+
+    <% if (typeof adminUser !== 'undefined' && adminUser) { %>
+        <div class="admin-account">
+            <span class="admin-account-name" title="<%= adminUser.username %>">
+                <span aria-hidden="true">👤</span>
+                <%= adminUser.full_name || adminUser.username %>
+                <span class="badge-role <%= adminUser.role %>"><%= adminUser.role === 'admin' ? 'Admin' : 'Staff' %></span>
+            </span>
+            <a class="admin-bar-link" href="/admin/logout">Đăng xuất</a>
+        </div>
+    <% } %>
 </aside>
+
+<style>
+    .badge-role{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;line-height:1.7;vertical-align:middle}
+    .badge-role.admin{background:#e7f0ff;color:#1b4fbf}
+    .badge-role.staff{background:#eef1f4;color:#556}
+    .admin-account{margin-top:16px;padding-top:12px;border-top:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;gap:6px}
+    .admin-account-name{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px;font-weight:600}
+    .admin-hint{font-weight:400;color:#888;font-size:12px}
+</style>

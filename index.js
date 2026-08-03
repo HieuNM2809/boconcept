@@ -54,6 +54,17 @@ async function startServer() {
             await sequelize.authenticate();
             app.locals.dbReady = true;   // /health chuyển sang 200 từ đây
             logger.info(`Kết nối MySQL thành công (lần thử ${attempt})`);
+
+            // Tạo tài khoản admin ĐẦU TIÊN nếu bảng `users` còn trống (dùng
+            // ADMIN_USER/ADMIN_PASS). Bọc try/catch: DB cũ chưa chạy migration
+            // users thì chỉ cảnh báo chứ KHÔNG làm sập app (giống softFail ở home).
+            try {
+                await require('./app/Services/Api/user.service').ensureDefaultAdmin();
+            } catch (e) {
+                logger.warn('Chưa tạo được tài khoản admin mặc định — có thể bảng '
+                    + '`users` chưa tồn tại. Hãy chạy doc/migrations/2026-08-03-users.sql.',
+                    {error: {message: e.message}});
+            }
             return;
         } catch (err) {
             if (Date.now() >= deadline) {

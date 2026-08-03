@@ -1,0 +1,73 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'staff'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>NHÂN VIÊN</h1>
+        <a class="btn btn-primary" href="/admin/staff/new">+ Thêm tài khoản</a>
+    </div>
+
+    <form class="admin-filter" method="get" action="/admin/staff">
+        <div class="admin-filter-grid">
+            <div class="admin-filter-field">
+                <label for="f_q">Tìm</label>
+                <input type="text" id="f_q" name="q" value="<%= filters.q %>" placeholder="Tên đăng nhập / họ tên">
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_role">Vai trò</label>
+                <select id="f_role" name="role">
+                    <option value="">Tất cả</option>
+                    <option value="admin" <%= filters.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                    <option value="staff" <%= filters.role === 'staff' ? 'selected' : '' %>>Staff</option>
+                </select>
+            </div>
+            <div class="admin-filter-field">
+                <label for="f_status">Trạng thái</label>
+                <select id="f_status" name="status">
+                    <option value="">Tất cả</option>
+                    <option value="1" <%= filters.status === '1' ? 'selected' : '' %>>Hiện</option>
+                    <option value="0" <%= filters.status === '0' ? 'selected' : '' %>>Ẩn</option>
+                </select>
+            </div>
+        </div>
+        <div class="admin-filter-actions">
+            <a class="btn-sm" href="/admin/staff">Làm lại</a>
+            <button class="btn-sm primary" type="submit">Lọc</button>
+        </div>
+    </form>
+
+    <table class="admin-table" id="adminTable">
+        <thead>
+        <tr><th>STT</th><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Trạng thái</th><th>Đăng nhập gần nhất</th><th></th></tr>
+        </thead>
+        <tbody>
+        <% if (!items.length) { %><tr><td colspan="7" class="admin-empty">Chưa có tài khoản.</td></tr><% } %>
+        <% items.forEach(function (u) { %>
+            <% const isSelf = typeof adminUser !== 'undefined' && adminUser && adminUser.id === u.id; %>
+            <tr>
+                <td><%= u.id %></td>
+                <td><%= u.username %><% if (isSelf) { %> <span class="badge-role staff">Bạn</span><% } %></td>
+                <td><%= u.full_name || '—' %></td>
+                <td><span class="badge-role <%= u.role %>"><%= u.role === 'admin' ? 'Admin' : 'Staff' %></span></td>
+                <td><span class="badge-status <%= u.status ? 'on' : 'off' %>"><%= u.status ? 'Hiện' : 'Ẩn' %></span></td>
+                <td><%= u.last_login_at ? new Date(u.last_login_at).toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'}) : '—' %></td>
+                <td class="admin-row-actions">
+                    <a class="btn-sm" href="/admin/staff/<%= u.id %>/edit">Sửa</a>
+                    <%# Không hiện nút xoá ở hàng CHÍNH MÌNH — service cũng chặn tự xoá,
+                        đây chỉ là lớp UX để khỏi bấm nhầm. %>
+                    <% if (!isSelf) { %>
+                        <form method="post" action="/admin/staff/<%= u.id %>/delete" data-confirm="Xoá tài khoản này?" data-confirm-name="<%= u.username %>"><button class="btn-sm danger" type="submit">Xoá</button></form>
+                    <% } %>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+
+    <%- include('_pagination', {meta: meta, query: filters, base: '/admin/staff'}) %>
+
+    <p class="admin-note">Chỉ tài khoản vai trò <b>Admin</b> mới thấy và quản lý được mục này. Tài khoản <b>Staff</b> dùng được mọi chức năng quản trị khác nhưng không quản lý tài khoản.</p>
+</main>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

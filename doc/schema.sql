@@ -16,6 +16,26 @@ CREATE TABLE IF NOT EXISTS `api_clients` (
     UNIQUE KEY `uq_api_clients_client_id` (`client_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Tài khoản đăng nhập khu quản trị /admin + vai trò (admin | staff).
+-- Tài khoản admin đầu tiên KHÔNG seed ở đây (không băm mật khẩu bằng SQL được) —
+-- app tự tạo lúc khởi động từ ADMIN_USER/ADMIN_PASS khi bảng còn trống
+-- (UserService.ensureDefaultAdmin + index.js). Mật khẩu lưu "scrypt$<salt>$<hash>".
+CREATE TABLE IF NOT EXISTS `users` (
+    `id`            INT UNSIGNED          NOT NULL AUTO_INCREMENT,
+    `username`      VARCHAR(100)          NOT NULL,
+    `password`      VARCHAR(255)          NOT NULL,
+    `full_name`     VARCHAR(255)          NULL,
+    `role`          ENUM('admin','staff') NOT NULL DEFAULT 'staff',
+    `status`        TINYINT               NOT NULL DEFAULT 1,
+    `last_login_at` DATETIME              NULL,
+    `created_at`    DATETIME              NULL,
+    `updated_at`    DATETIME              NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_users_username` (`username`),
+    KEY `idx_users_role` (`role`),
+    KEY `idx_users_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `examples` (
     `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
     `name`        VARCHAR(255)  NOT NULL,

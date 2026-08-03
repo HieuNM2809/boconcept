@@ -1,0 +1,54 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'staff'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1><%= item ? ('Sửa tài khoản #' + item.id) : 'THÊM TÀI KHOẢN' %></h1>
+        <a class="btn-sm" href="/admin/staff">← Quay lại</a>
+    </div>
+
+    <form class="admin-form" method="post" action="<%= action %>" autocomplete="off">
+        <section class="form-card user-form-card">
+            <h2 class="admin-subhead">THÔNG TIN TÀI KHOẢN</h2>
+
+            <label for="username">Tên đăng nhập</label>
+            <input id="username" name="username" required value="<%= item ? item.username : '' %>" autocomplete="off">
+
+            <label for="full_name">Họ tên</label>
+            <input id="full_name" name="full_name" value="<%= item ? (item.full_name || '') : '' %>">
+
+            <label for="password">Mật khẩu <% if (item) { %><span class="admin-hint">(để trống nếu không đổi)</span><% } %></label>
+            <%# type=password + autocomplete=new-password: chặn trình duyệt tự điền
+                mật khẩu tài khoản admin đang đăng nhập vào ô này. %>
+            <input id="password" name="password" type="password" autocomplete="new-password"
+                   <%= item ? '' : 'required' %>
+                   placeholder="<%= item ? '••••••' : 'Tối thiểu 6 ký tự' %>">
+
+            <label for="role">Vai trò</label>
+            <select id="role" name="role">
+                <option value="staff" <%= (!item || item.role === 'staff') ? 'selected' : '' %>>Staff — quản trị nội dung, KHÔNG quản lý tài khoản</option>
+                <option value="admin" <%= (item && item.role === 'admin') ? 'selected' : '' %>>Admin — toàn quyền + quản lý tài khoản</option>
+            </select>
+
+            <label for="status">Trạng thái</label>
+            <select id="status" name="status">
+                <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện (được đăng nhập)</option>
+                <option value="0" <%= (item && !item.status) ? 'selected' : '' %>>Ẩn (khoá đăng nhập)</option>
+            </select>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit"><%= item ? 'Lưu thay đổi' : 'Thêm' %></button>
+                <a class="btn btn-outline" href="/admin/staff">Hủy</a>
+            </div>
+        </section>
+    </form>
+</main>
+
+<style>
+    .user-form-card{max-width:560px}
+    .user-form-card label{display:block;margin:14px 0 4px;font-weight:600}
+    .user-form-card input,.user-form-card select{width:100%;box-sizing:border-box}
+</style>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

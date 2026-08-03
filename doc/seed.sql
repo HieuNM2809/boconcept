@@ -167,3 +167,23 @@ INSERT INTO `settings` (`key`, `value`, `created_at`, `updated_at`)
 VALUES
     ('features_block_enabled', '1', NOW(), NOW())
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), `updated_at` = NOW();
+
+-- ── Tài khoản đăng nhập khu quản trị /admin (đăng nhập ở /admin/login) ─────────
+--   admin / 123456  — vai trò admin: toàn quyền + quản lý tài khoản (/admin/staff)
+--   staff / 123456  — vai trò staff: mọi chức năng quản trị KHÁC, không quản lý tài khoản
+-- ĐỔI MẬT KHẨU ngay sau lần đăng nhập đầu tiên.
+--
+-- Mật khẩu lưu dạng "scrypt$<salt>$<hash>", BĂM SẴN bằng app/Helpers/password.helper.js
+-- (SQL không băm scrypt được). Muốn đổi mật khẩu seed, chạy:
+--   node -e "console.log(require('./app/Helpers/password.helper').hash('matkhaumoi'))"
+-- rồi thay chuỗi bên dưới.
+--
+-- ON DUPLICATE cố ý CHỈ đụng `updated_at`: chạy lại seed trên DB đang dùng KHÔNG
+-- được reset mật khẩu/vai trò mà admin đã tự đổi trong giao diện (giống news/pages).
+-- Khi bảng còn trống, app cũng tự tạo admin đầu tiên từ ADMIN_USER/ADMIN_PASS
+-- (UserService.ensureDefaultAdmin); có seed này thì bước đó thấy bảng đã có hàng nên bỏ qua.
+INSERT INTO `users` (`id`, `username`, `password`, `full_name`, `role`, `status`, `created_at`, `updated_at`)
+VALUES
+    (1, 'admin', 'scrypt$417d2c7e8d15bf1546dcbb038d8d9517$20dbf28b191ecc7fa078835a6123d8739c783fd415d6b5554500348c824beeca301efb2ab7bfa4b6088d2a3944927eb245224ec95dd3250a3b87d4d0cff31c8f', 'Quản trị viên', 'admin', 1, NOW(), NOW()),
+    (2, 'staff', 'scrypt$41e37707caaa63e051fc426c7cfcbdf0$b3fe78fc0f4b20b4ba2f8b881a39647ed06a0c00644743cdef6e58a6573d6e671a4c7997a8ed0ff27616bf283d775a60d21161192d25fd6079dbf661bbb548de', 'Nhân viên', 'staff', 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE `updated_at` = NOW();
