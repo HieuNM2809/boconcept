@@ -1250,7 +1250,7 @@ body.drawer-open { overflow: hidden; }
 }
 .design-cta {
     display: inline-flex; align-items: center; gap: 10px;
-    font-size: 14px; color: var(--ink);
+    font-size: 14px; color: var(--ink);margin-bottom:25px;
 }
 .design-cta-icon {
     display: grid; place-items: center; flex: 0 0 auto;
