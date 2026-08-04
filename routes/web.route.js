@@ -17,6 +17,7 @@ const adminSloganController = require('../app/Http/Controllers/admin.slogan.cont
 const adminPreviewController = require('../app/Http/Controllers/admin.preview.controller');
 const adminAuthController = require('../app/Http/Controllers/admin.auth.controller');
 const adminUserController = require('../app/Http/Controllers/admin.user.controller');
+const adminAccountController = require('../app/Http/Controllers/admin.account.controller');
 const adminAuth = require('../app/Http/Middleware/adminAuth.middleware');
 const requireRole = require('../app/Http/Middleware/requireRole.middleware');
 const navigation = require('../app/Http/Middleware/navigation.middleware');
@@ -87,6 +88,11 @@ adminRouter.post('/logout', (req, res) => adminAuthController.logout(req, res));
 adminRouter.use(adminAuth);
 
 adminRouter.get('/', (req, res) => res.redirect('/admin/slides'));
+
+// ───── Tài khoản của tôi (tự phục vụ — MỌI người đã đăng nhập, KHÔNG requireRole) ─
+adminRouter.get('/account', (req, res) => adminAccountController.show(req, res));
+adminRouter.post('/account', (req, res) => adminAccountController.updateProfile(req, res));
+adminRouter.post('/account/password', (req, res) => adminAccountController.changePassword(req, res));
 
 // Xem trước nội dung soạn thảo (nút hình con mắt trên thanh công cụ) -> trả JSON,
 // không phải trang. Đặt ở đây, TRƯỚC crudRoutes: tên `preview` không trùng base

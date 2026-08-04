@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS `users` (
     `username`      VARCHAR(100)          NOT NULL,
     `password`      VARCHAR(255)          NOT NULL,
     `full_name`     VARCHAR(255)          NULL,
+    `email`         VARCHAR(255)          NULL,
+    `phone`         VARCHAR(30)           NULL,
     `role`          ENUM('admin','staff') NOT NULL DEFAULT 'staff',
     `status`        TINYINT               NOT NULL DEFAULT 1,
     `last_login_at` DATETIME              NULL,

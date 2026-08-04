@@ -142,6 +142,8 @@ class UserService {
         return {
             username: (d.username || '').trim(),
             full_name: str(d.full_name),
+            email: str(d.email),
+            phone: str(d.phone),
             role: ROLES.includes(d.role) ? d.role : 'staff',
             status: String(d.status) === '0' ? 0 : 1,
             // Mật khẩu để nguyên chuỗi thô ở đây; băm sau khi đã xác thực độ dài.
@@ -170,6 +172,8 @@ class UserService {
             username: n.username,
             password: passwords.hash(n.password),
             full_name: n.full_name,
+            email: n.email,
+            phone: n.phone,
             role: n.role,
             status: n.status,
         });
@@ -204,6 +208,8 @@ class UserService {
         const patch = {
             username: n.username,
             full_name: n.full_name,
+            email: n.email,
+            phone: n.phone,
             role: n.role,
             status: n.status,
         };
@@ -216,6 +222,39 @@ class UserService {
         }
 
         return user.update(patch);
+    }
+
+    /**
+     * Tự sửa hồ sơ CHÍNH MÌNH (trang /admin/account). CHỈ đụng trường hồ sơ —
+     * không cho tự đổi username/role/status/password ở đây (đổi mật khẩu có hàm
+     * riêng; role/status là việc của admin ở /admin/staff).
+     */
+    static async updateProfile(id, data = {}) {
+        const user = await User.findByPk(id);
+        if (!user) throw Object.assign(new Error('Không tìm thấy tài khoản.'), {status: 404});
+        const str = (v) => (v == null || String(v).trim() === '' ? null : String(v).trim());
+        return user.update({
+            full_name: str(data.full_name),
+            email: str(data.email),
+            phone: str(data.phone),
+        });
+    }
+
+    /**
+     * Đổi mật khẩu chính mình. Bắt buộc nhập ĐÚNG mật khẩu hiện tại (chặn người
+     * mượn phiên đang mở đổi trộm), mật khẩu mới đủ dài và khớp ô nhắc lại.
+     */
+    static async changePassword(id, {current, newPassword, confirm} = {}) {
+        const user = await User.findByPk(id);
+        if (!user) throw Object.assign(new Error('Không tìm thấy tài khoản.'), {status: 404});
+        if (!passwords.verify(current || '', user.password)) {
+            throw badReq('Mật khẩu hiện tại không đúng.');
+        }
+        if (!newPassword || newPassword.length < passwords.MIN_PASSWORD_LENGTH) {
+            throw badReq(`Mật khẩu mới tối thiểu ${passwords.MIN_PASSWORD_LENGTH} ký tự.`);
+        }
+        if (newPassword !== confirm) throw badReq('Nhắc lại mật khẩu mới không khớp.');
+        return user.update({password: passwords.hash(newPassword)});
     }
 
     static async delete(id, ctx = {}) {

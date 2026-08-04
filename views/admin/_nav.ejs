@@ -36,7 +36,25 @@ const adminMenu = [
 <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
 
 <aside class="admin-side">
-    <a class="admin-brand" href="/admin">⚙️ Quản trị</a>
+    <div class="admin-top">
+        <a class="admin-brand" href="/admin">⚙️ Quản trị</a>
+        <% if (typeof adminUser !== 'undefined' && adminUser) { %>
+            <div class="admin-user">
+                <button type="button" class="admin-avatar" id="avatarBtn" aria-haspopup="true" aria-expanded="false"
+                        title="<%= adminUser.full_name || adminUser.username %>">
+                    <%= ((adminUser.full_name || adminUser.username || '?').trim().charAt(0) || '?').toUpperCase() %>
+                </button>
+                <div class="admin-usermenu" id="userMenu" hidden>
+                    <div class="admin-usermenu-head">
+                        <span class="admin-usermenu-name"><%= adminUser.full_name || adminUser.username %></span>
+                        <span class="badge-role <%= adminUser.role %>"><%= adminUser.role === 'admin' ? 'Admin' : 'Staff' %></span>
+                    </div>
+                    <a href="/admin/account"><span aria-hidden="true">👤</span> Tài khoản</a>
+                    <a href="/admin/logout"><span aria-hidden="true">🚪</span> Đăng xuất</a>
+                </div>
+            </div>
+        <% } %>
+    </div>
 
     <nav class="admin-nav" aria-label="Menu quản trị">
         <% adminMenu.forEach(function (g) { %>
@@ -52,24 +70,46 @@ const adminMenu = [
     </nav>
 
     <a class="admin-bar-link" href="/" target="_blank" rel="noopener">Xem site ↗</a>
-
-    <% if (typeof adminUser !== 'undefined' && adminUser) { %>
-        <div class="admin-account">
-            <span class="admin-account-name" title="<%= adminUser.username %>">
-                <span aria-hidden="true">👤</span>
-                <%= adminUser.full_name || adminUser.username %>
-                <span class="badge-role <%= adminUser.role %>"><%= adminUser.role === 'admin' ? 'Admin' : 'Staff' %></span>
-            </span>
-            <a class="admin-bar-link" href="/admin/logout">Đăng xuất</a>
-        </div>
-    <% } %>
 </aside>
 
 <style>
     .badge-role{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;line-height:1.7;vertical-align:middle}
     .badge-role.admin{background:#e7f0ff;color:#1b4fbf}
     .badge-role.staff{background:#eef1f4;color:#556}
-    .admin-account{margin-top:16px;padding-top:12px;border-top:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;gap:6px}
-    .admin-account-name{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px;font-weight:600}
     .admin-hint{font-weight:400;color:#888;font-size:12px}
+    /* Avatar + menu người dùng ở ĐẦU sidebar (bấm avatar để mở menu) */
+    .admin-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .admin-user{position:relative}
+    .admin-avatar{width:38px;height:38px;border-radius:50%;border:0;cursor:pointer;
+        background:var(--accent,#c39a5e);color:#fff;font-weight:700;font-size:16px;
+        display:flex;align-items:center;justify-content:center}
+    .admin-avatar:hover{filter:brightness(.95)}
+    .admin-usermenu{position:absolute;top:46px;right:0;min-width:210px;background:#fff;
+        border:1px solid var(--line,#e5e8eb);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.14);
+        padding:8px;z-index:60;display:flex;flex-direction:column;gap:2px}
+    .admin-usermenu[hidden]{display:none}
+    .admin-usermenu-head{display:flex;align-items:center;gap:8px;justify-content:space-between;
+        padding:8px 10px;border-bottom:1px solid var(--line,#eee);margin-bottom:4px}
+    .admin-usermenu-name{font-weight:600;font-size:14px}
+    .admin-usermenu a{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;
+        color:#414a53;font-size:14px}
+    .admin-usermenu a:hover{background:var(--soft,#f7f8fa)}
 </style>
+<script>
+    (function () {
+        var btn = document.getElementById('avatarBtn'), menu = document.getElementById('userMenu');
+        if (!btn || !menu) return;
+        function close() { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var willOpen = menu.hidden;
+            menu.hidden = !willOpen;
+            btn.setAttribute('aria-expanded', String(willOpen));
+        });
+        // Bấm ra ngoài / nhấn Esc thì đóng menu.
+        document.addEventListener('click', function (e) {
+            if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) close();
+        });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    })();
+</script>

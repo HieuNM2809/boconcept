@@ -1,0 +1,130 @@
+<%- include('../partials/head') %>
+<body class="admin">
+<%- include('_nav', {section: 'account'}) %>
+<main class="admin-wrap">
+    <div class="admin-head">
+        <h1>TÀI KHOẢN</h1>
+    </div>
+
+    <% const initial = ((item && (item.full_name || item.username)) || '?').trim().charAt(0).toUpperCase(); %>
+
+    <section class="form-card acct-card">
+        <h2 class="admin-subhead">THÔNG TIN NGƯỜI DÙNG</h2>
+        <div class="acct-identity">
+            <span class="acct-avatar-lg" aria-hidden="true"><%= initial %></span>
+            <div>
+                <div class="acct-name"><%= item.full_name || item.username %></div>
+                <span class="badge-role <%= item.role %>"><%= item.role === 'admin' ? 'Admin' : 'Staff' %></span>
+                <div class="admin-hint" style="margin-top:6px">
+                    Đăng nhập gần nhất:
+                    <%= item.last_login_at ? new Date(item.last_login_at).toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'}) : '—' %>
+                </div>
+            </div>
+        </div>
+
+        <form class="admin-form" method="post" action="/admin/account">
+            <div class="form-auto">
+                <div>
+                    <label for="full_name">Tên hiển thị</label>
+                    <input id="full_name" name="full_name" value="<%= item.full_name || '' %>">
+                </div>
+                <div>
+                    <label for="username_ro">Tên đăng nhập</label>
+                    <%# Username KHÔNG cho tự đổi ở đây (là khoá đăng nhập) — chỉ hiện. %>
+                    <input id="username_ro" value="<%= item.username %>" disabled>
+                </div>
+                <div>
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" value="<%= item.email || '' %>" placeholder="vd: ban@congty.vn">
+                </div>
+                <div>
+                    <label for="phone">Điện thoại</label>
+                    <input id="phone" name="phone" value="<%= item.phone || '' %>" placeholder="vd: 0901234567">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="form-card acct-card">
+        <h2 class="admin-subhead">ĐĂNG NHẬP &amp; BẢO MẬT</h2>
+        <div class="acct-secrow">
+            <div>
+                <div class="acct-name">Mật khẩu</div>
+                <div class="admin-hint">Nên đổi mật khẩu định kỳ để bảo mật tài khoản.</div>
+            </div>
+            <button type="button" class="btn btn-outline" id="openPwBtn">Đổi mật khẩu</button>
+        </div>
+    </section>
+</main>
+
+<%# ── Hộp thoại đổi mật khẩu ─────────────────────────────────────────────────── %>
+<div class="acct-modal" id="pwModal" <%= openPw ? '' : 'hidden' %>>
+    <div class="acct-modal-card" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+        <div class="acct-modal-head">
+            <h3 id="pwTitle">Đổi mật khẩu</h3>
+            <button type="button" class="acct-modal-x" id="closePwBtn" aria-label="Đóng">×</button>
+        </div>
+        <form class="admin-form" method="post" action="/admin/account/password" autocomplete="off">
+            <label for="current_password">Mật khẩu hiện tại</label>
+            <input id="current_password" name="current_password" type="password" autocomplete="current-password" required>
+            <label for="new_password">Mật khẩu mới</label>
+            <input id="new_password" name="new_password" type="password" autocomplete="new-password" required
+                   placeholder="Tối thiểu 6 ký tự">
+            <label for="confirm_password">Nhắc lại mật khẩu mới</label>
+            <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" id="cancelPwBtn">Hủy</button>
+                <button type="submit" class="btn btn-primary">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .acct-card{max-width:640px;margin-bottom:18px}
+    .acct-identity{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .acct-avatar-lg{width:64px;height:64px;border-radius:50%;background:var(--accent,#c39a5e);
+        color:#fff;font-weight:700;font-size:28px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+    .acct-name{font-weight:600;font-size:16px}
+    .acct-card label{display:block;margin:12px 0 4px;font-weight:600}
+    .acct-card input{width:100%;box-sizing:border-box}
+    .acct-card input:disabled{background:#f1f2f4;color:#6b7280}
+    .acct-secrow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    /* Modal */
+    .acct-modal{position:fixed;inset:0;background:rgba(15,20,25,.45);z-index:100;
+        display:flex;align-items:center;justify-content:center;padding:20px}
+    .acct-modal[hidden]{display:none}
+    .acct-modal-card{background:#fff;border-radius:12px;width:100%;max-width:420px;
+        box-shadow:0 20px 60px rgba(0,0,0,.25);padding:20px}
+    .acct-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .acct-modal-head h3{margin:0;font-size:18px}
+    .acct-modal-x{border:0;background:none;font-size:24px;line-height:1;cursor:pointer;color:#6b7280;padding:0 4px}
+    .acct-modal-card label{display:block;margin:12px 0 4px;font-weight:600}
+    .acct-modal-card input{width:100%;box-sizing:border-box}
+</style>
+<script>
+    (function () {
+        var modal = document.getElementById('pwModal');
+        var openBtn = document.getElementById('openPwBtn');
+        var closeEls = [document.getElementById('closePwBtn'), document.getElementById('cancelPwBtn')];
+        if (!modal || !openBtn) return;
+        function open() { modal.hidden = false; var f = document.getElementById('current_password'); if (f) f.focus(); }
+        function close() { modal.hidden = true; }
+        openBtn.addEventListener('click', open);
+        closeEls.forEach(function (b) { if (b) b.addEventListener('click', close); });
+        // Bấm ra nền tối (ngoài thẻ card) thì đóng.
+        modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) close(); });
+        // Nhắc lại mật khẩu phải khớp — chặn ngay ở client cho đỡ một vòng server.
+        var np = document.getElementById('new_password'), cp = document.getElementById('confirm_password');
+        if (cp) cp.addEventListener('input', function () {
+            cp.setCustomValidity(np.value !== cp.value ? 'Nhắc lại mật khẩu không khớp.' : '');
+        });
+    })();
+</script>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

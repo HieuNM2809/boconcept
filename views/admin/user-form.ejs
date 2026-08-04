@@ -17,6 +17,12 @@
             <label for="full_name">Họ tên</label>
             <input id="full_name" name="full_name" value="<%= item ? (item.full_name || '') : '' %>">
 
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value="<%= item ? (item.email || '') : '' %>">
+
+            <label for="phone">Điện thoại</label>
+            <input id="phone" name="phone" value="<%= item ? (item.phone || '') : '' %>">
+
             <label for="password">Mật khẩu <% if (item) { %><span class="admin-hint">(để trống nếu không đổi)</span><% } %></label>
             <%# type=password + autocomplete=new-password: chặn trình duyệt tự điền
                 mật khẩu tài khoản admin đang đăng nhập vào ô này. %>
