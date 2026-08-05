@@ -2096,6 +2096,14 @@ body.admin {
 .admin-nav-icon { font-size: 15px; line-height: 1; }
 .admin-bar-link { color: var(--muted); font-size: 13px; padding: 0 8px; }
 .admin-bar-link:hover { color: var(--accent-dark); }
+/* Nút hamburger — CHỈ hiện ở mobile/tablet (≤1280px), xem media query bên dưới. */
+.admin-nav-toggle {
+    display: none; align-items: center; justify-content: center;
+    width: 40px; height: 40px; flex: 0 0 auto;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    cursor: pointer; font-size: 20px; line-height: 1; color: var(--ink);
+}
+.admin-nav-toggle:hover { background: var(--soft); }
 
 /* Màn danh sách chiếm hết bề ngang: bảng sản phẩm có 8 cột kèm cột thao tác 3
    nút, bó trong 1100px là cột "Tên" bị bóp và cụm nút tràn ra ngoài viền bảng. */
@@ -2229,20 +2237,28 @@ td.admin-row-actions > :first-child { margin-left: 0; }
 .admin-form input, .admin-form select, .admin-form textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; font-family: var(--sans); }
 .admin-form textarea { resize: vertical; }
 .admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus { outline: none; border-color: var(--accent); }
-/* Màn hẹp: sidebar thành thanh ngang cuộn được, không chiếm 232px của nội dung */
-@media (max-width: 860px) {
+/* Mobile + tablet/iPad (≤1280px): sidebar thu về một THANH TRÊN; menu ẩn sau nút
+   hamburger (☰) — bấm mới xổ ra, giống nút lọc ở trang sản phẩm. Trước đây menu
+   xếp ngang cuộn được, trên điện thoại các mục tràn ngang rất khó bấm. */
+@media (max-width: 1280px) {
     body.admin { flex-direction: column; }
     .admin-side {
         flex: 0 0 auto; width: 100%; height: auto; position: static;
-        flex-direction: row; align-items: center; gap: 12px;
-        padding: 10px 14px; overflow-x: auto;
-        /* Nằm ngang thì vạch ngăn phải ở CẠNH DƯỚI, không phải cạnh phải */
+        flex-direction: column; align-items: stretch; gap: 0;
+        padding: 10px 14px; overflow: visible;
+        /* Nằm trên cùng thì vạch ngăn ở CẠNH DƯỚI, không phải cạnh phải */
         border-right: 0; border-bottom: 1px solid var(--line);
     }
-    .admin-nav { flex-direction: row; flex: 1; gap: 4px; }
-    .admin-nav-group { display: none; }  /* nhãn nhóm vô nghĩa khi xếp ngang */
-    .admin-nav a { white-space: nowrap; padding: 8px 12px; }
-    .admin-wrap { margin-top: 20px; padding-inline: 18px; }
+    .admin-nav-toggle { display: flex; }
+    /* Menu ẩn mặc định; .nav-open (JS gắn khi bấm ☰) mới hiện, xổ DỌC xuống dưới. */
+    .admin-nav { display: none; flex-direction: column; flex: none; gap: 2px; margin-top: 10px; }
+    .admin-side.nav-open .admin-nav { display: flex; }
+    .admin-nav-group { display: block; margin: 10px 0 4px; }  /* nhãn nhóm hiện lại khi xổ dọc */
+    .admin-nav a { white-space: normal; }
+    /* "Xem site" gộp vào trong menu xổ để hàng trên gọn */
+    .admin-side > .admin-bar-link { display: none; }
+    .admin-side.nav-open > .admin-bar-link { display: block; margin-top: 8px; }
+    .admin-wrap { margin-top: 16px; padding-inline: 18px; }
 }
 .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
 .admin-hint { color: var(--muted); font-size: 12px; }

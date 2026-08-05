@@ -37,6 +37,9 @@ const adminMenu = [
 
 <aside class="admin-side">
     <div class="admin-top">
+        <%# Nút hamburger: chỉ hiện ≤1280px (CSS), bấm để xổ menu dọc bên dưới. %>
+        <button type="button" class="admin-nav-toggle" id="adminNavToggle"
+                aria-label="Mở menu" aria-controls="adminSideNav" aria-expanded="false">☰</button>
         <a class="admin-brand" href="/admin">⚙️ Quản trị</a>
         <% if (typeof adminUser !== 'undefined' && adminUser) { %>
             <div class="admin-user">
@@ -56,7 +59,7 @@ const adminMenu = [
         <% } %>
     </div>
 
-    <nav class="admin-nav" aria-label="Menu quản trị">
+    <nav class="admin-nav" id="adminSideNav" aria-label="Menu quản trị">
         <% adminMenu.forEach(function (g) { %>
             <p class="admin-nav-group"><%= g.group %></p>
             <% g.items.forEach(function (it) { %>
@@ -78,8 +81,8 @@ const adminMenu = [
     .badge-role.staff{background:#eef1f4;color:#556}
     .admin-hint{font-weight:400;color:#888;font-size:12px}
     /* Avatar + menu người dùng ở ĐẦU sidebar (bấm avatar để mở menu) */
-    .admin-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .admin-user{position:relative}
+    .admin-top{display:flex;align-items:center;gap:10px}
+    .admin-user{position:relative;margin-left:auto}
     .admin-avatar{width:38px;height:38px;border-radius:50%;border:0;cursor:pointer;
         background:var(--accent,#c39a5e);color:#fff;font-weight:700;font-size:16px;
         display:flex;align-items:center;justify-content:center}
@@ -97,6 +100,16 @@ const adminMenu = [
 </style>
 <script>
     (function () {
+        // Hamburger (mobile/tablet ≤1280px): bật/tắt menu dọc.
+        var navToggle = document.getElementById('adminNavToggle');
+        var side = document.querySelector('.admin-side');
+        if (navToggle && side) {
+            navToggle.addEventListener('click', function () {
+                var open = side.classList.toggle('nav-open');
+                navToggle.setAttribute('aria-expanded', String(open));
+            });
+        }
+        // Menu avatar
         var btn = document.getElementById('avatarBtn'), menu = document.getElementById('userMenu');
         if (!btn || !menu) return;
         function close() { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
