@@ -150,12 +150,12 @@
                         <option value="<%= c.id %>" <%= (item && item.category_id === c.id) ? 'selected' : '' %>><%= c.name_vi %></option>
                     <% }) %>
                 </select>
-                <label for="price">Giá (VNĐ)</label>
-                <%# `max` để trình duyệt chặn ngay tại chỗ; server vẫn kiểm lại
-                    bằng price.helper vì thuộc tính này sửa được qua devtools. %>
-                <input type="number" step="1000" min="0" max="<%= maxPrice %>"
-                       id="price" name="price" value="<%= item ? Number(item.price || 0) : 0 %>">
-                <span class="admin-hint">Tối đa <%= maxPrice.toLocaleString('vi-VN') %> ₫</span>
+                <%# GIÁ ẨN khỏi form quản lý sản phẩm theo yêu cầu. Vẫn gửi kèm dạng
+                    ô ẩn để: (1) SỬA sản phẩm giữ nguyên giá cũ trong DB (không bị
+                    reset về 0), (2) không phải đổi controller/service (vẫn nhận
+                    field `price`). Sản phẩm mới mặc định giá 0. Muốn hiện lại giá
+                    thì đổi input này về type="number" như cũ. %>
+                <input type="hidden" name="price" value="<%= item ? Number(item.price || 0) : 0 %>">
                 <label for="status">Trạng thái</label>
                 <select id="status" name="status">
                     <option value="1" <%= (!item || item.status) ? 'selected' : '' %>>Hiện</option>
