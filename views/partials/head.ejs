@@ -1,9 +1,69 @@
+<%
+// ── SEO: gom biến + fallback để TRANG NÀO cũng ra thẻ hợp lệ, kể cả khi controller
+//    không truyền gì. `seo` do seo.middleware bơm vào (siteUrl, canonical, hreflang…).
+const _brand = t.common.brand;
+const _title = (typeof pageTitle !== 'undefined' && pageTitle) ? pageTitle
+    : (_brand + ' — ' + t.common.tagline);
+const _seo = (typeof seo !== 'undefined' && seo) ? seo : null;
+const _clip = (s, n) => {
+    s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+    return s.length <= n ? s : s.slice(0, n - 1).replace(/\s+\S*$/, '').trim() + '…';
+};
+const _descRaw = (typeof metaDescription !== 'undefined' && metaDescription) ? metaDescription
+    : ((t.seo && t.seo.description) || t.common.tagline);
+const _desc = _clip(_descRaw, 160);
+const _keywords = (typeof metaKeywords !== 'undefined' && metaKeywords)
+    ? metaKeywords : ((t.seo && t.seo.keywords) || '');
+// og:image phải là URL tuyệt đối http(s). Ảnh admin upload là data URI base64 -> bỏ,
+// dùng logo mặc định; đường dẫn /static/... thì ghép domain vào.
+const _mi = (typeof metaImage !== 'undefined' && metaImage) ? String(metaImage).trim() : '';
+let _ogImage = _seo ? _seo.defaultImage : '/static/images/logo.png';
+if (/^https?:\/\//i.test(_mi)) _ogImage = _mi;
+else if (_mi.startsWith('/') && _seo) _ogImage = _seo.siteUrl + _mi;
+const _ogImageOk = /^https?:\/\//i.test(_ogImage);
+const _ogType = (typeof ogType !== 'undefined' && ogType) ? ogType : 'website';
+const _canonical = (typeof canonical !== 'undefined' && canonical) ? canonical : (_seo ? _seo.canonical : '');
+const _robots = (typeof metaRobots !== 'undefined' && metaRobots) ? metaRobots
+    : ((_seo && _seo.noindex) ? 'noindex, nofollow' : 'index, follow');
+const _isPublic = _seo && !_seo.noindex;
+// JSON-LD: escape '<' để chuỗi (mô tả sản phẩm…) không thể chèn </script> phá trang.
+const _ld = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
+const _pageLd = (typeof jsonLd !== 'undefined' && Array.isArray(jsonLd)) ? jsonLd.filter(Boolean) : [];
+%>
 <!DOCTYPE html>
 <html lang="<%= lang %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= (typeof pageTitle !== 'undefined' && pageTitle) ? pageTitle : (t.common.brand + ' — ' + t.common.tagline) %></title>
+    <title><%= _title %></title>
+    <meta name="description" content="<%= _desc %>">
+    <% if (_keywords) { %><meta name="keywords" content="<%= _keywords %>">
+    <% } %><meta name="robots" content="<%= _robots %>">
+    <meta name="author" content="<%= _brand %>">
+    <meta name="theme-color" content="#c39a5e">
+    <link rel="icon" href="/static/images/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="/static/images/logo.png">
+    <% if (_isPublic && _canonical) { %><link rel="canonical" href="<%= _canonical %>">
+    <% } %><% if (_isPublic && _seo) { %><link rel="alternate" hreflang="vi" href="<%= _seo.urlForLang('vi') %>">
+    <link rel="alternate" hreflang="en" href="<%= _seo.urlForLang('en') %>">
+    <link rel="alternate" hreflang="x-default" href="<%= _seo.urlForLang('vi') %>">
+    <% } %>
+    <%# ── Open Graph (Facebook/Zalo…) ── %>
+    <meta property="og:site_name" content="<%= _brand %>">
+    <meta property="og:type" content="<%= _ogType %>">
+    <meta property="og:title" content="<%= _title %>">
+    <meta property="og:description" content="<%= _desc %>">
+    <% if (_isPublic && _canonical) { %><meta property="og:url" content="<%= _canonical %>">
+    <% } %><% if (_ogImageOk) { %><meta property="og:image" content="<%= _ogImage %>">
+    <% } %><% if (_seo) { %><meta property="og:locale" content="<%= _seo.locale %>">
+    <meta property="og:locale:alternate" content="<%= _seo.altLocale %>">
+    <% } %>
+    <%# ── Twitter Card ── %>
+    <meta name="twitter:card" content="<%= _ogImageOk ? 'summary_large_image' : 'summary' %>">
+    <meta name="twitter:title" content="<%= _title %>">
+    <meta name="twitter:description" content="<%= _desc %>">
+    <% if (_ogImageOk) { %><meta name="twitter:image" content="<%= _ogImage %>">
+    <% } %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Gộp các họ vào MỘT request css2 (không tách nhiều thẻ link): chỉ một vòng
@@ -12,4 +72,23 @@
          loại sản phẩm (.why-title). -->
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css?v=<%= typeof assetVersion !== 'undefined' ? assetVersion : '1' %>">
+    <%# ── Dữ liệu có cấu trúc (Google rich results) ── %>
+    <% if (_isPublic && _seo && _seo.isHome) { %>
+    <script type="application/ld+json"><%- _ld({
+        '@context': 'https://schema.org', '@type': 'WebSite',
+        name: _brand, url: _seo.siteUrl, inLanguage: lang,
+        potentialAction: {
+            '@type': 'SearchAction',
+            target: _seo.siteUrl + '/search?q={search_term_string}',
+            'query-input': 'required name=search_term_string',
+        },
+    }) %></script>
+    <script type="application/ld+json"><%- _ld({
+        '@context': 'https://schema.org', '@type': 'Organization',
+        name: _brand, url: _seo.siteUrl, logo: _seo.siteUrl + '/static/images/logo.png',
+    }) %></script>
+    <% } %>
+    <% _pageLd.forEach(function (obj) { %>
+    <script type="application/ld+json"><%- _ld(obj) %></script>
+    <% }) %>
 </head>

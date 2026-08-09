@@ -1,5 +1,6 @@
 const PageService = require('../../Services/Api/page.service');
 const richtext = require('../../Helpers/richtext.helper');
+const seoHelper = require('../../Helpers/seo.helper');
 const {logger} = require('../../../config/log4js');
 
 /** Render một trang tĩnh theo slug. Dùng cho /about và /pages/:slug. */
@@ -22,6 +23,9 @@ async function showSlug(slug, req, res) {
 
         res.render('page', {
             pageTitle: `${res.locals.pick(page, 'title')} — ${t.common.brand}`,
+            metaDescription: seoHelper.metaDescription(res.locals.pick(page, 'excerpt') || bodyHtml),
+            metaImage: page.image || null,
+            ogType: 'article',
             page,
             bodyHtml,
         });

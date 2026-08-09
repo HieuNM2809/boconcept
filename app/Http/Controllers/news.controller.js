@@ -1,5 +1,6 @@
 const NewsService = require('../../Services/Api/news.service');
 const richtext = require('../../Helpers/richtext.helper');
+const seoHelper = require('../../Helpers/seo.helper');
 const {logger} = require('../../../config/log4js');
 
 const toPlain = (rows) => rows.map((r) => (r && typeof r.get === 'function' ? r.get({plain: true}) : r));
@@ -23,6 +24,8 @@ async function index(req, res) {
 
         res.render('news', {
             pageTitle: `${t.news.title} — ${t.common.brand}`,
+            metaDescription: seoHelper.metaDescription(t.news.sub),
+            metaKeywords: seoHelper.keywords(['tin tức nội thất', 'xu hướng nội thất', t.common.brand]),
             posts: toPlain(result.data),
             meta: result.meta,
             pages: buildPageList(current_page, last_page),
@@ -60,8 +63,31 @@ async function detail(req, res) {
             .filter((p) => p.id !== post.id)
             .slice(0, 3);
 
+        // ── SEO: mô tả + dữ liệu có cấu trúc Article ─────────────────────────────
+        const metaDesc = seoHelper.metaDescription(res.locals.pick(post, 'excerpt') || bodyHtml);
+        const articleLd = {
+            '@context': 'https://schema.org', '@type': 'Article',
+            headline: res.locals.pick(post, 'title'),
+            description: metaDesc,
+            author: {'@type': 'Organization', name: t.common.brand},
+            publisher: {
+                '@type': 'Organization', name: t.common.brand,
+                logo: {'@type': 'ImageObject', url: `${res.locals.seo.siteUrl}/static/images/logo.png`},
+            },
+            mainEntityOfPage: res.locals.seo.canonical,
+        };
+        const pub = post.published_at || post.created_at;
+        if (pub) articleLd.datePublished = new Date(pub).toISOString();
+        if (post.updated_at) articleLd.dateModified = new Date(post.updated_at).toISOString();
+        const artImgs = seoHelper.httpImages([post.image]);
+        if (artImgs.length) articleLd.image = artImgs;
+
         res.render('news-detail', {
             pageTitle: `${res.locals.pick(post, 'title')} — ${t.common.brand}`,
+            metaDescription: metaDesc,
+            metaImage: post.image || null,
+            ogType: 'article',
+            jsonLd: [articleLd],
             post,
             bodyHtml,
             related: others,

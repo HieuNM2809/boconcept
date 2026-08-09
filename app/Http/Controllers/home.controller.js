@@ -9,6 +9,7 @@ const GalleryService = require('../../Services/Api/gallery.service');
 const SettingService = require('../../Services/Api/setting.service');
 const PageService = require('../../Services/Api/page.service');
 const richtext = require('../../Helpers/richtext.helper');
+const seoHelper = require('../../Helpers/seo.helper');
 const {logger} = require('../../../config/log4js');
 
 // Dữ liệu KHÔNG dịch (ảnh/icon) — phần chữ lấy từ resources/lang.
@@ -124,6 +125,12 @@ async function index(req, res) {
 
         res.render('home', {
             pageTitle: home.meta.title,
+            // SEO: mô tả lấy từ đoạn giới thiệu (about), từ khoá gộp các danh mục gốc.
+            metaDescription: seoHelper.metaDescription(pickAbout('excerpt', home.why.body)),
+            metaKeywords: seoHelper.keywords(
+                rootCats.map((c) => res.locals.pick(c, 'name'))
+                    .concat(['nội thất', 'nội thất cao cấp', res.locals.t.common.brand])),
+            metaImage: (heroSlides[0] && heroSlides[0].image) || null,
             heroBrand,
             // Khối .intro-section của trang chủ: một cột chữ căn giữa.
             // ĐÚNG BA biến này, không hơn — view đã bỏ cột ảnh và nút CTA nên

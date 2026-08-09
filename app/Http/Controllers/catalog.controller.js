@@ -1,6 +1,7 @@
 const CategoryService = require('../../Services/Api/category.service');
 const ProductService = require('../../Services/Api/product.service');
 const richtext = require('../../Helpers/richtext.helper');
+const seoHelper = require('../../Helpers/seo.helper');
 const {logger} = require('../../../config/log4js');
 
 // UI sort (theo spec) -> sort của ProductService
@@ -100,8 +101,28 @@ async function category(req, res) {
             return `/categories/${current.id}?${parts.join('&')}`;
         };
 
+        // ── SEO: mô tả loại + breadcrumb ─────────────────────────────────────────
+        const catDesc = seoHelper.metaDescription(
+            res.locals.pick(current, 'description')
+            || `${res.locals.pick(current, 'name')} — ${res.locals.t.common.tagline}`);
+        const catCrumbLd = chain.length ? {
+            '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+            itemListElement: chain.map((c, i) => ({
+                '@type': 'ListItem', position: i + 1,
+                name: res.locals.pick(c, 'name'),
+                item: `${res.locals.seo.siteUrl}/categories/${c.id}`,
+            })),
+        } : null;
+
         res.render('category', {
             pageTitle: `${res.locals.pick(current, 'name')} — ${res.locals.t.common.brand}`,
+            metaDescription: catDesc,
+            metaImage: current.image || null,
+            metaKeywords: seoHelper.keywords(
+                [res.locals.pick(current, 'name')]
+                    .concat(children.map((c) => res.locals.pick(c, 'name')))
+                    .concat(['nội thất'])),
+            jsonLd: catCrumbLd ? [catCrumbLd] : [],
             category: current,
             breadcrumb: chain,
             children,
@@ -185,6 +206,10 @@ async function products(req, res) {
 
         res.render('products', {
             pageTitle: `${t.catalog.allTitle} — ${res.locals.t.common.brand}`,
+            metaDescription: seoHelper.metaDescription(`${t.catalog.allTitle} — ${t.common.tagline}`),
+            metaKeywords: seoHelper.keywords(
+                catOptions.map((c) => c[`name_${res.locals.lang}`] || c.name_vi)
+                    .concat(['nội thất', 'sản phẩm nội thất', 'mua nội thất'])),
             products: toPlain(result.data),
             meta: result.meta,
             pages: buildPageList(current_page, last_page),
@@ -247,8 +272,51 @@ async function product(req, res) {
             }),
         );
 
+        // ── SEO: mô tả + dữ liệu có cấu trúc Product & BreadcrumbList ─────────────
+        const metaDesc = seoHelper.metaDescription(
+            res.locals.pick(prod, 'description') || res.locals.pick(prod, 'extra') || res.locals.pick(prod, 'name'));
+        const material = res.locals.pick(prod, 'material');
+        const price = Number(prod.price || 0);
+        const productLd = {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: res.locals.pick(prod, 'name'),
+            description: metaDesc,
+            sku: String(prod.id),
+            brand: {'@type': 'Brand', name: res.locals.t.common.brand},
+        };
+        const httpImgs = seoHelper.httpImages(gallery);
+        if (httpImgs.length) productLd.image = httpImgs;
+        if (material) productLd.material = material;
+        if (prod.category) productLd.category = res.locals.pick(prod.category, 'name');
+        // offers CHỈ khi có giá (>0): sản phẩm ẩn giá/để 0 sẽ không gắn giá vào schema.
+        if (price > 0) {
+            productLd.offers = {
+                '@type': 'Offer', priceCurrency: 'VND', price,
+                availability: 'https://schema.org/InStock', url: res.locals.seo.canonical,
+            };
+        }
+        const crumbItems = breadcrumb.map((c, i) => ({
+            '@type': 'ListItem', position: i + 1,
+            name: res.locals.pick(c, 'name'),
+            item: `${res.locals.seo.siteUrl}/categories/${c.id}`,
+        }));
+        crumbItems.push({
+            '@type': 'ListItem', position: crumbItems.length + 1,
+            name: res.locals.pick(prod, 'name'), item: res.locals.seo.canonical,
+        });
+        const crumbLd = {'@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbItems};
+
         res.render('product', {
             pageTitle: `${res.locals.pick(prod, 'name')} — ${res.locals.t.common.brand}`,
+            metaDescription: metaDesc,
+            metaImage: gallery[0] || null,
+            ogType: 'product',
+            metaKeywords: seoHelper.keywords([
+                res.locals.pick(prod, 'name'), material,
+                prod.category && res.locals.pick(prod.category, 'name'), 'nội thất',
+            ]),
+            jsonLd: [productLd, crumbLd],
             product: prod,
             breadcrumb,
             gallery,
@@ -278,6 +346,8 @@ async function search(req, res) {
     if (!q) {
         return res.render('search', {
             pageTitle: `${t.search.title} — ${res.locals.t.common.brand}`,
+            // Trang kết quả tìm kiếm KHÔNG nên vào chỉ mục Google (nội dung mỏng/trùng).
+            metaRobots: 'noindex, follow',
             q: '', products: [], meta: null, pages: [], filters: {}, linkFor: () => '#',
         });
     }
@@ -305,6 +375,8 @@ async function search(req, res) {
 
         res.render('search', {
             pageTitle: `${t.search.title}: ${q} — ${res.locals.t.common.brand}`,
+            metaRobots: 'noindex, follow',
+            metaDescription: seoHelper.metaDescription(`${t.search.title}: ${q}`),
             q,
             products: toPlain(result.data),
             meta: result.meta,

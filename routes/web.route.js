@@ -22,6 +22,7 @@ const adminAuth = require('../app/Http/Middleware/adminAuth.middleware');
 const requireRole = require('../app/Http/Middleware/requireRole.middleware');
 const navigation = require('../app/Http/Middleware/navigation.middleware');
 const mergeRichtextImages = require('../app/Http/Middleware/richtextImages.middleware');
+const seoController = require('../app/Http/Controllers/seo.controller');
 
 // Danh mục cho header (partial dùng chung) -> res.locals.navCategories.
 // Đặt ở đây (không phải app-level) nên không bao giờ chạm /api — router đó được
@@ -152,6 +153,10 @@ adminRouter.post('/staff/:id/delete', onlyAdmin, (req, res) => adminUserControll
 adminRouter.post('/staff/:id', onlyAdmin, (req, res) => adminUserController.update(req, res));
 
 router.use('/admin', adminRouter);
+
+// ───── SEO: robots.txt + sitemap.xml (công khai) ──────────────────────────────
+router.get('/robots.txt', (req, res) => seoController.robots(req, res));
+router.get('/sitemap.xml', (req, res) => seoController.sitemap(req, res));
 
 // Health check — READINESS chứ không phải liveness.
 //

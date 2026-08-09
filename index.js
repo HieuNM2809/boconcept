@@ -16,6 +16,9 @@ const port = process.env.PORT || 3000;
 // View engine (EJS) + tài nguyên tĩnh (css/js/ảnh) tại /static
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+// Sau proxy của Railway / dev tunnel: tin X-Forwarded-* để req.protocol ra 'https'
+// (SEO canonical/og:url cần URL đúng giao thức) và rate-limit lấy đúng IP client.
+app.set('trust proxy', 1);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Cache-busting cho CSS/JS: markup và style đổi cùng lúc, nếu trình duyệt còn giữ
@@ -25,6 +28,9 @@ app.locals.assetVersion = Date.now().toString(36);
 applyApiMiddlewares(app);
 // i18n cho mọi request: gắn lang + bộ dịch vào res.locals (áp dụng toàn bộ pages)
 app.use(require('./app/Http/Middleware/locale.middleware'));
+// SEO cho mọi request: bơm res.locals.seo (canonical, hreflang, og...). Đặt SAU
+// locale vì cần res.locals.lang.
+app.use(require('./app/Http/Middleware/seo.middleware'));
 registerRoutes(app);
 applyErrorHandler(app);
 
